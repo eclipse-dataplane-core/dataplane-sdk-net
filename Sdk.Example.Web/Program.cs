@@ -1,39 +1,25 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using System.Xml;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Core;
-using Sdk.Core.Domain.Interfaces;
-using Sdk.Core.Infrastructure;
+using Sdk.Core.Domain;
+using Sdk.Core.Domain.Messages;
+using Sdk.Core.Extension;
+using Sdk.Example.Web;
+using Void = Sdk.Core.Domain.Void;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add controllers to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// add core service from SDK, make use of dependency injection
-builder.Services.AddSdkCoreServices();
+builder.Services.AddDataPlaneSdk();
 
-// add default storage implementation
-var storageType = builder.Configuration.GetValue<string>("Storage:Type");
-if (storageType != null && storageType.Equals("postgres", StringComparison.OrdinalIgnoreCase))
-{
-    builder.Services.AddPostgresStorage(options =>
-    {
-        options.ConnectionString = builder.Configuration.GetConnectionString("Postgres");
-        options.Schema = builder.Configuration.GetValue<string>("Storage:Schema") ?? "public";
-    });
-}
-else
-{
-    builder.Services.AddDefaultStorage();
-}
 
 // add authentication handler
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -71,6 +57,13 @@ builder.Services.AddAuthorizationBuilder()
 
 
 var app = builder.Build();
+
+
+//automatically migrate the database schema - can be replaced by invoking `dotnet ef database update` command
+await using (var dbContext = new DataFlowContext())
+{
+    await dbContext.EnsureMigrated();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -6,13 +6,8 @@ namespace Sdk.Core;
 
 public static class SdkExtensions
 {
-    public static void AddSdkCoreServices(this IServiceCollection services)
+    public static void AddFromSdk(this IServiceCollection services, DataPlaneSdk sdk)
     {
-        services.AddSingleton<IDataPlaneSignalingService, DataPlaneSignalingService>();
-    }
-
-    public static void AddDefaultStorage(this IServiceCollection services)
-    {
-        services.AddSingleton<IDataPlaneStore, DataPlaneStore>();
+        services.AddSingleton(sdk.Store);
     }
 }

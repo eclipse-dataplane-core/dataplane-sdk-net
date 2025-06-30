@@ -5,7 +5,7 @@ using Sdk.Core.Infrastructure;
 
 namespace Sdk.Core;
 
-public partial class Sdk
+public partial class DataPlaneSdk
 {
     
     public IDataPlaneStore Store { get; set; } = new DataPlaneStore();
@@ -20,49 +20,49 @@ public partial class Sdk
 
     public class SdkBuilder
     {
-        private readonly Sdk _sdk = new()
+        private readonly DataPlaneSdk _dataPlaneSdk = new()
         {
             OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null)
         };
 
         public SdkBuilder Store(DataPlaneStore dataPlaneStore)
         {
-            _sdk.Store = dataPlaneStore;
+            _dataPlaneSdk.Store = dataPlaneStore;
             return this;
         }
 
-        public Sdk Build()
+        public DataPlaneSdk Build()
         {
-            return _sdk;
+            return _dataPlaneSdk;
         }
 
         public SdkBuilder OnStart(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
         {
-            _sdk.OnStart += processor;
+            _dataPlaneSdk.OnStart += processor;
             return this;
         }
 
         public SdkBuilder OnProvision(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
         {
-            _sdk.OnProvision += processor;
+            _dataPlaneSdk.OnProvision += processor;
             return this;
         }
 
         public SdkBuilder OnTerminate(Func<DataFlow, StatusResult<Domain.Void>> processor)
         {
-            _sdk.OnTerminate += processor;
+            _dataPlaneSdk.OnTerminate += processor;
             return this;
         }
 
         public SdkBuilder OnSuspend(Func<DataFlow, StatusResult<Domain.Void>> processor)
         {
-            _sdk.OnSuspend += processor;
+            _dataPlaneSdk.OnSuspend += processor;
             return this;
         }
 
         public SdkBuilder OnRecover(Func<DataFlow, StatusResult<Domain.Void>> processor)
         {
-            _sdk.OnRecover += processor;
+            _dataPlaneSdk.OnRecover += processor;
             return this;
         }
     }

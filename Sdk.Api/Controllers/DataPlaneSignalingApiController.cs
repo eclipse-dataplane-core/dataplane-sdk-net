@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Sdk.Core.Domain.Interfaces;
 
 namespace Sdk.Api.Controllers;
@@ -20,15 +21,15 @@ public class DataPlaneSignalingApiController : ControllerBase
 
     [Authorize]
     [HttpGet(template: "{dataFlowId}")]
-    public IActionResult Get([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
+    public async Task<IActionResult> Get([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
     {
-        _logger.LogInformation("Participant Context ID: {ParticipantContextId}", participantContextId);
-        return Ok(
-            new
-            {
-                Message = "Data flow retrieved successfully",
-                DataFlowId = dataFlowId,
-                ParticipantContextId = participantContextId
-            });
+        var state = await _dataPlaneSignalingApiService.GetTransferStateAsync(dataFlowId);
+
+        if (state.IsSucceeded)
+        {
+            return Ok(state.Content);
+        }
+
+        return StatusCode(state.Failure!.Code, state);
     }
 }

@@ -1,10 +1,11 @@
-﻿using Sdk.Core.Domain;
+﻿using Sdk.Core;
+using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
 using Sdk.Core.Infrastructure;
 using Void = Sdk.Core.Domain.Void;
 
 // using the SDK directly
-var sdk = new Sdk.Core.Sdk
+var sdk = new DataPlaneSdk
 {
     Store = new DataPlaneStore(),
 };
@@ -14,8 +15,9 @@ sdk.OnTerminate += flow => StatusResult<Void>.Success(default);
 sdk.OnSuspend += flow => StatusResult<Void>.Success(default);
 sdk.OnProvision += flow => StatusResult<DataFlowResponseMessage>.Success(null);
 
+
 // using the SDK builder
-var sdk2 = Sdk.Core.Sdk.Builder()
+var sdk2 = DataPlaneSdk.Builder()
     .Store(new DataPlaneStore())
     .OnStart(flow => StatusResult<DataFlowResponseMessage>.Success(null))
     .OnProvision(flow => StatusResult<DataFlowResponseMessage>.Success(null))

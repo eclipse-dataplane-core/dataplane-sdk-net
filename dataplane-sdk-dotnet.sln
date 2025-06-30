@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk.Core.Test", "Sdk.Core.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk.Example", "Sdk.Example\Sdk.Example.csproj", "{907502C1-63BC-421E-BB1B-EEB9F250C4F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk.Example.Web", "Sdk.Example.Web\Sdk.Example.Web.csproj", "{A4F5ED36-5884-4319-83E7-C85626332099}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{907502C1-63BC-421E-BB1B-EEB9F250C4F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{907502C1-63BC-421E-BB1B-EEB9F250C4F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{907502C1-63BC-421E-BB1B-EEB9F250C4F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F5ED36-5884-4319-83E7-C85626332099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F5ED36-5884-4319-83E7-C85626332099}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F5ED36-5884-4319-83E7-C85626332099}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F5ED36-5884-4319-83E7-C85626332099}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

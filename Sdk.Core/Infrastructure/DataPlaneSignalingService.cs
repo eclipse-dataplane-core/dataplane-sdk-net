@@ -7,6 +7,13 @@ namespace Sdk.Core.Infrastructure;
 
 public class DataPlaneSignalingService : IDataPlaneSignalingService
 {
+    private readonly IDataPlaneStore _dataPlaneStore;
+
+    public DataPlaneSignalingService(IDataPlaneStore dataPlaneStore)
+    {
+        _dataPlaneStore = dataPlaneStore;
+    }
+
     public Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataflowStartMessage message)
     {
         throw new NotImplementedException();
@@ -22,8 +29,9 @@ public class DataPlaneSignalingService : IDataPlaneSignalingService
         throw new NotImplementedException();
     }
 
-    public Task<DataFlowState> GetTransferStateAsync(string processId)
+    public async Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId)
     {
-        throw new NotImplementedException();
+        var flow = await _dataPlaneStore.FindByIdAsync(processId);
+        return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success((DataFlowState)flow.State);
     }
 }

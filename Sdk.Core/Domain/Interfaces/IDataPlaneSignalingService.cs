@@ -22,12 +22,12 @@ public interface IDataPlaneSignalingService
     /// <param name="dataFlowId">Data flow ID</param>
     /// <param name="reason">Optional reason</param>
     Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null);
-    
+
     /// <summary>
     /// Returns the transfer state for the process.
     /// </summary>
     /// <param name="processId"></param>
-    Task<DataFlowState> GetTransferStateAsync(string processId);
+    Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId);
     
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 }

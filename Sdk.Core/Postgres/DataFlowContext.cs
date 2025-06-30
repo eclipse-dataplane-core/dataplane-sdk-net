@@ -1,18 +1,19 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Sdk.Core.Domain;
 
-namespace Sdk.Core.Extension;
+namespace Sdk.Core.Postgres;
 
 public class DataFlowContext : DbContext
 {
+    
+    public DataFlowContext(DbContextOptions<DataFlowContext> options)
+        : base(options)
+    {
+    }
+    
     public DbSet<DataFlow> DataFlows { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        //fixme: inject this
-        optionsBuilder.UseNpgsql(new NpgsqlConnection("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=postgres"));
-    }
+
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

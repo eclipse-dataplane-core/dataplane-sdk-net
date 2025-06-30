@@ -1,5 +1,3 @@
-using Sdk.Core.Domain.Messages;
-
 namespace Sdk.Core.Domain;
 
 public class StatusResult<TContent>(TContent? content, StatusFailure? failure) 

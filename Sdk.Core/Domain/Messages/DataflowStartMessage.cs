@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sdk.Core.Domain;
+namespace Sdk.Core.Domain.Messages;
 
 /// <summary>
 /// Represents a data flow start message from the Dataplane Signaling API protocol. It is used to initiate a data transfer

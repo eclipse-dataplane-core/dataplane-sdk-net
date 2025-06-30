@@ -1,23 +1,27 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sdk.Core.Authorization;
+using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 
 namespace Sdk.Api.Controllers;
 
 [ApiController]
-[Route("/api/v1/{participantContextId}/dataflows")]
+[Route("/api/v1/{participantContextId}")]
 public class DataPlaneSignalingApiController(
     IDataPlaneSignalingService signalingService,
-    IApiAuthorizationService authorizationService)
+    IAuthorizationService authorizationService)
     : ControllerBase
 {
     [Authorize]
-    [HttpGet(template: "{dataFlowId}")]
+    [HttpGet(template: "dataflows/{dataFlowId}")]
     public async Task<IActionResult> Get([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
     {
-        
-        var isAuthorized = await authorizationService.AuthorizeAsync(participantContextId, User);
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess");
+
+        if (!authorizationResult.Succeeded)
+            return Forbid();
        
         var state = await signalingService.GetTransferStateAsync(dataFlowId);
 
@@ -27,5 +31,19 @@ public class DataPlaneSignalingApiController(
         }
 
         return StatusCode(state.Failure!.Code, state);
+    }
+    
+    [Authorize]
+    [HttpGet(template: "foo/{fooId}")]
+    public async Task<IActionResult> GetFoo([FromRoute] string fooId, [FromRoute] string participantContextId)
+    {
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, fooId), "FooAccess");
+
+        if (!authorizationResult.Succeeded)
+            return Forbid();
+
+
+        return Ok();
     }
 }

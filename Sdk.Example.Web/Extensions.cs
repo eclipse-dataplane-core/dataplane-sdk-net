@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
+using Sdk.Api;
 using Sdk.Core;
+using Sdk.Core.Authorization;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
 using Sdk.Core.Postgres;
@@ -28,8 +31,11 @@ public static class Extensions
 
         sdk.OnAuthentication += token => Task.CompletedTask;
 
-
-        services.AddFromSdk(sdk);
+        // add SDK core services
+        services.AddSdkServices(sdk);
+        
+        // wire up authorization handlers
+        services.AddSdkAuthorizationServices();
     }
 }
 

@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Sdk.Core.Authorization;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
@@ -18,7 +17,7 @@ public class DataPlaneSdk
     {
         var subjectClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
         var isValid = subjectClaim != null && subjectClaim.Value.Equals(s);
-
+        
         return Task.FromResult(isValid);
     };
 

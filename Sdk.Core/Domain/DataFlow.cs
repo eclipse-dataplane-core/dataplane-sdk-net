@@ -23,10 +23,28 @@ public class DataFlow(string id) : Identifiable(id)
     public required string AssetId { get; set; }
     public int State { get; set; } = -1;
     public required string AgreementId { get; set; }
-    public int StateCount { get; } = 0;
-    public DateTime StateTimestamp { get; } = DateTime.UtcNow;
+    public int StateCount { get; private set; }
+    public DateTime StateTimestamp { get; private set; } = DateTime.UtcNow;
     public string? ErrorDetail { get; } = null;
     public bool IsPending { get; } = false;
-    public DateTime UpdatedAt { get; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
+
+    public void Deprovision()
+    {
+        Transition((int)DataFlowState.Deprovisioning);
+    }
+
+    private void Transition(int targetState)
+    {
+        StateCount = State == targetState ? StateCount + 1 : 1;
+        State = targetState;
+        StateTimestamp = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Terminate()
+    {
+        Transition((int)DataFlowState.Terminated);
+    }
 }

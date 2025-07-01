@@ -1,5 +1,4 @@
-﻿using Sdk.Core.Domain;
-using Sdk.Core.Infrastructure;
+﻿using Sdk.Core.Infrastructure;
 
 namespace Sdk.Core.Test;
 
@@ -11,7 +10,7 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task FindById_WhenExists()
     {
         var id = "test-id";
-        var flow = CreateDataFlow(id);
+        var flow = TestMethods.CreateDataFlow(id);
         await _dataPlaneStatefulEntityStore.SaveAsync(flow);
         var found = await _dataPlaneStatefulEntityStore.FindByIdAsync(id);
         Assert.NotNull(found);
@@ -28,10 +27,10 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task SaveAsync_ShouldOverwriteExisting()
     {
         var id = "duplicate-id";
-        var original = CreateDataFlow(id);
+        var original = TestMethods.CreateDataFlow(id);
         await _dataPlaneStatefulEntityStore.SaveAsync(original);
 
-        var updated = CreateDataFlow(id);
+        var updated = TestMethods.CreateDataFlow(id);
         updated.RuntimeId = "new-runtime";
         await _dataPlaneStatefulEntityStore.SaveAsync(updated);
 
@@ -44,7 +43,7 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task SaveAsync_ShouldCreateNew()
     {
         var id = "test-id";
-        var original = CreateDataFlow(id);
+        var original = TestMethods.CreateDataFlow(id);
         await _dataPlaneStatefulEntityStore.SaveAsync(original);
 
         var found = await _dataPlaneStatefulEntityStore.FindByIdAsync(id);
@@ -55,7 +54,7 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task FindByIdAndLease()
     {
         const string id = "test-id";
-        var dataFlow = CreateDataFlow(id);
+        var dataFlow = TestMethods.CreateDataFlow(id);
         await _dataPlaneStatefulEntityStore.SaveAsync(dataFlow);
         var result = await _dataPlaneStatefulEntityStore.FindByIdAndLeaseAsync(id);
         Assert.True(result.IsSucceeded);
@@ -75,7 +74,7 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task FindByIdAndLease_AlreadyLeasedBySame()
     {
         const string id = "test-id";
-        var dataFlow = CreateDataFlow(id);
+        var dataFlow = TestMethods.CreateDataFlow(id);
         await _dataPlaneStatefulEntityStore.SaveAsync(dataFlow);
         var result = await _dataPlaneStatefulEntityStore.FindByIdAndLeaseAsync(id);
         Assert.True(result.IsSucceeded);
@@ -88,19 +87,5 @@ public class DataPlaneStatefulEntityStoreTest
     public async Task NextNotLeased_ThrowsNotImplemented()
     {
         await Assert.ThrowsAsync<NotImplementedException>(() => _dataPlaneStatefulEntityStore.NextNotLeased(0));
-    }
-
-    private static DataFlow CreateDataFlow(string id)
-    {
-        return new DataFlow(id)
-        {
-            Source = new DataAddress(),
-            Destination = new DataAddress(),
-            TransferType = new TransferType("test-type", FlowType.Pull),
-            RuntimeId = "test-runtime",
-            ParticipantId = "test-participant",
-            AssetId = "test-asset",
-            AgreementId = "test-agreement"
-        };
     }
 }

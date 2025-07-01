@@ -20,9 +20,23 @@ public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlane
     public async Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null)
     {
         var df = await dataPlaneStore.FindByIdAsync(dataFlowId);
-        //todo: terminate
+        if (df == null || df.State == (int)DataFlowState.Terminated)
+        {
+            return StatusResult<Void>.NotFound();
+        }
 
-        return sdk.InvokeTerminate(df!);
+        if (df.State == (int)DataFlowState.Provisioned)
+        {
+            df.Deprovision();
+        }
+        else
+        {
+            df.Terminate();
+        }
+
+        await dataPlaneStore.SaveAsync(df);
+
+        return sdk.InvokeTerminate(df);
     }
 
     public async Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId)

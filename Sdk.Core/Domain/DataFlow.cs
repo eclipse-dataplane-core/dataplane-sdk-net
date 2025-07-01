@@ -1,8 +1,10 @@
+using Sdk.Core.Domain.Interfaces;
+
 namespace Sdk.Core.Domain;
 
-public class DataFlow
+public class DataFlow(string id) : Identifiable(id)
 {
-    public required string Id { get; set; }
+    public readonly string Id = id;
     public required DataAddress Source { get; set; }
     public required DataAddress Destination { get; set; }
     public Uri? CallbackAddress { get; set; }

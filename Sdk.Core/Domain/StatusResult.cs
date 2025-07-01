@@ -21,6 +21,15 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
             Code = 404
         });
     }
+
+    public static StatusResult<TContent> Conflict(string message)
+    {
+        return Failed(new StatusFailure
+        {
+            Message = message,
+            Code = 409
+        });
+    }
 }
 
 public class StatusFailure

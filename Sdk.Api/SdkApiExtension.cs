@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Api.Authorization.DataFlows;
 using Sdk.Api.Authorization.Foo;
@@ -45,23 +44,20 @@ public static class SdkApiExtension
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // Disable built-in validation via fake parameters
+                // Configure Keycloak as the Identity Provider
+                options.Authority = "http://localhost:8080/realms/master";
+                options.RequireHttpsMetadata = false; // Only for develop
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = configuration.GetValue<bool>("Token:ValidateIssuer"),
-                    ValidateAudience = configuration.GetValue<bool>("Token:ValidateAudience"),
-                    ValidateIssuerSigningKey = configuration.GetValue<bool>("Token:ValidateIssuerSigningKey"),
-                    ValidateLifetime = configuration.GetValue<bool>("Token:ValidateLifetime"),
+                    ValidateIssuer = true,
+                    ValidIssuer = "http://localhost:8080/realms/master",
+                    ValidateAudience = true,
+                    ValidAudience = "dataplane-api",
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
                     ValidateActor = false,
-                    ValidateTokenReplay = configuration.GetValue<bool>("Token:ValidateTokenReplay"),
-                    SignatureValidator = (token, tp) => new JsonWebTokenHandler().ReadJsonWebToken(token)
-                };
-                // Custom logic example: additional validation
-                options.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = _ => Task.CompletedTask,
-                    OnAuthenticationFailed = c => Task.FromException(c.Exception),
-                    OnMessageReceived = _ => Task.CompletedTask
+                    ValidateTokenReplay = true
                 };
             });
     }

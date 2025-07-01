@@ -8,7 +8,8 @@ namespace Sdk.Core;
 
 public class DataPlaneSdk
 {
-    public IDataPlaneStore Store { get; set; } = new DataPlaneStore();
+    //todo: make the lease id configurable
+    public IDataPlaneStore Store { get; set; } = new DataPlaneStatefulEntityStore(Guid.NewGuid().ToString());
 
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
@@ -34,9 +35,9 @@ public class DataPlaneSdk
             OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null)
         };
 
-        public SdkBuilder Store(DataPlaneStore dataPlaneStore)
+        public SdkBuilder Store(DataPlaneStatefulEntityStore dataPlaneStatefulEntityStore)
         {
-            _dataPlaneSdk.Store = dataPlaneStore;
+            _dataPlaneSdk.Store = dataPlaneStatefulEntityStore;
             return this;
         }
 

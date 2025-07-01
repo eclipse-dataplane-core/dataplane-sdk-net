@@ -12,7 +12,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlane
         throw new NotImplementedException();
     }
 
-    public Task<StatusResult<Void>> SuspendAsync(string dataFlowId)
+    public Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason)
     {
         throw new NotImplementedException();
     }

@@ -1,25 +1,25 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Sdk.Api.Authorization;
 using Sdk.Core.Domain.Interfaces;
+using Sdk.Core.Domain.Messages;
 
 namespace Sdk.Api.Controllers;
 
 [ApiController]
-[Route("/api/v1/{participantContextId}")]
+[Route("/api/v1")]
 public class DataPlaneSignalingApiController(
+    ILogger<DataPlaneSignalingApiController> logger,
     IDataPlaneSignalingService signalingService,
     IAuthorizationService authorizationService)
     : ControllerBase
 {
     [Authorize]
-    [HttpGet("dataflows/{dataFlowId}")]
-    public async Task<IActionResult> Get([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
+    [HttpGet("{participantContextId}/dataflows/{dataFlowId}/state")]
+    public async Task<IActionResult> GetTransferState([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
     {
-        var authorizationResult = await authorizationService.AuthorizeAsync(User,
-            new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess");
-
-        if (!authorizationResult.Succeeded)
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
         {
             return Forbid();
         }
@@ -32,6 +32,71 @@ public class DataPlaneSignalingApiController(
         }
 
         return StatusCode(state.Failure!.Code, state);
+    }
+
+    [Authorize]
+    [HttpPost("{participantContextId}/dataflows/")]
+    public async Task<IActionResult> StartDataFlow([FromRoute] string participantContextId, DataflowStartMessage startMessage)
+    {
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, null), "DataFlowAccess")).Succeeded)
+        {
+            return Forbid();
+        }
+
+        //todo: validation of startMessage
+        logger.LogWarning("Validation of startMessage is not implemented yet. This should be done before starting the data flow.");
+
+        var result = await signalingService.StartAsync(startMessage);
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Failure?.Message);
+        }
+
+        return Ok(result.Content);
+    }
+
+    [Authorize]
+    [HttpPost("{participantContextId}/dataflows/{dataFlowId}/suspend")]
+    public async Task<IActionResult> SuspendDataFlow([FromRoute] string dataFlowId, [FromRoute] string participantContextId,
+        DataFlowSuspendMessage suspendMessage)
+    {
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
+        {
+            return Forbid();
+        }
+
+        var result = await signalingService.SuspendAsync(dataFlowId, suspendMessage.Reason);
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Failure?.Message);
+        }
+
+        return Ok(result.Content);
+    }
+
+    [Authorize]
+    [HttpPost("{participantContextId}/dataflows/{dataFlowId}/terminate")]
+    public async Task<IActionResult> TerminateDataFlow([FromRoute] string dataFlowId, [FromRoute] string participantContextId,
+        DataFlowTerminationMessage terminateMessage)
+    {
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
+        {
+            return Forbid();
+        }
+
+        var result = await signalingService.TerminateAsync(dataFlowId, terminateMessage.Reason);
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Failure?.Message);
+        }
+
+        return Ok(result.Content);
+    }
+
+    [HttpGet("check")]
+    public IActionResult CheckHealth()
+    {
+        return Ok();
     }
 
     [Authorize]

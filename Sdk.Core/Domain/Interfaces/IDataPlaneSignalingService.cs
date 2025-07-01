@@ -14,7 +14,7 @@ public interface IDataPlaneSignalingService
     /// <summary>
     ///     Suspends (pauses) a data flow by its ID.
     /// </summary>
-    Task<StatusResult<Void>> SuspendAsync(string dataFlowId);
+    Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason = null);
 
     /// <summary>
     ///     Terminates (aborts) a data flow by its ID.

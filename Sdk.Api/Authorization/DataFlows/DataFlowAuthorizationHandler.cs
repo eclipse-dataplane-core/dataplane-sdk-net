@@ -19,6 +19,12 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
             return;
         }
 
+        if (dataFlowId == null)
+        {
+            context.Succeed(requirement);
+            return;
+        }
+
         var dataFlow = await store.FindByIdAsync(dataFlowId);
         if (dataFlow != null && dataFlow.ParticipantId == participantContextId)
         {

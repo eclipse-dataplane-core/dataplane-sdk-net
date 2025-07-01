@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Sdk.Core.Authorization.Foo;
+namespace Sdk.Api.Authorization.Foo;
 
 public class FooAuthorizationHandler : AuthorizationHandler<FooRequirement, ResourceTuple>
 {

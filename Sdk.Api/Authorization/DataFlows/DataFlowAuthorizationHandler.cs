@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Sdk.Core.Domain.Interfaces;
 
-namespace Sdk.Core.Authorization.DataFlows;
+namespace Sdk.Api.Authorization.DataFlows;
 
 public class DataFlowAuthorizationHandler(IDataPlaneStore store)
     : AuthorizationHandler<DataFlowRequirement, ResourceTuple>

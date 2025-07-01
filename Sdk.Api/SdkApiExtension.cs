@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Sdk.Core.Authorization.DataFlows;
-using Sdk.Core.Authorization.Foo;
+using Sdk.Api.Authorization.DataFlows;
+using Sdk.Api.Authorization.Foo;
 using Sdk.Core.Domain;
 
 namespace Sdk.Api;

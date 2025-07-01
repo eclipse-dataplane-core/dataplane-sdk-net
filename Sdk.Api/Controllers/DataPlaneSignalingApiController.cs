@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sdk.Core.Authorization;
+using Sdk.Api.Authorization;
 using Sdk.Core.Domain.Interfaces;
 
 namespace Sdk.Api.Controllers;

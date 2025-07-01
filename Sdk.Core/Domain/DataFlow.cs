@@ -7,7 +7,9 @@ public class DataFlow
     public required DataAddress Destination { get; set; }
     public Uri? CallbackAddress { get; set; }
     public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+
     public required TransferType TransferType { get; set; }
+
     // public IList<ResourceDefinition> ResourceDefinitions { get; set; }
     public required string RuntimeId { get; set; }
     public bool IsProvisionComplete { get; set; } = true;
@@ -25,5 +27,4 @@ public class DataFlow
     public bool IsPending { get; } = false;
     public DateTime UpdatedAt { get; } = DateTime.UtcNow;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
-    
 }

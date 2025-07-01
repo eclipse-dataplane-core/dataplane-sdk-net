@@ -21,8 +21,8 @@ public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlane
     {
         var df = await dataPlaneStore.FindByIdAsync(dataFlowId);
         //todo: terminate
-        
-       return sdk.InvokeTerminate(df!);
+
+        return sdk.InvokeTerminate(df!);
     }
 
     public async Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId)

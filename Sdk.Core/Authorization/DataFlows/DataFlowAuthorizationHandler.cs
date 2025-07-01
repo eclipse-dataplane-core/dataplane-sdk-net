@@ -1,7 +1,8 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Sdk.Core.Domain.Interfaces;
 
-namespace Sdk.Core.Authorization;
+namespace Sdk.Core.Authorization.DataFlows;
 
 public class DataFlowAuthorizationHandler(IDataPlaneStore store)
     : AuthorizationHandler<DataFlowRequirement, ResourceTuple>
@@ -10,6 +11,13 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
         DataFlowRequirement requirement, ResourceTuple resource)
     {
         var (participantContextId, dataFlowId) = resource;
+
+        // Verify that the participant context ID (from the request) matches the user ID in the claims
+        if (participantContextId != context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
+        {
+            context.Fail();
+            return;
+        }
 
         var dataFlow = await store.FindByIdAsync(dataFlowId);
         if (dataFlow != null && dataFlow.ParticipantId == participantContextId)

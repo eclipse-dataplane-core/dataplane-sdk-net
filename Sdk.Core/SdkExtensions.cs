@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using Sdk.Core.Authorization;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Infrastructure;
 
@@ -12,8 +10,5 @@ public static class SdkExtensions
     {
         services.AddSingleton(sdk.Store);
         services.AddSingleton<IDataPlaneSignalingService>(new DataPlaneSignalingService(sdk.Store, sdk));
-        
-
-
     }
 }

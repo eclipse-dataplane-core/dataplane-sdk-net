@@ -15,5 +15,5 @@ public enum DataFlowState
     Deprovisioning = 500,
     DeprovisionRequested = 550,
     Deprovisioned = 600,
-    DeprovisionFailed = 650,
+    DeprovisionFailed = 650
 }

@@ -8,9 +8,8 @@ public abstract class AbstractResult<TContent, TFailure>(TContent? content, TFai
     public TFailure? Failure { get; set; } = failure;
 
     [JsonIgnore]
-    public bool IsSucceeded =>  Failure == null;
+    public bool IsSucceeded => Failure == null;
+
     [JsonIgnore]
     public bool IsFailed => !IsSucceeded;
-
-
 }

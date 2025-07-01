@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
@@ -10,18 +8,7 @@ namespace Sdk.Core;
 
 public class DataPlaneSdk
 {
-    
     public IDataPlaneStore Store { get; set; } = new DataPlaneStore();
-
-    public Func<string, ClaimsPrincipal, Task<bool>> AuthorizationHandler { get; set; } = (s, principal) =>
-    {
-        var subjectClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
-        var isValid = subjectClaim != null && subjectClaim.Value.Equals(s);
-        
-        return Task.FromResult(isValid);
-    };
-
-    public event Func<JsonWebToken, Task> OnAuthentication = _ => Task.CompletedTask;
 
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
@@ -29,8 +16,16 @@ public class DataPlaneSdk
     public event Func<DataFlow, StatusResult<Void>>? OnSuspend;
     public event Func<DataFlow, StatusResult<Void>>? OnRecover;
 
-    
-    public static SdkBuilder Builder() => new();
+
+    public static SdkBuilder Builder()
+    {
+        return new SdkBuilder();
+    }
+
+    internal StatusResult<Void> InvokeTerminate(DataFlow df)
+    {
+        return OnTerminate != null ? OnTerminate(df) : StatusResult<Void>.Success(default);
+    }
 
     public class SdkBuilder
     {
@@ -79,10 +74,5 @@ public class DataPlaneSdk
             _dataPlaneSdk.OnRecover += processor;
             return this;
         }
-    }
-
-    internal StatusResult<Void> InvokeTerminate(DataFlow df)
-    {
-       return OnTerminate != null ? OnTerminate(df) : StatusResult<Void>.Success(default);
     }
 }

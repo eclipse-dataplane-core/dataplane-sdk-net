@@ -1,7 +1,7 @@
 namespace Sdk.Core.Domain;
 
 /// <summary>
-/// Represents a transfer type.
+///     Represents a transfer type.
 /// </summary>
 /// <param name="DestinationType">The physical location where data is supposed to go</param>
 /// <param name="FlowType">push or pull</param>
@@ -10,5 +10,6 @@ public record TransferType(string DestinationType, FlowType FlowType, string? Re
 
 public enum FlowType
 {
-    Push, Pull
+    Push,
+    Pull
 }

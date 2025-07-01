@@ -1,6 +1,7 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Sdk.Core.Authorization;
+namespace Sdk.Core.Authorization.Foo;
 
 public class FooAuthorizationHandler : AuthorizationHandler<FooRequirement, ResourceTuple>
 {
@@ -9,13 +10,15 @@ public class FooAuthorizationHandler : AuthorizationHandler<FooRequirement, Reso
     {
         var (participantContextId, fooId) = resource;
 
-        // todo: this makes no sense, but is just a placeholder
-        if (participantContextId == fooId)
-            context.Succeed(requirement);
-        else
+        // Verify that the participant context ID (from the request) matches the user ID in the claims
+        if (participantContextId != context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
         {
             context.Fail();
+            return Task.CompletedTask;
         }
+
+        // todo: this makes no sense, but is just a placeholder
+        context.Succeed(requirement);
 
         return Task.CompletedTask;
     }

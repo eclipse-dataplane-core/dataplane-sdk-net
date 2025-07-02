@@ -2,6 +2,7 @@ using Moq;
 using Sdk.Core.Data;
 using Sdk.Core.Domain;
 using Sdk.Core.Infrastructure;
+using Shouldly;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Test;
@@ -38,8 +39,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
 
         var result = await _service.TerminateAsync(dataFlowId, reason);
 
-        Assert.True(result.IsSucceeded);
-        Assert.Contains(_dataFlowContext.DataFlows, x => x.Id == dataFlowId);
+        result.IsSucceeded.ShouldBeTrue();
+        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class DataPlaneSignalingServiceTest : IDisposable
 
         var result = await _service.TerminateAsync(dataFlowId, reason);
 
-        Assert.True(result.IsSucceeded);
+        result.IsSucceeded.ShouldBeTrue();
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Once);
     }
 
@@ -70,7 +71,7 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string dataFlowId = "test-flow-id";
 
         var result = await _service.TerminateAsync(dataFlowId);
-        Assert.False(result.IsSucceeded);
-        Assert.Equal(404, result.Failure!.Code);
+        result.IsSucceeded.ShouldBeFalse();
+        result.Failure!.Code.ShouldBe(404);
     }
 }

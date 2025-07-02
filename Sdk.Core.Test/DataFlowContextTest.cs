@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sdk.Core.Data;
 using Sdk.Core.Domain;
+using Shouldly;
 
 namespace Sdk.Core.Test;
 
@@ -14,12 +15,12 @@ public class DataFlowContextTest
         var dataFlow = TestMethods.CreateDataFlow("test-flow-id");
         await _context.SaveAsync(dataFlow);
 
-        Assert.True(_context.ChangeTracker.HasChanges());
+        _context.ChangeTracker.HasChanges().ShouldBeTrue();
         var entry = _context.ChangeTracker.Entries<DataFlow>().FirstOrDefault(e => e.Entity.Id == dataFlow.Id);
-        Assert.NotNull(entry);
-        Assert.Equal(EntityState.Added, entry.State);
+        entry.ShouldNotBeNull();
+        entry.State.ShouldBe(EntityState.Added);
 
-        Assert.Equal(dataFlow.Id, entry.Entity.Id);
+        entry.Entity.Id.ShouldBe(dataFlow.Id);
     }
 
     [Fact]
@@ -34,11 +35,11 @@ public class DataFlowContextTest
         dataFlow.State = (int)DataFlowState.Completed;
         await _context.SaveAsync(dataFlow);
 
-        Assert.True(_context.ChangeTracker.HasChanges());
+        _context.ChangeTracker.HasChanges().ShouldBeTrue();
         var entry = _context.ChangeTracker.Entries<DataFlow>().FirstOrDefault(e => e.Entity.Id == dataFlow.Id);
-        Assert.NotNull(entry);
-        Assert.Equal(EntityState.Modified, entry.State);
-        Assert.Equal((int)DataFlowState.Completed, entry.Entity.State);
+        entry.ShouldNotBeNull();
+        entry.State.ShouldBe(EntityState.Modified);
+        entry.Entity.State.ShouldBe((int)DataFlowState.Completed);
     }
 
     [Fact]
@@ -50,15 +51,15 @@ public class DataFlowContextTest
 
         var foundFlow = await _context.FindByIdAsync(dataFlow.Id);
 
-        Assert.NotNull(foundFlow);
-        Assert.Equal(dataFlow.Id, foundFlow.Id);
+        foundFlow.ShouldNotBeNull();
+        foundFlow.Id.ShouldBe(dataFlow.Id);
     }
 
     [Fact]
     public async Task FindByIdAsync_ShouldReturnNull_WhenNotExist()
     {
         var foundFlow = await _context.FindByIdAsync("non-existent-id");
-        Assert.Null(foundFlow);
+        foundFlow.ShouldBeNull();
     }
 
     [Fact]
@@ -70,23 +71,23 @@ public class DataFlowContextTest
 
         var result = await _context.FindByIdAndLeaseAsync(dataFlow.Id);
         // verify data flow
-        Assert.True(result.IsSucceeded);
-        Assert.NotNull(result.Content);
-        Assert.Equal(dataFlow.Id, result.Content.Id);
+        result.IsSucceeded.ShouldBeTrue();
+        result.Content.ShouldNotBeNull();
+        result.Content.Id.ShouldBe(dataFlow.Id);
 
         //verify lease
         var lease = await _context.Leases.FindAsync(dataFlow.Id);
-        Assert.NotNull(lease);
-        Assert.Equal("test-lock-id", lease.LeasedBy);
-        Assert.False(lease.IsExpired(), "lease should not be expired");
-        Assert.True(DateTimeOffset.FromUnixTimeMilliseconds(lease.LeasedAt).DateTime < DateTime.UtcNow);
+        lease.ShouldNotBeNull();
+        lease.LeasedBy.ShouldBe("test-lock-id");
+        lease.IsExpired().ShouldBeFalse("lease should not be expired");
+        DateTimeOffset.FromUnixTimeMilliseconds(lease.LeasedAt).DateTime.ShouldBeLessThan(DateTime.UtcNow);
     }
 
     [Fact]
     public async Task FindByIdAndLeaseAsync_ShouldReturnNull_WhenNotExists()
     {
         var result = await _context.FindByIdAndLeaseAsync("not-exist");
-        Assert.True(result.IsFailed);
-        Assert.Equal(404, result.Failure!.Code);
+        result.IsFailed.ShouldBeTrue();
+        result.Failure!.Code.ShouldBe(404);
     }
 }

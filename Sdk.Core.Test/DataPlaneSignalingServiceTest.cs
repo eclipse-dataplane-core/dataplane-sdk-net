@@ -1,22 +1,29 @@
 using Moq;
+using Sdk.Core.Data;
 using Sdk.Core.Domain;
-using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Infrastructure;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Test;
 
-public class DataPlaneSignalingServiceTest
+public class DataPlaneSignalingServiceTest : IDisposable
 {
-    private readonly Mock<IDataPlaneStore> _dataPlaneStore;
+    private readonly DataFlowContext _dataFlowContext;
     private readonly DataPlaneSdk _sdk;
-    private readonly DataPlaneSignalingService service;
+    private readonly DataPlaneSignalingService _service;
 
     public DataPlaneSignalingServiceTest()
     {
-        _dataPlaneStore = new Mock<IDataPlaneStore>();
         _sdk = new DataPlaneSdk();
-        service = new DataPlaneSignalingService(_dataPlaneStore.Object, _sdk);
+        _dataFlowContext = DataFlowContextFactory.CreateInMem("test-lock-id");
+
+        _service = new DataPlaneSignalingService(_dataFlowContext, _sdk);
+    }
+
+    public void Dispose()
+    {
+        _dataFlowContext.DataFlows.RemoveRange(_dataFlowContext.DataFlows);
+        _dataFlowContext.SaveChanges();
     }
 
     [Fact]
@@ -26,14 +33,13 @@ public class DataPlaneSignalingServiceTest
         const string reason = "Test termination";
         var dataFlow = TestMethods.CreateDataFlow(dataFlowId);
 
-        _dataPlaneStore.Setup(store => store.FindByIdAsync(dataFlowId))
-            .ReturnsAsync(dataFlow);
+        _dataFlowContext.DataFlows.Add(dataFlow);
+        await _dataFlowContext.SaveChangesAsync();
 
-        var result = await service.TerminateAsync(dataFlowId, reason);
+        var result = await _service.TerminateAsync(dataFlowId, reason);
 
         Assert.True(result.IsSucceeded);
-        _dataPlaneStore.Verify(store => store.FindByIdAsync(dataFlowId), Times.Once);
-        _dataPlaneStore.Verify(store => store.SaveAsync(dataFlow), Times.Once);
+        Assert.Contains(_dataFlowContext.DataFlows, x => x.Id == dataFlowId);
     }
 
     [Fact]
@@ -43,8 +49,8 @@ public class DataPlaneSignalingServiceTest
         const string reason = "Test termination";
         var dataFlow = TestMethods.CreateDataFlow(dataFlowId);
 
-        _dataPlaneStore.Setup(store => store.FindByIdAsync(dataFlowId))
-            .ReturnsAsync(dataFlow);
+        _dataFlowContext.DataFlows.Add(dataFlow);
+        await _dataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
@@ -52,11 +58,9 @@ public class DataPlaneSignalingServiceTest
 
         _sdk.OnTerminate += eventMock.Object;
 
-        var result = await service.TerminateAsync(dataFlowId, reason);
+        var result = await _service.TerminateAsync(dataFlowId, reason);
 
         Assert.True(result.IsSucceeded);
-        _dataPlaneStore.Verify(store => store.FindByIdAsync(dataFlowId), Times.Once);
-        _dataPlaneStore.Verify(store => store.SaveAsync(dataFlow), Times.Once);
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Once);
     }
 
@@ -65,9 +69,7 @@ public class DataPlaneSignalingServiceTest
     {
         const string dataFlowId = "test-flow-id";
 
-        _dataPlaneStore.Setup(store => store.FindByIdAsync(dataFlowId))
-            .ReturnsAsync(null as DataFlow);
-        var result = await service.TerminateAsync(dataFlowId);
+        var result = await _service.TerminateAsync(dataFlowId);
         Assert.False(result.IsSucceeded);
         Assert.Equal(404, result.Failure!.Code);
     }

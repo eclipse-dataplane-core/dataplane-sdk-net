@@ -1,8 +1,8 @@
 using Sdk.Api;
 using Sdk.Core;
+using Sdk.Core.Data;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
-using Sdk.Core.Postgres;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Example.Web;
@@ -14,8 +14,9 @@ public static class Extensions
         // initialize and configure the DataPlaneSdk
         var sdk = new DataPlaneSdk
         {
-            Store = new PostgresDataPlaneStore(new DataFlowContextFactory(configuration))
+            Store = DataFlowContextFactory.CreatePostgres(configuration, "test-lock-id")
         };
+
 
         sdk.OnStart += _ => StatusResult<DataFlowResponseMessage>.Success(null);
         sdk.OnRecover += _ => StatusResult<Void>.Success(default);

@@ -15,10 +15,10 @@ public interface IDataPlaneStore
     /// <summary>
     ///     Returns the next batch of <see cref="DataFlow" /> items that are in the specified state and are not leased.
     /// </summary>
-    /// <param name="state">desired state of the data flows</param>
-    /// <param name="criteria">additional optional filter criteria</param>
+    /// <param name="max">desired state of the data flows</param>
+    /// <param name="states">additional optional state filter. Only return flows that are in any of the desired states</param>
     /// <returns>a (potentially empty) collection of <see cref="DataFlow" /> items, never null.</returns>
-    Task<ICollection<DataFlow>> NextNotLeased(int state, params Criterion[] criteria);
+    Task<ICollection<DataFlow>> NextNotLeased(int max, params int[] states);
 
     /// <summary>
     ///     Finds a data flow by its ID and attempts to aquire a lease on it.

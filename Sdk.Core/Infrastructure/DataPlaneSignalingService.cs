@@ -1,3 +1,4 @@
+using Sdk.Core.Data;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
@@ -5,7 +6,7 @@ using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Infrastructure;
 
-public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlaneSdk sdk) : IDataPlaneSignalingService
+public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlaneSdk sdk) : IDataPlaneSignalingService
 {
     public Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataflowStartMessage message)
     {
@@ -19,7 +20,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlane
 
     public async Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null)
     {
-        var df = await dataPlaneStore.FindByIdAsync(dataFlowId);
+        var df = await dataFlowContext.FindByIdAsync(dataFlowId);
         if (df == null || df.State == (int)DataFlowState.Terminated)
         {
             return StatusResult<Void>.NotFound();
@@ -34,14 +35,17 @@ public class DataPlaneSignalingService(IDataPlaneStore dataPlaneStore, DataPlane
             df.Terminate();
         }
 
-        await dataPlaneStore.SaveAsync(df);
+        await dataFlowContext.SaveAsync(df);
 
-        return sdk.InvokeTerminate(df);
+
+        var res = sdk.InvokeTerminate(df);
+        await dataFlowContext.SaveChangesAsync(); //commit transaction
+        return res;
     }
 
     public async Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId)
     {
-        var flow = await dataPlaneStore.FindByIdAsync(processId);
+        var flow = await dataFlowContext.DataFlows.FindAsync(processId);
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success((DataFlowState)flow.State);
     }
 }

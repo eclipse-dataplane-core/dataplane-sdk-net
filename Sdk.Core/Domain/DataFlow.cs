@@ -4,7 +4,6 @@ namespace Sdk.Core.Domain;
 
 public class DataFlow(string id) : Identifiable(id)
 {
-    public readonly string Id = id;
     public required DataAddress Source { get; set; }
     public required DataAddress Destination { get; set; }
     public Uri? CallbackAddress { get; set; }

@@ -1,13 +1,13 @@
 ﻿using Sdk.Core;
+using Sdk.Core.Data;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
-using Sdk.Core.Infrastructure;
 using Void = Sdk.Core.Domain.Void;
 
 // using the SDK directly
 var sdk = new DataPlaneSdk
 {
-    Store = new DataPlaneStatefulEntityStore(Guid.NewGuid().ToString())
+    Store = DataFlowContextFactory.CreateInMem(Guid.NewGuid().ToString())
 };
 sdk.OnStart += flow => StatusResult<DataFlowResponseMessage>.Success(null);
 sdk.OnRecover += flow => StatusResult<Void>.Success(default);
@@ -18,7 +18,7 @@ sdk.OnProvision += flow => StatusResult<DataFlowResponseMessage>.Success(null);
 
 // using the SDK builder
 var sdk2 = DataPlaneSdk.Builder()
-    .Store(new DataPlaneStatefulEntityStore(Guid.NewGuid().ToString()))
+    .Store(DataFlowContextFactory.CreateInMem(Guid.NewGuid().ToString()))
     .OnStart(flow => StatusResult<DataFlowResponseMessage>.Success(null))
     .OnProvision(flow => StatusResult<DataFlowResponseMessage>.Success(null))
     .OnSuspend(flow => StatusResult<Void>.Success(default))

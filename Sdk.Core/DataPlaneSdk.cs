@@ -1,7 +1,7 @@
+using Sdk.Core.Data;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
-using Sdk.Core.Infrastructure;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core;
@@ -9,7 +9,7 @@ namespace Sdk.Core;
 public class DataPlaneSdk
 {
     //todo: make the lease id configurable
-    public IDataPlaneStore Store { get; set; } = new DataPlaneStatefulEntityStore(Guid.NewGuid().ToString());
+    public IDataPlaneStore Store { get; set; } = DataFlowContextFactory.CreateInMem("test-lock-id");
 
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
     public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
@@ -35,7 +35,7 @@ public class DataPlaneSdk
             OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null)
         };
 
-        public SdkBuilder Store(DataPlaneStatefulEntityStore dataPlaneStatefulEntityStore)
+        public SdkBuilder Store(IDataPlaneStore dataPlaneStatefulEntityStore)
         {
             _dataPlaneSdk.Store = dataPlaneStatefulEntityStore;
             return this;

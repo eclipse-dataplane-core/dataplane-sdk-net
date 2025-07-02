@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Sdk.Core.Data;
 
-public static class DataFlowContextFactory
+public class DataFlowContextFactory
 {
     public static DataFlowContext CreatePostgres(string connectionString, string lockId, bool autoMigrate = false)
     {

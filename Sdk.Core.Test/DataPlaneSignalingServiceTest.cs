@@ -24,7 +24,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.Database.EnsureDeleted();
         _dataFlowContext.SaveChanges();
     }
-    
+
     protected void Initialize(DataFlowContext dataFlowContext)
     {
         var runtimeId = "test-lock-id";
@@ -32,7 +32,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext = dataFlowContext;
         _sdk = new DataPlaneSdk
         {
-            Store = _dataFlowContext
+            DataFlowStore = _dataFlowContext
         };
         _service = new DataPlaneSignalingService(_dataFlowContext, _sdk, runtimeId);
     }
@@ -365,10 +365,11 @@ public class PostgresDataPlaneSignalingServiceTest : DataPlaneSignalingServiceTe
 
     public PostgresDataPlaneSignalingServiceTest()
     {
+        const string dbName = "SdkApiTests";
         if (_postgreSqlContainer == null) // create only once per test run
         {
             _postgreSqlContainer = new PostgreSqlBuilder()
-                .WithDatabase("SdkApi")
+                .WithDatabase(dbName)
                 .WithUsername("postgres")
                 .WithPassword("postgres")
                 .WithPortBinding(5432, true)
@@ -378,7 +379,7 @@ public class PostgresDataPlaneSignalingServiceTest : DataPlaneSignalingServiceTe
 
         var port = _postgreSqlContainer.GetMappedPublicPort(5432);
         // dynamically map port to avoid conflicts
-        var ctx = CreatePostgres($"Host=localhost;Port={port};Database=SdkApi;Username=postgres;Password=postgres", "test-lock-id");
+        var ctx = CreatePostgres($"Host=localhost;Port={port};Database={dbName};Username=postgres;Password=postgres", "test-lock-id");
         ctx.Database.EnsureCreated();
         Initialize(ctx);
     }

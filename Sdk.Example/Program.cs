@@ -7,7 +7,7 @@ using Void = Sdk.Core.Domain.Void;
 // using the SDK directly
 var sdk = new DataPlaneSdk
 {
-    Store = DataFlowContextFactory.CreateInMem(Guid.NewGuid().ToString())
+    DataFlowStore = DataFlowContextFactory.CreateInMem(Guid.NewGuid().ToString())
 };
 sdk.OnStart += flow => StatusResult<DataFlowResponseMessage>.Success(null);
 sdk.OnRecover += flow => StatusResult<Void>.Success(default);

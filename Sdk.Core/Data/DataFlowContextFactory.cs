@@ -5,6 +5,22 @@ namespace Sdk.Core.Data;
 
 public static class DataFlowContextFactory
 {
+    public static DataFlowContext CreatePostgres(string connectionString, string lockId, bool autoMigrate = false)
+    {
+        var options = new DbContextOptionsBuilder<DataFlowContext>()
+            .UseNpgsql(connectionString)
+            .Options;
+
+        var dataFlowContext = new DataFlowContext(options, lockId);
+
+        if (autoMigrate)
+        {
+            dataFlowContext.Database.EnsureCreated();
+        }
+
+        return dataFlowContext;
+    }
+
     public static DataFlowContext CreatePostgres(IConfiguration configuration, string lockId)
     {
         if (configuration == null)

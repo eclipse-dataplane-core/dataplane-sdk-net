@@ -4,6 +4,7 @@ using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
 using Sdk.Core.Infrastructure;
 using Shouldly;
+using Testcontainers.PostgreSql;
 using static Sdk.Core.Data.DataFlowContextFactory;
 using static Sdk.Core.Domain.DataFlowState;
 using static Sdk.Core.Domain.FailureReason;
@@ -12,25 +13,29 @@ using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Test;
 
-public class DataPlaneSignalingServiceTest : IDisposable
+public abstract class DataPlaneSignalingServiceTest : IDisposable
 {
-    private readonly DataFlowContext _dataFlowContext;
     private readonly DataPlaneSdk _sdk;
     private readonly DataPlaneSignalingService _service;
+    protected readonly DataFlowContext DataFlowContext;
 
-    public DataPlaneSignalingServiceTest()
+    protected DataPlaneSignalingServiceTest(DataFlowContext context)
     {
-        _sdk = new DataPlaneSdk();
         var runtimeId = "test-lock-id";
-        _dataFlowContext = CreateInMem(runtimeId);
+        DataFlowContext = context;
 
-        _service = new DataPlaneSignalingService(_dataFlowContext, _sdk, runtimeId);
+        _sdk = new DataPlaneSdk
+        {
+            Store = DataFlowContext
+        };
+        _service = new DataPlaneSignalingService(DataFlowContext, _sdk, runtimeId);
     }
+
 
     public void Dispose()
     {
-        _dataFlowContext.DataFlows.RemoveRange(_dataFlowContext.DataFlows);
-        _dataFlowContext.SaveChanges();
+        DataFlowContext.Database.EnsureDeleted();
+        DataFlowContext.SaveChanges();
     }
 
 
@@ -38,8 +43,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
     public async Task GetState_WhenExists()
     {
         var flow = CreateDataFlow("test-process-id", Provisioning);
-        _dataFlowContext.DataFlows.Add(flow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
         var result = await _service.GetTransferStateAsync(flow.Id);
         result.ShouldNotBeNull();
         result.Content.ShouldBe(Provisioning);
@@ -66,8 +71,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         result.Content.ShouldSatisfyAllConditions(() => result.Content!.DataAddress.ShouldNotBeNull());
 
 
-        _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId);
+        DataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
+        DataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId);
     }
 
     [Fact]
@@ -78,16 +83,16 @@ public class DataPlaneSignalingServiceTest : IDisposable
         message.ProcessId = id;
 
         var dataFlow = CreateDataFlow(id);
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var result = await _service.StartAsync(message);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
         result.Content.ShouldSatisfyAllConditions(() => result.Content!.DataAddress.ShouldNotBeNull());
 
-        _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
+        DataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
+        DataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
     }
 
     [Fact]
@@ -95,8 +100,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
     {
         var startMessage = CreateStartMessage();
         var dataFlow = CreateDataFlow(startMessage.ProcessId, Started);
-        await _dataFlowContext.AddAsync(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        await DataFlowContext.AddAsync(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var mock = new Mock<Func<DataFlow, StatusResult<DataFlowResponseMessage>>>();
         _sdk.OnStart += mock.Object;
@@ -123,7 +128,7 @@ public class DataPlaneSignalingServiceTest : IDisposable
         result.IsSucceeded.ShouldBeFalse();
         result.Failure!.Message.ShouldBe("error");
 
-        (await _dataFlowContext.DataFlows.FindAsync(startMessage.ProcessId)).ShouldBeNull();
+        (await DataFlowContext.DataFlows.FindAsync(startMessage.ProcessId)).ShouldBeNull();
 
         mock.Verify(m => m.Invoke(It.IsAny<DataFlow>()), Times.Once);
     }
@@ -139,9 +144,9 @@ public class DataPlaneSignalingServiceTest : IDisposable
             LeaseDurationMillis = 60_000,
             EntityId = dataFlow.Id
         };
-        await _dataFlowContext.DataFlows.AddAsync(dataFlow);
-        await _dataFlowContext.Leases.AddAsync(lease);
-        await _dataFlowContext.SaveChangesAsync();
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
+        await DataFlowContext.Leases.AddAsync(lease);
+        await DataFlowContext.SaveChangesAsync();
 
         var mock = new Mock<Func<DataFlow, StatusResult<DataFlowResponseMessage>>>();
         _sdk.OnStart += mock.Object;
@@ -160,13 +165,13 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test termination";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var result = await _service.TerminateAsync(dataFlowId, reason);
 
         result.IsSucceeded.ShouldBeTrue();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId);
+        DataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId);
     }
 
     [Fact]
@@ -176,8 +181,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test termination";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
@@ -208,8 +213,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test termination";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
@@ -222,7 +227,7 @@ public class DataPlaneSignalingServiceTest : IDisposable
         result.IsSucceeded.ShouldBeFalse();
         result.Failure!.Message.ShouldBe("foobartestmessage");
 
-        (await _dataFlowContext.DataFlows.FindAsync(dataFlow.Id))!.State.ShouldNotBe(Terminated);
+        (await DataFlowContext.DataFlows.FindAsync(dataFlow.Id))!.State.ShouldNotBe(Terminated);
 
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Once);
     }
@@ -235,8 +240,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         var dataFlow = CreateDataFlow(dataFlowId);
         dataFlow.State = Terminated;
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         _sdk.OnSuspend += eventMock.Object;
@@ -254,13 +259,13 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var result = await _service.SuspendAsync(dataFlowId, reason);
 
         result.IsSucceeded.ShouldBeTrue();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId);
+        DataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId);
     }
 
     [Fact]
@@ -270,8 +275,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
@@ -302,8 +307,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
@@ -316,7 +321,7 @@ public class DataPlaneSignalingServiceTest : IDisposable
         result.IsSucceeded.ShouldBeFalse();
         result.Failure!.Message.ShouldBe("foobartestmessage");
 
-        (await _dataFlowContext.DataFlows.FindAsync(dataFlow.Id))!.State.ShouldNotBe(Suspended);
+        (await DataFlowContext.DataFlows.FindAsync(dataFlow.Id))!.State.ShouldNotBe(Suspended);
 
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Once);
     }
@@ -329,8 +334,8 @@ public class DataPlaneSignalingServiceTest : IDisposable
         var dataFlow = CreateDataFlow(dataFlowId);
         dataFlow.State = Suspended;
 
-        _dataFlowContext.DataFlows.Add(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
+        DataFlowContext.DataFlows.Add(dataFlow);
+        await DataFlowContext.SaveChangesAsync();
 
         var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
         _sdk.OnSuspend += eventMock.Object;
@@ -339,5 +344,38 @@ public class DataPlaneSignalingServiceTest : IDisposable
 
         result.IsSucceeded.ShouldBeTrue();
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Never);
+    }
+}
+
+public class InMemDataPlaneSignalingServiceTest() : DataPlaneSignalingServiceTest(CreateInMem("test-lock-id"));
+
+public class PostgresDataPlaneSignalingServiceTest : DataPlaneSignalingServiceTest, IAsyncDisposable
+{
+    private static PostgreSqlContainer? _postgreSqlContainer;
+
+    public PostgresDataPlaneSignalingServiceTest() : base(CreatePostgres("Host=localhost;Port=5432;Database=SdkApi;Username=postgres;Password=postgres",
+        "test-lock-id"))
+    {
+        if (_postgreSqlContainer == null)
+        {
+            _postgreSqlContainer = new PostgreSqlBuilder()
+                .WithDatabase("SdkApi")
+                .WithUsername("postgres")
+                .WithPassword("postgres")
+                .WithPortBinding(5432, 5432)
+                .Build();
+            _postgreSqlContainer.StartAsync().Wait();
+        }
+
+        DataFlowContext.Database.EnsureCreated();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_postgreSqlContainer != null)
+        {
+            await _postgreSqlContainer.StopAsync();
+            await _postgreSqlContainer.DisposeAsync();
+        }
     }
 }

@@ -42,14 +42,14 @@ public class DataFlowContextTest
         await _context.SaveChangesAsync();
 
         // update, call save
-        dataFlow.State = (int)DataFlowState.Completed;
+        dataFlow.State = DataFlowState.Completed;
         await _context.SaveAsync(dataFlow);
 
         _context.ChangeTracker.HasChanges().ShouldBeTrue();
         var entry = _context.ChangeTracker.Entries<DataFlow>().FirstOrDefault(e => e.Entity.Id == dataFlow.Id);
         entry.ShouldNotBeNull();
         entry.State.ShouldBe(EntityState.Modified);
-        entry.Entity.State.ShouldBe((int)DataFlowState.Completed);
+        entry.Entity.State.ShouldBe(DataFlowState.Completed);
     }
 
     [Fact]
@@ -84,6 +84,7 @@ public class DataFlowContextTest
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
         result.Content.Id.ShouldBe(dataFlow.Id);
+        _context.ChangeTracker.HasChanges().ShouldBeFalse(); // FindByIdAndLease should commit transaction
 
         //verify lease
         var lease = await _context.Leases.FindAsync(dataFlow.Id);
@@ -98,7 +99,7 @@ public class DataFlowContextTest
     {
         var result = await _context.FindByIdAndLeaseAsync("not-exist");
         result.IsFailed.ShouldBeTrue();
-        result.Failure!.Code.ShouldBe(404);
+        result.Failure!.Reason.ShouldBe(FailureReason.NotFound);
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public class DataFlowContextTest
 
         var result = await _context.FindByIdAndLeaseAsync(dataFlow.Id);
         result.IsFailed.ShouldBeTrue();
-        result.Failure!.Code.ShouldBe(409);
+        result.Failure!.Reason.ShouldBe(FailureReason.Conflict);
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class DataFlowContextTest
         await _context.SaveChangesAsync();
 
         var result = await _context.FindByIdAndLeaseAsync(dataFlow.Id);
-        _context.ChangeTracker.HasChanges().ShouldBeTrue();
+        _context.ChangeTracker.HasChanges().ShouldBeFalse(); // FindByIdAndLease should commit transaction
         _context.ChangeTracker.Entries<Lease>()
             .FirstOrDefault(l => l.Entity.EntityId == dataFlow.Id)
             .ShouldNotBeSameAs(originalLease);
@@ -156,13 +157,13 @@ public class DataFlowContextTest
         _context.DataFlows.AddRange(f1, f2, f3, f4, f5, f6);
         await _context.SaveChangesAsync();
 
-        var notLeased = await _context.NextNotLeased(100, (int)DataFlowState.Started);
+        var notLeased = await _context.NextNotLeased(100, DataFlowState.Started);
         notLeased.ShouldNotBeNull();
         notLeased.Count.ShouldBe(2);
         notLeased.ShouldContain(f1);
         notLeased.ShouldContain(f5);
 
-        var notified = await _context.NextNotLeased(1, (int)DataFlowState.Notified);
+        var notified = await _context.NextNotLeased(1, DataFlowState.Notified);
         notified.ShouldNotBeNull();
         notified.Count.ShouldBe(1);
         notified.ShouldContain(f3);

@@ -32,7 +32,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
             DataFlows.Add(df);
         }
 
-        FreeLeaseAsync(lease);
+        FreeLeaseAsync(lease.EntityId);
     }
 
     public async Task<DataFlow?> FindByIdAsync(string id)
@@ -52,6 +52,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         try
         {
             await AcquireLeaseAsync(flow.Id);
+            await SaveChangesAsync(); // commit transaction
             return StatusResult<DataFlow>.Success(flow);
         }
         catch (ArgumentException e)
@@ -60,7 +61,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         }
     }
 
-    public async Task<ICollection<DataFlow>> NextNotLeased(int max, params int[] states)
+    public async Task<ICollection<DataFlow>> NextNotLeased(int max, params DataFlowState[] states)
     {
         var filteredFlows = DataFlows.Where(dataFlow => states.Contains(dataFlow.State)).Take(max);
         return await filteredFlows.ToListAsync();
@@ -101,6 +102,12 @@ public class DataFlowContext : DbContext, IDataPlaneStore
             .HasConversion(da => ToJson(da),
                 s => JsonSerializer.Deserialize<TransferType>(s, null as JsonSerializerOptions)!);
 
+        modelBuilder.Entity<DataFlow>()
+            .Property(df => df.Properties)
+            .HasConversion(
+                props => ToJson(props),
+                json => JsonSerializer.Deserialize<IDictionary<string, string>>(json, null as JsonSerializerOptions) ?? new Dictionary<string, string>());
+
         modelBuilder.Entity<Lease>()
             .HasKey(l => l.EntityId);
     }
@@ -110,8 +117,9 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         return JsonSerializer.Serialize(da);
     }
 
-    private void FreeLeaseAsync(Lease lease)
+    private async void FreeLeaseAsync(string leaseId)
     {
+        var lease = (await Leases.FindAsync(leaseId))!; //track if not tracked
         Leases.Remove(lease);
     }
 

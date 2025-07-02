@@ -1,4 +1,5 @@
 using Sdk.Core.Domain;
+using Sdk.Core.Domain.Messages;
 
 namespace Sdk.Core.Test;
 
@@ -15,7 +16,23 @@ public static class TestMethods
             ParticipantId = "test-participant",
             AssetId = "test-asset",
             AgreementId = "test-agreement",
-            State = (int)state
+            State = state
         };
+    }
+
+    public static DataflowStartMessage CreateStartMessage()
+    {
+        var message = new DataflowStartMessage
+        {
+            ProcessId = "test-process-id",
+            SourceDataAddress = new DataAddress("test-source-type"),
+            DestinationDataAddress = new DataAddress("test-destination-type"),
+            TransferType = new TransferType("test-destination-type",
+                FlowType.Pull),
+            ParticipantId = "test-participant-id",
+            AssetId = "test-asset-id",
+            AgreementId = "test-agreement-id"
+        };
+        return message;
     }
 }

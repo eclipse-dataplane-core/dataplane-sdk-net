@@ -9,7 +9,7 @@ namespace Sdk.Core.Domain.Messages;
 /// </summary>
 public class DataflowStartMessage
 {
-    public required string Id { get; set; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     [JsonPropertyName(IConstants.EdcNamespace + "processId")]
     public required string ProcessId { get; set; }

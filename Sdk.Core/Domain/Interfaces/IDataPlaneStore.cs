@@ -18,7 +18,7 @@ public interface IDataPlaneStore
     /// <param name="max">desired state of the data flows</param>
     /// <param name="states">additional optional state filter. Only return flows that are in any of the desired states</param>
     /// <returns>a (potentially empty) collection of <see cref="DataFlow" /> items, never null.</returns>
-    Task<ICollection<DataFlow>> NextNotLeased(int max, params int[] states);
+    Task<ICollection<DataFlow>> NextNotLeased(int max, params DataFlowState[] states);
 
     /// <summary>
     ///     Finds a data flow by its ID and attempts to aquire a lease on it.

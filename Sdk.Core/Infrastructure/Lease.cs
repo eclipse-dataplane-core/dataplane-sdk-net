@@ -8,7 +8,7 @@ public class Lease
     public required string LeasedBy { get; init; }
 
     [JsonPropertyName("leasedAt")]
-    public required long LeasedAt { get; init; }
+    public long LeasedAt { get; init; } = DateTime.UtcNow.Millisecond;
 
     [JsonPropertyName("leaseDuration")]
     public required long LeaseDurationMillis { get; init; }

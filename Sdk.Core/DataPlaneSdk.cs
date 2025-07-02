@@ -28,6 +28,21 @@ public class DataPlaneSdk
         return OnTerminate != null ? OnTerminate(df) : StatusResult<Void>.Success(default);
     }
 
+    internal StatusResult<Void> InvokeSuspend(DataFlow df)
+    {
+        return OnSuspend != null ? OnSuspend(df) : StatusResult<Void>.Success(default);
+    }
+
+    internal StatusResult<DataFlowResponseMessage> InvokeStart(DataFlow df)
+    {
+        return OnStart != null
+            ? OnStart(df)
+            : StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage
+            {
+                DataAddress = df.Destination
+            });
+    }
+
     public class SdkBuilder
     {
         private readonly DataPlaneSdk _dataPlaneSdk = new()

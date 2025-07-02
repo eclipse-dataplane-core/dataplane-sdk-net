@@ -26,12 +26,7 @@ public class DataPlaneSignalingApiController(
 
         var state = await signalingService.GetTransferStateAsync(dataFlowId);
 
-        if (state.IsSucceeded)
-        {
-            return Ok(state.Content);
-        }
-
-        return StatusCode(state.Failure!.Code, state);
+        return state.IsSucceeded ? Ok(state.Content) : StatusCode((int)state.Failure!.Reason, state);
     }
 
     [Authorize]

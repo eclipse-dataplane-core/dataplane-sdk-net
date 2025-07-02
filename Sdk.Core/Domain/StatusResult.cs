@@ -18,7 +18,7 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
         return Failed(new StatusFailure
         {
             Message = "Not Found",
-            Code = 404
+            Reason = FailureReason.NotFound
         });
     }
 
@@ -27,7 +27,7 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
         return Failed(new StatusFailure
         {
             Message = message,
-            Code = 409
+            Reason = FailureReason.Conflict
         });
     }
 }
@@ -35,5 +35,16 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
 public class StatusFailure
 {
     public required string Message { get; set; }
-    public required int Code { get; set; }
+    public required FailureReason Reason { get; set; }
+}
+
+public enum FailureReason
+{
+    NotFound = 404,
+    Conflict = 409,
+    InternalError = 500,
+    ServiceUnavailable = 503,
+    Unauthorized = 401,
+    Forbidden = 403,
+    BadRequest = 400
 }

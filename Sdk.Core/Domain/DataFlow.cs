@@ -7,7 +7,7 @@ public class DataFlow(string id) : Identifiable(id)
     public required DataAddress Source { get; set; }
     public required DataAddress Destination { get; set; }
     public Uri? CallbackAddress { get; set; }
-    public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+    public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
     public required TransferType TransferType { get; set; }
 
@@ -20,7 +20,7 @@ public class DataFlow(string id) : Identifiable(id)
     public bool IsConsumer { get; set; } = false;
     public required string ParticipantId { get; set; }
     public required string AssetId { get; set; }
-    public int State { get; set; }
+    public DataFlowState State { get; set; }
     public required string AgreementId { get; set; }
     public int StateCount { get; private set; }
     public DateTime StateTimestamp { get; private set; } = DateTime.UtcNow;
@@ -31,10 +31,10 @@ public class DataFlow(string id) : Identifiable(id)
 
     public void Deprovision()
     {
-        Transition((int)DataFlowState.Deprovisioning);
+        Transition(DataFlowState.Deprovisioning);
     }
 
-    private void Transition(int targetState)
+    private void Transition(DataFlowState targetState)
     {
         StateCount = State == targetState ? StateCount + 1 : 1;
         State = targetState;
@@ -44,6 +44,16 @@ public class DataFlow(string id) : Identifiable(id)
 
     public void Terminate()
     {
-        Transition((int)DataFlowState.Terminated);
+        Transition(DataFlowState.Terminated);
+    }
+
+    public void Suspend(string? reason)
+    {
+        Transition(DataFlowState.Suspended);
+    }
+
+    public void Start()
+    {
+        Transition(DataFlowState.Started);
     }
 }

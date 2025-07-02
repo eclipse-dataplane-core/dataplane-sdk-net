@@ -20,7 +20,6 @@ public class DataFlowContext : DbContext, IDataPlaneStore
     public DbSet<DataFlow> DataFlows { get; set; }
     public DbSet<Lease> Leases { get; set; }
 
-
     public async Task SaveAsync(DataFlow df)
     {
         var lease = await AcquireLeaseAsync(df.Id);
@@ -67,7 +66,6 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         return await filteredFlows.ToListAsync();
     }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DataFlow>()
@@ -104,7 +102,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
                 s => JsonSerializer.Deserialize<TransferType>(s, null as JsonSerializerOptions)!);
 
         modelBuilder.Entity<Lease>()
-            .HasKey(df => df.Id);
+            .HasKey(l => l.EntityId);
     }
 
     private static string ToJson(dynamic da)
@@ -124,23 +122,32 @@ public class DataFlowContext : DbContext, IDataPlaneStore
 
     private async Task<Lease> AcquireLeaseAsync(string entityId, string lockId, TimeSpan leaseDuration)
     {
-        if (await IsLeasedAsync(entityId) && !await IsLeasedAsync(entityId, lockId))
-        {
-            throw new ArgumentException("Cannot acquire lease, entity ${entityId} is already leased by another process.");
-        }
-
         var lease = new Lease
         {
-            Id = entityId,
+            EntityId = entityId,
             LeasedBy = lockId,
             LeasedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             LeaseDurationMillis = (long)leaseDuration.TotalMilliseconds
         };
-        Leases.Add(lease);
+        if (!await IsLeasedAsync(entityId))
+        {
+            await Leases.AddAsync(lease);
+        }
+        else if (await IsLeasedByAsync(entityId, lockId))
+        {
+            // load tracked entity and update its values
+            var existing = await Leases.FindAsync(entityId);
+            Entry(existing!).CurrentValues.SetValues(lease);
+        }
+        else
+        {
+            throw new ArgumentException("Cannot acquire lease, entity ${entityId} is already leased by another process.");
+        }
+
         return lease;
     }
 
-    private async Task<bool> IsLeasedAsync(string entityId, string lockId)
+    private async Task<bool> IsLeasedByAsync(string entityId, string lockId)
     {
         var lease = await Leases.FindAsync(entityId);
         return lease != null && !lease.IsExpired(DateTime.UtcNow.Millisecond) && lease.LeasedBy == lockId;

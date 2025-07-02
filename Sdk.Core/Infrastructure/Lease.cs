@@ -14,7 +14,7 @@ public class Lease
     public required long LeaseDurationMillis { get; init; }
 
     [JsonIgnore]
-    public required string Id { get; init; }
+    public required string EntityId { get; init; }
 
     public bool IsExpired(long? now = null)
     {

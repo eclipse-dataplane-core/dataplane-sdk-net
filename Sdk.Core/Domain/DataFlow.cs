@@ -20,7 +20,7 @@ public class DataFlow(string id) : Identifiable(id)
     public bool IsConsumer { get; set; } = false;
     public required string ParticipantId { get; set; }
     public required string AssetId { get; set; }
-    public int State { get; set; } = -1;
+    public int State { get; set; }
     public required string AgreementId { get; set; }
     public int StateCount { get; private set; }
     public DateTime StateTimestamp { get; private set; } = DateTime.UtcNow;

@@ -4,7 +4,7 @@ namespace Sdk.Core.Test;
 
 public static class TestMethods
 {
-    public static DataFlow CreateDataFlow(string id)
+    public static DataFlow CreateDataFlow(string id, DataFlowState state = 0)
     {
         return new DataFlow(id)
         {
@@ -14,7 +14,8 @@ public static class TestMethods
             RuntimeId = "test-runtime",
             ParticipantId = "test-participant",
             AssetId = "test-asset",
-            AgreementId = "test-agreement"
+            AgreementId = "test-agreement",
+            State = (int)state
         };
     }
 }

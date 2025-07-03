@@ -14,6 +14,7 @@ sdk.OnRecover += flow => StatusResult<Void>.Success(default);
 sdk.OnTerminate += flow => StatusResult<Void>.Success(default);
 sdk.OnSuspend += flow => StatusResult<Void>.Success(default);
 sdk.OnProvision += flow => StatusResult<DataFlowResponseMessage>.Success(null);
+sdk.OnValidateStartMessage += msg => StatusResult<Void>.Success(default);
 
 
 // using the SDK builder
@@ -24,4 +25,5 @@ var sdk2 = DataPlaneSdk.Builder()
     .OnSuspend(flow => StatusResult<Void>.Success(default))
     .OnTerminate(flow => StatusResult<Void>.Success(default))
     .OnRecover(flow => StatusResult<Void>.Success(default))
+    .OnValidateStartMessage(msg => StatusResult<Void>.Success(default))
     .Build();

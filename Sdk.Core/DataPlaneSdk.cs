@@ -1,6 +1,8 @@
 using Sdk.Core.Data;
+using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
+using Sdk.Core.Infrastructure;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core;
@@ -94,6 +96,12 @@ public class DataPlaneSdk
         public SdkBuilder OnRecover(Func<DataFlow, StatusResult<Void>> processor)
         {
             _dataPlaneSdk.OnRecover += processor;
+            return this;
+        }
+
+        public SdkBuilder OnValidateStartMessage(Func<DataflowStartMessage, StatusResult<Void>> processor)
+        {
+            _dataPlaneSdk.OnValidateStartMessage += processor;
             return this;
         }
     }

@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Api.Authorization.DataFlows;
 using Sdk.Api.Authorization.Foo;
+using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Model;
+using Sdk.Core.Infrastructure;
 
 namespace Sdk.Api;
 
@@ -18,6 +20,7 @@ public static class SdkApiExtension
     {
         services.AddSingleton<IAuthorizationHandler, DataFlowAuthorizationHandler>();
         services.AddSingleton<IAuthorizationHandler, FooAuthorizationHandler>();
+        services.AddSingleton<IControlApiService, ControlApiService>();
 
         services.AddAuthorizationBuilder()
             .AddPolicy("DataFlowAccess", policy =>
@@ -43,10 +46,6 @@ public static class SdkApiExtension
         services.AddAuthentication("DataPlaneSdkJWT")
             .AddJwtBearer("DataPlaneSdkJWT", options =>
             {
-                // Configure Keycloak as the Identity Provider
-                options.Authority = "http://localhost:8080/realms/master";
-                options.RequireHttpsMetadata = false; // Only for develop
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,

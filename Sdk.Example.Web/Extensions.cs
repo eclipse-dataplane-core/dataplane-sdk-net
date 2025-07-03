@@ -13,10 +13,11 @@ public static class Extensions
     public static void AddDataPlaneSdk(this IServiceCollection services, IConfiguration configuration)
     {
         // initialize and configure the DataPlaneSdk
+        const string exampleRuntimeId = "example-runtime-id";
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = CreatePostgres(configuration, "test-lock-id"),
-            RuntimeId = "example-runtime-id"
+            DataFlowStore = CreatePostgres(configuration, exampleRuntimeId),
+            RuntimeId = exampleRuntimeId
         };
 
         sdk.OnStart += _ => StatusResult<DataFlowResponseMessage>.Success(null);

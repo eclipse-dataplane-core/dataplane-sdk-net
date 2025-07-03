@@ -1,3 +1,4 @@
+using Microsoft.IdentityModel.Tokens;
 using Sdk.Api;
 using Sdk.Core;
 using Sdk.Core.Domain;
@@ -29,6 +30,28 @@ public static class Extensions
 
         // wire up ASP.net authentication services
         services.AddSdkAuthentication(configuration);
+
+        // overwrite SDK authentication with KeycloakJWT. Effectively, this sets the default authentication scheme to "KeycloakJWT",
+        // foregoing the SDK default authentication scheme ("DataPlaneSdkJWT").
+        services.AddAuthentication("KeycloakJWT")
+            .AddJwtBearer("KeycloakJWT", options =>
+            {
+                // Configure Keycloak as the Identity Provider
+                options.Authority = "http://localhost:8080/realms/master";
+                options.RequireHttpsMetadata = false; // Only for develop
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = "http://localhost:8080/realms/master",
+                    ValidateAudience = true,
+                    ValidAudience = "dataplane-api",
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidateActor = false,
+                    ValidateTokenReplay = true
+                };
+            });
 
         // wire up ASP.net authorization handlers
         services.AddSdkAuthorization();

@@ -108,12 +108,12 @@ public class DataFlowContextTest
         var dataFlow = TestMethods.CreateDataFlow("test-flow-id");
         await _context.DataFlows.AddAsync(dataFlow);
         await _context.Leases.AddAsync(new Lease
-            {
-                EntityId = dataFlow.Id,
-                LeasedBy = "someone_else",
-                LeasedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                LeaseDurationMillis = 60_000 // 1 minute
-            }
+        {
+            EntityId = dataFlow.Id,
+            LeasedBy = "someone_else",
+            LeasedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            LeaseDurationMillis = 60_000 // 1 minute
+        }
         );
         await _context.SaveChangesAsync();
 

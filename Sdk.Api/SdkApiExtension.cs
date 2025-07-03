@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,8 +40,8 @@ public static class SdkApiExtension
     public static void AddSdkAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         // add authentication handler
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+        services.AddAuthentication("DataPlaneSdkJWT")
+            .AddJwtBearer("DataPlaneSdkJWT", options =>
             {
                 // Configure Keycloak as the Identity Provider
                 options.Authority = "http://localhost:8080/realms/master";
@@ -51,9 +50,9 @@ public static class SdkApiExtension
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = "http://localhost:8080/realms/master",
+                    ValidIssuer = configuration.GetValue<string>("Token:ValidIssuer"),
                     ValidateAudience = true,
-                    ValidAudience = "dataplane-api",
+                    ValidAudience = configuration.GetValue<string>("Token:ValidAudience"),
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
                     ValidateActor = false,

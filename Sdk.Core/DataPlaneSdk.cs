@@ -16,6 +16,7 @@ public class DataPlaneSdk
     public event Func<DataFlow, StatusResult<Void>>? OnTerminate;
     public event Func<DataFlow, StatusResult<Void>>? OnSuspend;
     public event Func<DataFlow, StatusResult<Void>>? OnRecover;
+    public event Func<DataflowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
 
 
     public static SdkBuilder Builder()
@@ -41,6 +42,11 @@ public class DataPlaneSdk
             {
                 DataAddress = df.Destination
             });
+    }
+
+    internal StatusResult<Void> InvokeValidate(DataflowStartMessage startMessage)
+    {
+        return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult<Void>.Success(default);
     }
 
     public class SdkBuilder

@@ -38,8 +38,11 @@ public class DataPlaneSignalingApiController(
             return Forbid();
         }
 
-        //todo: validation of startMessage
-        logger.LogWarning("Validation of startMessage is not implemented yet. This should be done before starting the data flow.");
+        var valid = await signalingService.ValidateStartMessageAsync(startMessage);
+        if (!valid.IsSucceeded)
+        {
+            return BadRequest(valid.Failure?.Message);
+        }
 
         var result = await signalingService.StartAsync(startMessage);
         if (result.IsFailed)

@@ -29,5 +29,13 @@ public interface IDataPlaneSignalingService
     /// <param name="processId"></param>
     Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId);
 
+    /// <summary>
+    ///     Validate the start message, i.e. check if the data flow already exists, if source and destination addresses are
+    ///     valid, etc.
+    /// </summary>
+    /// <param name="startMessage"></param>
+    /// <returns></returns>
+    Task<StatusResult<Void>> ValidateStartMessageAsync(DataflowStartMessage startMessage);
+
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 }

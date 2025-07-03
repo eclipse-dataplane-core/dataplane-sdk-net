@@ -113,7 +113,13 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
-    private DataFlowResponseMessage? CreateResponse(DataFlow existingFlow)
+    public Task<StatusResult<Void>> ValidateStartMessageAsync(DataflowStartMessage startMessage)
+    {
+        // delegate validation to the SDK callback
+        return Task.FromResult(sdk.InvokeValidate(startMessage));
+    }
+
+    private DataFlowResponseMessage CreateResponse(DataFlow existingFlow)
     {
         return new DataFlowResponseMessage
         {

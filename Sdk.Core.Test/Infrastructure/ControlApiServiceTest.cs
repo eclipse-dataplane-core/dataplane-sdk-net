@@ -1,4 +1,6 @@
 using JetBrains.Annotations;
+using Microsoft.Extensions.Options;
+using Moq;
 using Sdk.Core.Domain.Model;
 using Sdk.Core.Infrastructure;
 using Shouldly;
@@ -12,15 +14,25 @@ namespace Sdk.Core.Test.Infrastructure;
 [TestSubject(typeof(ControlApiService))]
 public class ControlApiServiceTest : IDisposable
 {
-    private readonly WireMockServer _mockServer;
+    private const string TestDataPlaneId = "dotnet-sdk-test-dataplane";
+    private readonly WireMockServer _mockServer = WireMockServer.Start();
+
     private readonly ControlApiService _service;
-    private readonly string _testDataplaneId = "test-dataplane";
 
     public ControlApiServiceTest()
     {
-        _mockServer = WireMockServer.Start(8083);
-        _service = new ControlApiService(new HttpClient(), "http://localhost:8083/api/control");
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+
+        httpClientFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+
+        _service = new ControlApiService(httpClientFactory.Object, Options.Create(new ControlApiOptions
+        {
+            BaseUrl = $"http://localhost:{_mockServer.Port}/api/control"
+            // BaseUrl = "http://localhost:8083/api/control"
+        }));
     }
+
+    // BaseUrl = $"http://localhost:{_mockServer.Port}/api/control"
 
     public void Dispose()
     {
@@ -34,7 +46,7 @@ public class ControlApiServiceTest : IDisposable
         _mockServer
             .Given(Request.Create().WithPath("/api/control/v1/dataplanes").UsingPost())
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(IdResponseJson("test-dataplane")));
-        var result = await _service.RegisterDataPlane(new DataPlaneInstance(_testDataplaneId)
+        var result = await _service.RegisterDataPlane(new DataPlaneInstance(TestDataPlaneId)
         {
             Url = new Uri("http://localhost/dataplane"),
             State = DataPlaneState.Available,
@@ -57,7 +69,7 @@ public class ControlApiServiceTest : IDisposable
         _mockServer
             .Given(Request.Create().WithPath("/api/control/v1/dataplanes").UsingPost())
             .RespondWith(Response.Create().WithNotFound());
-        var result = await _service.RegisterDataPlane(new DataPlaneInstance(_testDataplaneId)
+        var result = await _service.RegisterDataPlane(new DataPlaneInstance(TestDataPlaneId)
         {
             Url = new Uri("http://localhost:8082"),
             State = DataPlaneState.Available,
@@ -75,10 +87,12 @@ public class ControlApiServiceTest : IDisposable
     {
         await Should.ThrowAsync<ArgumentException>(async () =>
         {
-            await _service.RegisterDataPlane(new DataPlaneInstance(_testDataplaneId)
+            await _service.RegisterDataPlane(new DataPlaneInstance(TestDataPlaneId)
             {
                 Url = new Uri("http://localhost:8082"),
-                State = DataPlaneState.Available
+                State = DataPlaneState.Available,
+                AllowedSourceTypes = [],
+                AllowedTransferTypes = []
             });
         });
     }
@@ -87,9 +101,9 @@ public class ControlApiServiceTest : IDisposable
     public async Task UnregisterDataPlane_Success()
     {
         _mockServer
-            .Given(Request.Create().WithPath($"/api/control/v1/dataplanes/{_testDataplaneId}/unregister").UsingPut())
+            .Given(Request.Create().WithPath($"/api/control/v1/dataplanes/{TestDataPlaneId}/unregister").UsingPut())
             .RespondWith(Response.Create().WithSuccess());
-        var result = await _service.UnregisterDataPlane(_testDataplaneId);
+        var result = await _service.UnregisterDataPlane(TestDataPlaneId);
         result.IsSucceeded.ShouldBeTrue();
     }
 
@@ -97,13 +111,11 @@ public class ControlApiServiceTest : IDisposable
     public async Task UnregisterDataPlane_NotFound()
     {
         _mockServer
-            .Given(Request.Create().WithPath($"/api/control/v1/dataplanes/{_testDataplaneId}/unregister").UsingPut())
+            .Given(Request.Create().WithPath($"/api/control/v1/dataplanes/{TestDataPlaneId}/unregister").UsingPut())
             .RespondWith(Response.Create().WithNotFound());
-        var result = await _service.UnregisterDataPlane(_testDataplaneId);
+        var result = await _service.UnregisterDataPlane(TestDataPlaneId);
         result.IsSucceeded.ShouldBeFalse();
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(FailureReason.NotFound);
     }
-
-    
 }

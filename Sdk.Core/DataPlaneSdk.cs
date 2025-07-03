@@ -9,17 +9,17 @@ namespace Sdk.Core;
 
 public class DataPlaneSdk
 {
+    public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
+    public Func<DataFlow, StatusResult<Void>>? OnRecover;
+    public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
+    public Func<DataFlow, StatusResult<Void>>? OnSuspend;
+    public Func<DataFlow, StatusResult<Void>>? OnTerminate;
+    public Func<DataflowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
+
     //todo: make the lease id configurable
     public DataFlowContext DataFlowStore { get; set; } = DataFlowContextFactory.CreateInMem("test-lock-id");
-    public string RuntimeId { get; init; } = Guid.NewGuid().ToString();
-
-    public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
-    public event Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
-    public event Func<DataFlow, StatusResult<Void>>? OnTerminate;
-    public event Func<DataFlow, StatusResult<Void>>? OnSuspend;
-    public event Func<DataFlow, StatusResult<Void>>? OnRecover;
-    public event Func<DataflowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
-
+    public string RuntimeId { get; set; } = Guid.NewGuid().ToString();
+    public ITokenProvider TokenProvider { get; set; } = new NoopTokenProvider();
 
     public static SdkBuilder Builder()
     {
@@ -71,37 +71,43 @@ public class DataPlaneSdk
 
         public SdkBuilder OnStart(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
         {
-            _dataPlaneSdk.OnStart += processor;
+            _dataPlaneSdk.OnStart = processor;
             return this;
         }
 
         public SdkBuilder OnProvision(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
         {
-            _dataPlaneSdk.OnProvision += processor;
+            _dataPlaneSdk.OnProvision = processor;
             return this;
         }
 
         public SdkBuilder OnTerminate(Func<DataFlow, StatusResult<Void>> processor)
         {
-            _dataPlaneSdk.OnTerminate += processor;
+            _dataPlaneSdk.OnTerminate = processor;
             return this;
         }
 
         public SdkBuilder OnSuspend(Func<DataFlow, StatusResult<Void>> processor)
         {
-            _dataPlaneSdk.OnSuspend += processor;
+            _dataPlaneSdk.OnSuspend = processor;
             return this;
         }
 
         public SdkBuilder OnRecover(Func<DataFlow, StatusResult<Void>> processor)
         {
-            _dataPlaneSdk.OnRecover += processor;
+            _dataPlaneSdk.OnRecover = processor;
             return this;
         }
 
         public SdkBuilder OnValidateStartMessage(Func<DataflowStartMessage, StatusResult<Void>> processor)
         {
-            _dataPlaneSdk.OnValidateStartMessage += processor;
+            _dataPlaneSdk.OnValidateStartMessage = processor;
+            return this;
+        }
+
+        public SdkBuilder RuntimeId(string runtimeId)
+        {
+            _dataPlaneSdk.RuntimeId = runtimeId;
             return this;
         }
     }

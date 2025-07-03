@@ -1,12 +1,25 @@
 using System.Net.Http.Json;
+using Microsoft.Extensions.Options;
+using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Model;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Infrastructure;
 
-public class ControlApiService(HttpClient httpClient, string controlPlaneBaseUrl) : IControlApiService
+public class ControlApiService : IControlApiService
 {
+    private readonly string _baseUrl;
+    private readonly HttpClient _httpClient;
+
+
+    public ControlApiService(IHttpClientFactory factory, IOptions<ControlApiOptions> options)
+    {
+        _baseUrl = options.Value.BaseUrl;
+        // must use named HTTP client to make use of all configuration etc.
+        _httpClient = factory.CreateClient(IConstants.HttpClientName);
+    }
+
     public async Task<StatusResult<IdResponse>> RegisterDataPlane(DataPlaneInstance dataplaneInstance)
     {
         if (dataplaneInstance.AllowedSourceTypes.Count == 0)
@@ -21,7 +34,7 @@ public class ControlApiService(HttpClient httpClient, string controlPlaneBaseUrl
             throw new ArgumentException("Must specify at least one allowed transfer type");
         }
 
-        var result = await httpClient.PostAsJsonAsync(controlPlaneBaseUrl + "/v1/dataplanes", new DataPlaneDto(dataplaneInstance));
+        var result = await _httpClient.PostAsJsonAsync(_baseUrl + "/v1/dataplanes", new DataPlaneDto(dataplaneInstance));
 
         if (result.IsSuccessStatusCode)
         {
@@ -34,13 +47,13 @@ public class ControlApiService(HttpClient httpClient, string controlPlaneBaseUrl
 
     public async Task<StatusResult<Void>> UnregisterDataPlane(string dataPlaneInstanceId)
     {
-        var result = await httpClient.PutAsync($"{controlPlaneBaseUrl}/v1/dataplanes/{dataPlaneInstanceId}/unregister", null);
+        var result = await _httpClient.PutAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneInstanceId}/unregister", null);
         return Response(result);
     }
 
     public async Task<StatusResult<Void>> DeleteDataPlane(string dataPlaneInstanceId)
     {
-        var result = await httpClient.DeleteAsync($"{controlPlaneBaseUrl}/v1/dataplanes/{dataPlaneInstanceId}");
+        var result = await _httpClient.DeleteAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneInstanceId}");
         return Response(result);
     }
 
@@ -50,4 +63,9 @@ public class ControlApiService(HttpClient httpClient, string controlPlaneBaseUrl
             ? StatusResult<Void>.Success(default)
             : StatusResult<Void>.FromCode((int)result.StatusCode, result.ReasonPhrase);
     }
+}
+
+public class ControlApiOptions
+{
+    public string? BaseUrl { get; init; }
 }

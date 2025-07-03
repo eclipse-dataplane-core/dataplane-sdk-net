@@ -11,7 +11,6 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDataPlaneSdk(builder.Configuration);
 
-
 var app = builder.Build();
 
 

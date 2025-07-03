@@ -3,6 +3,7 @@ using Sdk.Api;
 using Sdk.Core;
 using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
+using Sdk.Core.Infrastructure;
 using static Sdk.Core.Data.DataFlowContextFactory;
 using Void = Sdk.Core.Domain.Void;
 
@@ -17,14 +18,16 @@ public static class Extensions
         var sdk = new DataPlaneSdk
         {
             DataFlowStore = CreatePostgres(configuration, exampleRuntimeId),
-            RuntimeId = exampleRuntimeId
+            RuntimeId = exampleRuntimeId,
+            OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null),
+            OnRecover = _ => StatusResult<Void>.Success(default),
+            OnTerminate = _ => StatusResult<Void>.Success(default),
+            OnSuspend = _ => StatusResult<Void>.Success(default),
+            OnProvision = _ => StatusResult<DataFlowResponseMessage>.Success(null)
         };
 
-        sdk.OnStart += _ => StatusResult<DataFlowResponseMessage>.Success(null);
-        sdk.OnRecover += _ => StatusResult<Void>.Success(default);
-        sdk.OnTerminate += _ => StatusResult<Void>.Success(default);
-        sdk.OnSuspend += _ => StatusResult<Void>.Success(default);
-        sdk.OnProvision += _ => StatusResult<DataFlowResponseMessage>.Success(null);
+        // read required configuration from appsettings.json
+        services.Configure<ControlApiOptions>(configuration.GetSection("ControlApi"));
 
         // add SDK core services
         services.AddSdkServices(sdk);

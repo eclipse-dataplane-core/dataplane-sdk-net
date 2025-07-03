@@ -7,8 +7,8 @@ namespace Sdk.Core.Domain.Model;
 /// <param name="id">The unique identifier for the data plane instance.</param>
 public class DataPlaneInstance(string id) : StatefulEntity<DataPlaneState>(id)
 {
-    public ICollection<string> AllowedSourceTypes { get; set; } = new List<string>();
-    public ICollection<string> AllowedTransferTypes { get; set; } = new List<string>();
+    public required ICollection<string> AllowedSourceTypes { get; set; } = new List<string>();
+    public required ICollection<string> AllowedTransferTypes { get; set; } = new List<string>();
     public ICollection<string> DestinationProvisionTypes { get; set; } = new List<string>();
     public long LastActive { get; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     public IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();

@@ -1,0 +1,45 @@
+name: Publish to GitHub NuGet Registry
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build and Push to GHCR
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build packages
+        run: |
+          dotnet build Sdk.Core/Sdk.Core.csproj --configuration Release
+          dotnet build Sdk.Api/Sdk.Api.csproj --configuration Release
+
+      - name: Pack projects
+        run: |
+          dotnet pack Sdk.Core/Sdk.Core.csproj --configuration Release --output ./nupkgs
+          dotnet pack Sdk.Api/Sdk.Api.csproj --configuration Release --output ./nupkgs
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate

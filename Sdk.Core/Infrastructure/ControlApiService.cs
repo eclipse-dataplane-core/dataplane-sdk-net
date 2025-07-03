@@ -15,7 +15,7 @@ public class ControlApiService : IControlApiService
 
     public ControlApiService(IHttpClientFactory factory, IOptions<ControlApiOptions> options)
     {
-        _baseUrl = options.Value.BaseUrl;
+        _baseUrl = options.Value.BaseUrl ?? throw new ArgumentException("BaseUrl must be set in ControlApiOptions");
         // must use named HTTP client to make use of all configuration etc.
         _httpClient = factory.CreateClient(IConstants.HttpClientName);
     }

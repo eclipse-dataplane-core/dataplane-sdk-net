@@ -1,13 +1,13 @@
 using System.Text.Json.Serialization;
 using static Sdk.Core.Domain.IConstants;
 
-namespace Sdk.Core.Domain.Model;
+namespace Sdk.Core.Infrastructure;
 
-public class IdResponse(string id)
+public class IdResponse(string id) : JsonLdDto
 {
-    [field: JsonPropertyName("@id")]
+    [JsonPropertyName("@id")]
     public string Id { get; init; } = id;
 
-    [field: JsonPropertyName(EdcNamespace + "createdAt")]
+    [JsonPropertyName(EdcNamespace + "createdAt")]
     public long CreatedAt { get; init; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 }

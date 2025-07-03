@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Sdk.Core.Domain.Model;
 
 /// <summary>
@@ -6,5 +8,6 @@ namespace Sdk.Core.Domain.Model;
 /// <param name="id">The unique identifier for the entity.</param>
 public abstract class Identifiable(string id)
 {
+    [JsonPropertyName("@id")]
     public string Id { get; } = id;
 }

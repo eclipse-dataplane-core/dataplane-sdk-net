@@ -1,3 +1,5 @@
+using static Sdk.Core.Domain.Model.FailureReason;
+
 namespace Sdk.Core.Domain.Model;
 
 public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
@@ -30,6 +32,21 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
             Reason = FailureReason.Conflict
         });
     }
+
+    public static StatusResult<TContent> FromCode(int resultStatusCode, string? resultReasonPhrase)
+    {
+        return resultStatusCode switch
+        {
+            404 => NotFound(),
+            409 => Conflict(resultReasonPhrase ?? "Conflict occurred"),
+            500 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Internal Server Error", Reason = InternalError }),
+            503 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Service Unavailable", Reason = ServiceUnavailable }),
+            401 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unauthorized", Reason = Unauthorized }),
+            403 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Forbidden", Reason = Forbidden }),
+            400 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Bad Request", Reason = BadRequest }),
+            _ => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unknown Error", Reason = Unrecognized })
+        };
+    }
 }
 
 public class StatusFailure
@@ -46,5 +63,6 @@ public enum FailureReason
     ServiceUnavailable = 503,
     Unauthorized = 401,
     Forbidden = 403,
-    BadRequest = 400
+    BadRequest = 400,
+    Unrecognized = 0
 }

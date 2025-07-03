@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Api.Authorization.DataFlows;
 using Sdk.Api.Authorization.Foo;
-using Sdk.Core.Domain;
+using Sdk.Core.Domain.Model;
 
 namespace Sdk.Api;
 

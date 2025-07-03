@@ -1,4 +1,4 @@
-namespace Sdk.Core.Domain;
+namespace Sdk.Core.Domain.Model;
 
 public enum DataFlowState
 {

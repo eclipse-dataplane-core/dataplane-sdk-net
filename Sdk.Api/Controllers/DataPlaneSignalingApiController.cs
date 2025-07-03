@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Sdk.Api.Authorization;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
@@ -10,7 +9,6 @@ namespace Sdk.Api.Controllers;
 [ApiController]
 [Route("/api/v1")]
 public class DataPlaneSignalingApiController(
-    ILogger<DataPlaneSignalingApiController> logger,
     IDataPlaneSignalingService signalingService,
     IAuthorizationService authorizationService)
     : ControllerBase

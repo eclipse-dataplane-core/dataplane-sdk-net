@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Sdk.Core.Domain.Model;
 
 namespace Sdk.Core.Domain.Messages;
 

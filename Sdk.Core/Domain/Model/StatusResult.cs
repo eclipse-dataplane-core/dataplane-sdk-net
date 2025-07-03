@@ -1,4 +1,4 @@
-namespace Sdk.Core.Domain;
+namespace Sdk.Core.Domain.Model;
 
 public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
     : AbstractResult<TContent, StatusFailure>(content, failure)

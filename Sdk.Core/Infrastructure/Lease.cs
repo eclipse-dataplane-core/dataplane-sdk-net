@@ -8,7 +8,7 @@ public class Lease
     public required string LeasedBy { get; init; }
 
     [JsonPropertyName("leasedAt")]
-    public long LeasedAt { get; init; } = DateTime.UtcNow.Millisecond;
+    public long LeasedAt { get; init; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     [JsonPropertyName("leaseDuration")]
     public required long LeaseDurationMillis { get; init; }
@@ -18,7 +18,7 @@ public class Lease
 
     public bool IsExpired(long? now = null)
     {
-        now ??= DateTime.UtcNow.Millisecond;
+        now ??= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         return LeasedAt + LeaseDurationMillis < now;
     }
 }

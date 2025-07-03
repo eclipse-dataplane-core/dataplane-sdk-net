@@ -1,4 +1,4 @@
-namespace Sdk.Core.Domain;
+namespace Sdk.Core.Domain.Model;
 
 /// <summary>
 ///     Represents a data address, i.e. a physical location.

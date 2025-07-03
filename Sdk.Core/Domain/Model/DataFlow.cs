@@ -1,8 +1,6 @@
-using Sdk.Core.Domain.Interfaces;
+namespace Sdk.Core.Domain.Model;
 
-namespace Sdk.Core.Domain;
-
-public class DataFlow(string id) : Identifiable(id)
+public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
 {
     public required DataAddress Source { get; set; }
     public required DataAddress Destination { get; set; }
@@ -20,26 +18,12 @@ public class DataFlow(string id) : Identifiable(id)
     public bool IsConsumer { get; set; } = false;
     public required string ParticipantId { get; set; }
     public required string AssetId { get; set; }
-    public DataFlowState State { get; set; }
     public required string AgreementId { get; set; }
-    public int StateCount { get; private set; }
-    public DateTime StateTimestamp { get; private set; } = DateTime.UtcNow;
-    public string? ErrorDetail { get; } = null;
-    public bool IsPending { get; } = false;
-    public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
 
     public void Deprovision()
     {
         Transition(DataFlowState.Deprovisioning);
-    }
-
-    private void Transition(DataFlowState targetState)
-    {
-        StateCount = State == targetState ? StateCount + 1 : 1;
-        State = targetState;
-        StateTimestamp = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Terminate()

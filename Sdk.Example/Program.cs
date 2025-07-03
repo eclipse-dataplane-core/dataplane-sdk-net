@@ -1,7 +1,7 @@
 ﻿using Sdk.Core;
 using Sdk.Core.Data;
-using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
+using Sdk.Core.Domain.Model;
 using Void = Sdk.Core.Domain.Void;
 
 // using the SDK directly

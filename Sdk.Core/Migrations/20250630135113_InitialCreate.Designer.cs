@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sdk.Core.Data;
 using Sdk.Core.Domain;
+using Sdk.Core.Domain.Model;
 
 #nullable disable
 

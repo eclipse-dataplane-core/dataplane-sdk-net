@@ -1,8 +1,8 @@
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Api;
 using Sdk.Core;
-using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
+using Sdk.Core.Domain.Model;
 using static Sdk.Core.Data.DataFlowContextFactory;
 using Void = Sdk.Core.Domain.Void;
 

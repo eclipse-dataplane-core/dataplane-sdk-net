@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
+using Sdk.Core.Domain.Model;
 using Sdk.Core.Infrastructure;
 
 namespace Sdk.Core.Data;
@@ -158,12 +158,12 @@ public class DataFlowContext : DbContext, IDataPlaneStore
     private async Task<bool> IsLeasedByAsync(string entityId, string lockId)
     {
         var lease = await Leases.FindAsync(entityId);
-        return lease != null && !lease.IsExpired(DateTime.UtcNow.Millisecond) && lease.LeasedBy == lockId;
+        return lease != null && !lease.IsExpired(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) && lease.LeasedBy == lockId;
     }
 
     private async Task<bool> IsLeasedAsync(string entityId)
     {
         var lease = await Leases.FindAsync(entityId);
-        return lease != null && !lease.IsExpired(DateTime.UtcNow.Millisecond);
+        return lease != null && !lease.IsExpired(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
     }
 }

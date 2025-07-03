@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Sdk.Core.Domain;
+using Sdk.Core.Domain.Model;
 
 #nullable disable
 

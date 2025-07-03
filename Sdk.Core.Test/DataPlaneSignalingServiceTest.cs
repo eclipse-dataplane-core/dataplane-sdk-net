@@ -1,13 +1,13 @@
 using Moq;
 using Sdk.Core.Data;
-using Sdk.Core.Domain;
 using Sdk.Core.Domain.Messages;
+using Sdk.Core.Domain.Model;
 using Sdk.Core.Infrastructure;
 using Shouldly;
 using Testcontainers.PostgreSql;
 using static Sdk.Core.Data.DataFlowContextFactory;
-using static Sdk.Core.Domain.DataFlowState;
-using static Sdk.Core.Domain.FailureReason;
+using static Sdk.Core.Domain.Model.DataFlowState;
+using static Sdk.Core.Domain.Model.FailureReason;
 using static Sdk.Core.Test.TestMethods;
 using Void = Sdk.Core.Domain.Void;
 

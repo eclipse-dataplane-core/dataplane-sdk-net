@@ -1,7 +1,7 @@
 using Sdk.Core.Data;
-using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
+using Sdk.Core.Domain.Model;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Infrastructure;
@@ -139,7 +139,8 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             AssetId = message.AssetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
-            Properties = message.Properties
+            Properties = message.Properties,
+            State = DataFlowState.Notified
         };
     }
 }

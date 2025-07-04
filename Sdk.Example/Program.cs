@@ -28,7 +28,7 @@ internal class Program
             {
                 // read required configuration from appsettings.json
                 c.Configuration.GetSection("DataPlaneSdk").Bind(config);
-                services.Configure<ControlApiOptions>(c.Configuration.GetSection("ControlApi"));
+                services.Configure<ControlApiOptions>(c.Configuration.GetSection("DataPlaneSdk:ControlApi"));
                 services.Configure<DataPlaneSdkOptions>(c.Configuration.GetSection("DataPlaneSdk"));
                 // use the SDK's extension method to register all services provided by the SDK
                 sdk = CreateSdk(c.Configuration.GetConnectionString("DefaultConnection"), config);

@@ -27,7 +27,7 @@ public static class Extensions
         };
 
         // read required configuration from appsettings.json
-        services.Configure<ControlApiOptions>(configuration.GetSection("ControlApi"));
+        services.Configure<ControlApiOptions>(configuration.GetSection("DataPlaneSdk:ControlApi"));
 
         // add SDK core services
         services.AddSdkServices(sdk);

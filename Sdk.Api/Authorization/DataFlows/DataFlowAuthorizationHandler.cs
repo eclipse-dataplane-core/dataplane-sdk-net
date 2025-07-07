@@ -13,12 +13,14 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
         var (participantContextId, dataFlowId) = resource;
 
         // Verify that the participant context ID (from the request) matches the user ID in the claims
-        if (participantContextId != context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
+        var principal = context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (participantContextId != principal)
         {
             context.Fail();
             return;
         }
 
+        // can happen on endpoints that don't target a specific dataflow (e.g. "start")
         if (dataFlowId == null)
         {
             context.Succeed(requirement);
@@ -26,10 +28,11 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
         }
 
         var dataFlow = await store.FindByIdAsync(dataFlowId);
-        //if null, then it's not a permission problem, but a data flow not found problem
+        //if null, then it's not a permission problem, but a data-flow-not-found problem
         if (dataFlow == null || dataFlow.ParticipantId == participantContextId)
         {
             context.Succeed(requirement);
+            return;
         }
 
         // user does not own dataflow

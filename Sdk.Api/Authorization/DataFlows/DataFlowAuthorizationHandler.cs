@@ -26,10 +26,13 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
         }
 
         var dataFlow = await store.FindByIdAsync(dataFlowId);
-        //if null, then its not a permission problem, but a data flow not found problem
+        //if null, then it's not a permission problem, but a data flow not found problem
         if (dataFlow == null || dataFlow.ParticipantId == participantContextId)
         {
             context.Succeed(requirement);
         }
+
+        // user does not own dataflow
+        context.Fail();
     }
 }

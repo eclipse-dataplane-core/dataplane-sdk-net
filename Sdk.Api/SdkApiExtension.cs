@@ -4,9 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Sdk.Api.Authorization.DataFlows;
 using Sdk.Api.Authorization.Foo;
-using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Model;
-using Sdk.Core.Infrastructure;
 
 namespace Sdk.Api;
 
@@ -20,7 +18,6 @@ public static class SdkApiExtension
     {
         services.AddSingleton<IAuthorizationHandler, DataFlowAuthorizationHandler>();
         services.AddSingleton<IAuthorizationHandler, FooAuthorizationHandler>();
-        services.AddSingleton<IControlApiService, ControlApiService>();
 
         services.AddAuthorizationBuilder()
             .AddPolicy("DataFlowAccess", policy =>

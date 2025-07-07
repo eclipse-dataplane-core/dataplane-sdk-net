@@ -8,7 +8,7 @@ namespace Sdk.Core.Domain.Messages;
 ///     transfer
 ///     between a consumer and the provider. This message is sent by the control plane to the data plane.
 /// </summary>
-public class DataflowStartMessage
+public class DataflowStartMessage : JsonLdDto
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
 

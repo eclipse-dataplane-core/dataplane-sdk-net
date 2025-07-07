@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sdk.Core.Data;
 using Sdk.Core.Domain.Interfaces;
 using Sdk.Core.Domain.Messages;
@@ -19,7 +20,7 @@ public class DataPlaneSdk
     //todo: make the lease id configurable
     public DataFlowContext DataFlowStore { get; set; } = DataFlowContextFactory.CreateInMem("test-lock-id");
     public string RuntimeId { get; set; } = Guid.NewGuid().ToString();
-    public ITokenProvider TokenProvider { get; set; } = new NoopTokenProvider();
+    public ITokenProvider TokenProvider { get; set; } = new NoopTokenProvider(LoggerFactory.Create(_ => { }).CreateLogger<NoopTokenProvider>());
 
     public static SdkBuilder Builder()
     {

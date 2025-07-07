@@ -12,7 +12,7 @@ public class DataPlaneInstance(string id) : StatefulEntity<DataPlaneState>(id)
     public ICollection<string> DestinationProvisionTypes { get; set; } = new List<string>();
     public long LastActive { get; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     public IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
-    public required Uri Url { get; set; }
+    public required Uri? Url { get; set; }
 }
 
 public enum DataPlaneState

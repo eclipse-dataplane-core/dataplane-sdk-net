@@ -3,17 +3,27 @@ using Microsoft.Extensions.Configuration;
 
 namespace Sdk.Core.Data;
 
-public class DataFlowContextFactory
+/// <summary>
+///     Provides factory methods for creating instances of <see cref="DataFlowContext" />
+///     configured for different database providers such as PostgreSQL and in-memory databases.
+/// </summary>
+public static class DataFlowContextFactory
 {
-    public static DataFlowContext CreatePostgres(string connectionString, string lockId, bool autoMigrate = false)
+    /// <summary>
+    ///     Creates a <see cref="DbContext" /> that is based on PostgreSQL using the provided connection string
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="leaseId">The lease ID of this instance</param>
+    /// <param name="autoCreate">Whether the DB and the schema should be created automatically</param>
+    public static DataFlowContext CreatePostgres(string connectionString, string leaseId, bool autoCreate = false)
     {
         var options = new DbContextOptionsBuilder<DataFlowContext>()
             .UseNpgsql(connectionString)
             .Options;
 
-        var dataFlowContext = new DataFlowContext(options, lockId);
+        var dataFlowContext = new DataFlowContext(options, leaseId);
 
-        if (autoMigrate)
+        if (autoCreate)
         {
             dataFlowContext.Database.EnsureCreated();
         }
@@ -21,6 +31,13 @@ public class DataFlowContextFactory
         return dataFlowContext;
     }
 
+    /// <summary>
+    ///     Creates a <see cref="DbContext" /> that is based on PostgreSQL using the provided <see cref="IConfiguration" />
+    ///     object from which
+    ///     the connection string and the auto-create flag is taken.
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <param name="leaseId">The lease ID of this instance</param>
     public static DataFlowContext CreatePostgres(IConfiguration configuration, string lockId)
     {
         if (configuration == null)
@@ -43,13 +60,19 @@ public class DataFlowContextFactory
         return dataFlowContext;
     }
 
-    public static DataFlowContext CreateInMem(string lockId, string? dbName = null)
+    /// <summary>
+    ///     Creates an implementation of the <see cref="DataFlowContext" /> that is based on the EF InMemory database.
+    /// </summary>
+    /// <param name="leaseId">The Lease ID of this instance</param>
+    /// <param name="dbName">DB name. A random GUID is used if omitted.</param>
+    /// <returns></returns>
+    public static DataFlowContext CreateInMem(string leaseId, string? dbName = null)
     {
         dbName ??= Guid.NewGuid().ToString();
 
         var context = new DataFlowContext(new DbContextOptionsBuilder<DataFlowContext>()
             .UseInMemoryDatabase(dbName)
-            .Options, lockId);
+            .Options, leaseId);
 
         return context;
     }

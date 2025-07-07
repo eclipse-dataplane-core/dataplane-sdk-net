@@ -2,11 +2,15 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using Sdk.Core.Domain;
 using Sdk.Core.Domain.Interfaces;
+using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
 using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Infrastructure;
 
+/// <summary>
+///     Client service to communicate with an EDC Control Plane's Control API.
+/// </summary>
 public class ControlApiService : IControlApiService
 {
     private readonly string _baseUrl;

@@ -1,5 +1,5 @@
+using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
-using Sdk.Core.Infrastructure;
 
 namespace Sdk.Core.Domain.Interfaces;
 

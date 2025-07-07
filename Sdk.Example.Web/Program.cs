@@ -9,6 +9,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+
+// SDK: add all services, read configuration etc. 
 builder.Services.AddDataPlaneSdk(builder.Configuration);
 
 var app = builder.Build();

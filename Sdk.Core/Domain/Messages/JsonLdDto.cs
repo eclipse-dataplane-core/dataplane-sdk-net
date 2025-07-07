@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
-using Sdk.Core.Domain;
 
-namespace Sdk.Core.Infrastructure;
+namespace Sdk.Core.Domain.Messages;
 
+/// <summary>
+///     Base class for all objects that are transmitted in JSON-LD format
+/// </summary>
 public class JsonLdDto
 {
     protected JsonLdDto()
@@ -10,7 +12,7 @@ public class JsonLdDto
         Type = IConstants.EdcNamespace + GetType().Name;
     }
 
-    public JsonLdDto(string type)
+    protected JsonLdDto(string type)
     {
         Type = IConstants.EdcNamespace + type;
     }

@@ -3,7 +3,7 @@ using Sdk.Core.Domain.Model;
 
 namespace Sdk.Core.Domain.Messages;
 
-public class DataFlowResponseMessage
+public class DataFlowResponseMessage : JsonLdDto
 {
     [JsonPropertyName(IConstants.EdcNamespace + "dataAddress")]
     public required DataAddress DataAddress { get; set; }

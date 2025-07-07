@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Sdk.Core.Domain;
+using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
 
 namespace Sdk.Core.Infrastructure;
@@ -33,5 +34,5 @@ public class DataPlaneDto : JsonLdDto
     public IDictionary<string, object> Properties { get; }
 
     [JsonPropertyName(IConstants.EdcNamespace + "url")]
-    public Uri Url { get; }
+    public Uri? Url { get; }
 }

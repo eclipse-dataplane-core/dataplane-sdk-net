@@ -6,6 +6,15 @@ using Sdk.Core.Infrastructure;
 
 namespace Sdk.Core.Data;
 
+/// <summary>
+///     Represents the Entity Framework database context for managing <see cref="DataFlow" /> and <see cref="Lease" />
+///     entities,
+///     providing methods for data persistence, leasing, and querying data flows in a data plane store.
+/// </summary>
+/// <remarks>
+///     This context implements <see cref="IDataPlaneStore" /> and handles concurrency using a leasing mechanism
+///     to ensure exclusive access to <see cref="DataFlow" /> entities during updates.
+/// </remarks>
 public class DataFlowContext : DbContext, IDataPlaneStore
 {
     private static readonly TimeSpan DefaultLeaseTime = TimeSpan.FromSeconds(60);
@@ -20,20 +29,28 @@ public class DataFlowContext : DbContext, IDataPlaneStore
     public DbSet<DataFlow> DataFlows { get; set; }
     public DbSet<Lease> Leases { get; set; }
 
-    public async Task SaveAsync(DataFlow df)
+    /// Asynchronously saves the specified
+    /// <see cref="DataFlow" />
+    /// instance to the data store.
+    /// Acquires a lease for the given DataFlow, updates it if it exists, or adds it if it does not.
+    /// Releases the lease after the operation completes. Does NOT save changes on the db context!
+    /// <param name="dataflow">The <see cref="DataFlow" /> instance to save.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
+    public async Task SaveAsync(DataFlow dataflow)
     {
-        var lease = await AcquireLeaseAsync(df.Id);
-        if (DataFlows.Contains(df))
+        var lease = await AcquireLeaseAsync(dataflow.Id);
+        if (DataFlows.Contains(dataflow))
         {
-            DataFlows.Update(df);
+            DataFlows.Update(dataflow);
         }
         else
         {
-            DataFlows.Add(df);
+            DataFlows.Add(dataflow);
         }
 
         FreeLeaseAsync(lease.EntityId);
     }
+
 
     public async Task<DataFlow?> FindByIdAsync(string id)
     {
@@ -41,6 +58,24 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         return df;
     }
 
+    /// Attempts to find a
+    /// <see cref="DataFlow" />
+    /// entity by its ID and acquire a lease on it.
+    /// <param name="id">The unique identifier of the <see cref="DataFlow" /> to find and lease.</param>
+    /// <returns>
+    ///     A <see cref="StatusResult{DataFlow}" /> indicating the outcome:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description><c>Success</c>: The entity was found and the lease was successfully acquired.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>NotFound</c>: No entity with the specified identifier exists.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>Conflict</c>: The entity is already leased by another process.</description>
+    ///         </item>
+    ///     </list>
+    /// </returns>
     public async Task<StatusResult<DataFlow>> FindByIdAndLeaseAsync(string id)
     {
         var flow = await FindByIdAsync(id);
@@ -61,6 +96,20 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         }
     }
 
+    /// Asynchronously retrieves a collection of
+    /// <see cref="DataFlow" />
+    /// objects that are in the specified states and have not been leased,
+    /// up to the specified maximum number.
+    /// <param name="max">The maximum number of <see cref="DataFlow" /> objects to return.</param>
+    /// <param name="states">
+    ///     An array of <see cref="DataFlowState" /> values to filter the <see cref="DataFlow" /> objects by
+    ///     state.
+    /// </param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation. The task result contains a collection of <see cref="DataFlow" />
+    ///     objects
+    ///     matching the specified states and not currently leased.
+    /// </returns>
     public async Task<ICollection<DataFlow>> NextNotLeased(int max, params DataFlowState[] states)
     {
         var filteredFlows = DataFlows.Where(dataFlow => states.Contains(dataFlow.State)).Take(max);

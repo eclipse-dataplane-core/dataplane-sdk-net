@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Moq;
+using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
 using Sdk.Core.Infrastructure;
 using Shouldly;

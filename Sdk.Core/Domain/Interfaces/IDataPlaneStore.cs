@@ -32,7 +32,7 @@ public interface IDataPlaneStore
     /// <summary>
     ///     Persists the entity. This follows UPSERT semantics, so if the object didn't exit before, it's created.
     /// </summary>
-    Task SaveAsync(DataFlow dataFlow);
+    Task SaveAsync(DataFlow dataflow);
 
 
     static Criterion StateFilter(int state)

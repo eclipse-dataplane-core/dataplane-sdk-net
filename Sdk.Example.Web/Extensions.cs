@@ -14,11 +14,11 @@ public static class Extensions
     public static void AddDataPlaneSdk(this IServiceCollection services, IConfiguration configuration)
     {
         // initialize and configure the DataPlaneSdk
-        const string exampleRuntimeId = "example-runtime-id";
+        var config = configuration.GetSection("DataPlaneSdk").Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = CreatePostgres(configuration, exampleRuntimeId),
-            RuntimeId = exampleRuntimeId,
+            DataFlowStore = CreatePostgres(configuration, config.RuntimeId),
+            RuntimeId = config.RuntimeId,
             OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null),
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
@@ -26,7 +26,7 @@ public static class Extensions
             OnProvision = _ => StatusResult<DataFlowResponseMessage>.Success(null)
         };
 
-        // read required configuration from appsettings.json
+        // read required configuration from appsettings.json to make it injectable
         services.Configure<ControlApiOptions>(configuration.GetSection("DataPlaneSdk:ControlApi"));
 
         // add SDK core services

@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
+using Sdk.Core.Infrastructure;
 using static Sdk.Core.Domain.IConstants;
 
-namespace Sdk.Core.Infrastructure;
+namespace Sdk.Core.Domain.Messages;
 
-public class IdResponse(string id) : JsonLdDto
+public class IdResponse(string id) : JsonLdDto(nameof(IdResponse))
 {
     [JsonPropertyName("@id")]
     public string Id { get; init; } = id;

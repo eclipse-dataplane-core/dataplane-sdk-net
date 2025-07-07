@@ -6,6 +6,15 @@ using Void = Sdk.Core.Domain.Void;
 
 namespace Sdk.Core.Infrastructure;
 
+/// <summary>
+///     DataPlane Signaling (DPS) Service implementation to handle DPS requests and events.
+/// </summary>
+/// <param name="dataFlowContext">
+///     The underlying persistence layer for <see cref="DataFlow" /> objects. Note that this
+///     service acts as transaction boundary.
+/// </param>
+/// <param name="sdk">An instance of the <see cref="DataPlaneSdk" /> to invoke callbacks</param>
+/// <param name="runtimeId">The Runtime ID of this data plane.</param>
 public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlaneSdk sdk, string runtimeId) : IDataPlaneSignalingService
 {
     public async Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataflowStartMessage message)

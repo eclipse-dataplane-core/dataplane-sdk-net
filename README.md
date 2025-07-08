@@ -6,7 +6,7 @@ A Data Plane SDK for .NET. This SDK provides components for creating .NET-based 
 Planes via the Data Plane Signaling API (DPS API). The SDK includes callbacks on API events, transactional persistence
 and mutual authentication and authorization scaffolding.
 
-All sample code discussed here is available in the [`Sdk.Example.Web`](Sdk.Example.Web/) project.
+All sample code discussed here is available in the [`DataPlane.Sdk.Example.Web`](DataPlane.Sdk.Example.Web/) project.
 
 <!-- TOC -->
 * [Dataplane SDK .NET](#dataplane-sdk-net)
@@ -32,10 +32,10 @@ This SDK is compiled against `net9.0` so consuming applications must be upgraded
 
 To install the SDK, add the following packages to your .NET app:
 
-- install the project's NuGet feed `https://nuget.pkg.github.com/metaform/index.json` (
+* install the project's NuGet feed `https://nuget.pkg.github.com/metaform/index.json` (
   see [details](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry))
-- `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha1` for the API extensions s
-- `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha1` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
+* `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha1` for the API extensions s
+* `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha1` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
   is used
 
 Note that while the `DataPlane.Sdk.Api` package is not strictly required, it handles all incoming DPS API communication,
@@ -76,11 +76,11 @@ This example uses .NET's built-in webserver Kestrel to service any API requests 
 all SDK-related services in an extension method. Let's write a simple extension method:
 
 ```csharp
-using Sdk.Core;
-using Sdk.Core.Data;
-using Sdk.Core.Domain.Messages;
-using Sdk.Core.Domain.Model;
-using Void = Sdk.Core.Domain.Void;
+using DataPlane.Sdk.Core;
+using DataPlane.Sdk.Core.Data;
+using DataPlane.Sdk.Core.Domain.Messages;
+using DataPlane.Sdk.Core.Domain.Model;
+using Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace MyProject;
 
@@ -94,11 +94,11 @@ public static class MyExtensions
         {
             DataFlowStore = DataFlowContextFactory.CreatePostgres(configuration, config.RuntimeId),
             RuntimeId = config.RuntimeId,
-            OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null),
-            OnRecover = _ => StatusResult<Domain.Void>.Success(default),
+            OnStart = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination }),
+            OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = _ => StatusResult<DataFlowResponseMessage>.Success(null)
+            OnProvision = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination })
         };
     }
 
@@ -139,8 +139,8 @@ providers and API clients.
 Next, we need to configure API authentication and authorization. The SDK does bring most of the scaffolding and glue
 code, but clients still need to implement the following:
 
-- API authentication logic: validating incoming auth tokens and their signatures
-- authorization of outgoing HTTP requests: this is relevant when the data plane sends DPS or other HTTP requests to the
+* API authentication logic: validating incoming auth tokens and their signatures
+* authorization of outgoing HTTP requests: this is relevant when the data plane sends DPS or other HTTP requests to the
   control plane: an authorization token header must be added.
 
 ```csharp
@@ -150,11 +150,11 @@ services.AddSdkAuthentication(configuration);
 
 this sets up default SDK token validation, which will validate:
 
-- the issuer (valid issuer is configured via `Token:ValidIssuer`)
-- the audience (`Token:ValidAudience`)
-- the token signing key
-- token lifetime
-- token replay (`jti` claims)
+* the issuer (valid issuer is configured via `Token:ValidIssuer`)
+* the audience (`Token:ValidAudience`)
+* the token signing key
+* token lifetime
+* token replay (`jti` claims)
 
 In cases where a third-party IdP like KeyCloak is used, this can be customized. Instead of using the
 `AddSdkAuthentication` method, authentication parameters must be overridden:
@@ -200,9 +200,9 @@ services.AddSdkAuthorization();
 This registers authorization handlers for all resource types, that reject any request, where the `participantContextId`
 does not match the auth token's `sub` claim, for example:
 
-- `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant123` -> accepted, if `participant123` owns
+* `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant123` -> accepted, if `participant123` owns
   `dataflowXYZ`
-- `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant456` -> rejected
+* `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant456` -> rejected
 
 ### 2.5 Setting up authorization of outgoing HTTP requests
 
@@ -264,16 +264,16 @@ public class MyTokenProvider(HttpClient httpClient) : ITokenProvider
 To avoid conflicts and potential infinite loops during token generation, the token provider is only registered for a "
 named" `HttpClient` (name = `"SdkHttpClient"`). As a general rule of thumb, client code should:
 
-- use _named_ `HttpClient` objects by using `IHttpClientFactory.CreateClient("SdkHttpClient")` when making HTTP requests
+* use _named_ `HttpClient` objects by using `IHttpClientFactory.CreateClient("SdkHttpClient")` when making HTTP requests
   to the DataPlane Signaling Api, the Control API or other control plane APIs
-- use _unnamed_ `HttpClient` objects when making arbitrary HTTP requests to external services, like an IdP
+* use _unnamed_ `HttpClient` objects when making arbitrary HTTP requests to external services, like an IdP
 
 ## 3. Usage (core only)
 
 In situations where the built-in API server for DataPlane Signaling cannot be used, it may be an option to use only the
-`Sdk.Core` module. While this will forego all API controllers, authentication and authorization, it will still provide
-core services and persistence. To do that, add the `Sdk.Core` package to your .NET project:
-`dotnet add package Sdk.Core --version 0.0.1-alpha`.
+`DataPlane.Sdk.Core` module. While this will forego all API controllers, authentication and authorization, it will still provide
+core services and persistence. To do that, add the `DataPlane.Sdk.Core` package to your .NET project:
+`dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha`.
 
 Depending on the type of project (console, webapi) an `IHost` may or may not be available. If it is, client code can
 still utilize the dependency injection facilities built into the SDK by calling the `AddSdkServices(sdk)` extension
@@ -309,13 +309,13 @@ We opted for combining all SDK-related configuration in one config object:
 With the exception of the `RuntimeId`, which is optional, all entries are _required_, and omitting them will result in a
 runtime exception.
 
-- `ControlApi.BaseUrl`: this is the base URL for the control plane's control API which is used to register and
+* `ControlApi.BaseUrl`: this is the base URL for the control plane's control API which is used to register and
   un-register this dataplane
-- `InstanceId`: this should be a unique ID which identifies this data plane. This is used during data plane registration
-- `RuntimeId`: an internal identifier that is used for various details such as database-level locking of entities
-- `AllowedSourceTypes`: array of types of data sources that this data plane can handle. Influences the control plane's
+* `InstanceId`: this should be a unique ID which identifies this data plane. This is used during data plane registration
+* `RuntimeId`: an internal identifier that is used for various details such as database-level locking of entities
+* `AllowedSourceTypes`: array of types of data sources that this data plane can handle. Influences the control plane's
   catalog.
-- `AllowedTransferTypes`: array of types of transfer types that this data plane can handle. Influences the control
+* `AllowedTransferTypes`: array of types of transfer types that this data plane can handle. Influences the control
   plane's catalog.
 
 If PostgreSQL persistence use used, the `appsettings.json` file must contain a connection string:
@@ -335,9 +335,9 @@ should be registered when [initializing the SDK](#21-configuring-the-sdk).
 
 When using SDK callbacks, users should keep in mind the following tenets:
 
-- all SDK callbacks are invoked _before_ objects are stored in persistence
-- callbacks are always involved inside a transaction, i.e. before a call to `DbContext.SaveChanges[Async]`
-- as a result, callbacks should not throw any exceptions, instead they should communicate any error using a
+* all SDK callbacks are invoked _before_ objects are stored in persistence
+* callbacks are always involved inside a transaction, i.e. before a call to `DbContext.SaveChanges[Async]`
+* as a result, callbacks should not throw any exceptions, instead they should communicate any error using a
   `StatusResult`
 
 ## 6. In-memory vs PostgreSQL persistence
@@ -380,7 +380,6 @@ however, register it with the DI container.
 For example:
 
 ```csharp
-DataPlaneSdkOptions config = ...;
 DataPlaneSdkOptions config = ...;
 var result = await controlService.RegisterDataPlane(new DataPlaneInstance(config.InstanceId)
 {

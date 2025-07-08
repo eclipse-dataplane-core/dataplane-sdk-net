@@ -19,11 +19,11 @@ public static class Extensions
         {
             DataFlowStore = CreatePostgres(configuration, config.RuntimeId),
             RuntimeId = config.RuntimeId,
-            OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null),
+            OnStart = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination }),
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = _ => StatusResult<DataFlowResponseMessage>.Success(null)
+            OnProvision = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination })
         };
 
         // read required configuration from appsettings.json to make it injectable

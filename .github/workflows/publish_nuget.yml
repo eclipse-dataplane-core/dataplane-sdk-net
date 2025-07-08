@@ -35,7 +35,11 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            # Remove leading 'v' if present (e.g., v1.2.3 -> 1.2.3)
+            version="${GITHUB_REF#refs/tags/v}"
+            echo "version=$version" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
           else
             # Read version from DataPlane.Sdk.Core.csproj (assumes all projects have same version)
@@ -58,4 +62,4 @@ jobs:
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key ${{ secrets.GITHUB_TOKEN }} \
-            --skip
+            --skip-duplicate

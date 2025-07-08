@@ -34,8 +34,8 @@ To install the SDK, add the following packages to your .NET app:
 
 - install the project's NuGet feed `https://nuget.pkg.github.com/metaform/index.json` (
   see [details](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry))
-- `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha2` for the API extensions s
-- `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha2` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
+- `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha1` for the API extensions s
+- `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha1` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
   is used
 
 Note that while the `DataPlane.Sdk.Api` package is not strictly required, it handles all incoming DPS API communication,

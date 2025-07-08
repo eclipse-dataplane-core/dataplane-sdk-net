@@ -7,7 +7,7 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Contains extensions to the core SDK, such as an HTTP API to receive DPS messages</Description>
-        <Version>0.0.1-alpha2</Version>
+        <Version>0.0.1-alpha1</Version>
     </PropertyGroup>
 
     <ItemGroup>

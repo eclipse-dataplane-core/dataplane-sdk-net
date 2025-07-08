@@ -1,76 +1,99 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Json;
+using Sdk.Api.Test.Fixtures;
 using Sdk.Core;
 using Sdk.Core.Data;
-using Sdk.Core.Domain.Interfaces;
+using Sdk.Core.Domain.Messages;
 using Sdk.Core.Domain.Model;
-using Sdk.Core.Infrastructure;
 using Shouldly;
 using static Sdk.Api.Test.TestAuthHandler;
 
 namespace Sdk.Api.Test;
 
-public class DataPlaneSignalingApiControllerTest
+/// <summary>
+///     Base class for DPS API controller tests
+/// </summary>
+public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFlowContext, HttpClient httpClient, DataPlaneSdk sdk) : IDisposable
 {
-    private readonly DataFlowContext _dataFlowContext;
-    private readonly HttpClient _htmlClient;
+    private DataFlowContext DataFlowContext { get; } = dataFlowContext;
+    private HttpClient HttpClient { get; } = httpClient;
+    private DataPlaneSdk Sdk { get; } = sdk;
 
-    public DataPlaneSignalingApiControllerTest()
+    public void Dispose()
     {
-        var sdk = new DataPlaneSdk();
-        _dataFlowContext = DataFlowContextFactory.CreateInMem("test-leaser");
-        var dataPlaneSignalingService = new DataPlaneSignalingService(_dataFlowContext, sdk, "test-runtime-id");
-
-        // need to wire those two up here, because we need access to the db context
-        var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                services.AddSingleton<IDataPlaneStore>(_dataFlowContext);
-                services.AddSingleton<IDataPlaneSignalingService>(dataPlaneSignalingService);
-            });
-        });
-        _htmlClient = factory.CreateClient();
+        DataFlowContext.DataFlows.RemoveRange(DataFlowContext.DataFlows);
+        DataFlowContext.Leases.RemoveRange(DataFlowContext.Leases);
+        DataFlowContext.SaveChanges();
     }
 
     [Fact]
     public async Task GetState_Success()
     {
-        await _dataFlowContext.DataFlows.AddAsync(CreateDataFlow());
-        await _dataFlowContext.SaveChangesAsync();
-        var response = await _htmlClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
+        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        await DataFlowContext.SaveChangesAsync();
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetState_WrongParticipantInUrlPath()
     {
-        await _dataFlowContext.DataFlows.AddAsync(CreateDataFlow());
-        await _dataFlowContext.SaveChangesAsync();
-        var response = await _htmlClient.GetAsync("/api/v1/invalid-participant/dataflows/flow1/state");
+        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        await DataFlowContext.SaveChangesAsync();
+        var response = await HttpClient.GetAsync("/api/v1/invalid-participant/dataflows/flow1/state");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
     public async Task GetState_DoesNotOwnDataFlow()
     {
-        await _dataFlowContext.DataFlows.AddAsync(CreateDataFlow(participantId: "another-user"));
-        await _dataFlowContext.SaveChangesAsync();
-        var response = await _htmlClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
+        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow(participantId: "another-user"));
+        await DataFlowContext.SaveChangesAsync();
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
     public async Task GetState_DataFlowNotFound()
     {
-        await _dataFlowContext.DataFlows.AddAsync(CreateDataFlow("another-flow"));
-        await _dataFlowContext.SaveChangesAsync();
-        var response = await _htmlClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
+        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow("another-flow"));
+        await DataFlowContext.SaveChangesAsync();
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1/state");
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    private DataFlow CreateDataFlow(string id = "flow1", string participantId = TestUser)
+    [Fact]
+    public async Task Start_VerifySdkCallback()
+    {
+        var destinationDataAddress = new DataAddress("test-type");
+        var latch = new CountdownEvent(1);
+        Sdk.OnStart = flow =>
+        {
+            latch.Signal();
+            return StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = flow.Destination });
+        };
+
+        var msg = new DataflowStartMessage
+        {
+            ProcessId = "test-pid",
+            AssetId = "test-asset",
+            ParticipantId = TestUser,
+            AgreementId = "test-agreement",
+            SourceDataAddress = new DataAddress("test-type"),
+            DestinationDataAddress = destinationDataAddress,
+            TransferType = new TransferType("test-type", FlowType.Pull)
+        };
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/", JsonContent.Create(msg));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var responseMessage = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        responseMessage.ShouldNotBeNull();
+        responseMessage.DataAddress.ShouldBeEquivalentTo(destinationDataAddress);
+
+        (await DataFlowContext.FindByIdAsync("test-pid")).ShouldSatisfyAllConditions(df => df!.AssetId.ShouldBe("test-asset"));
+        latch.IsSet.ShouldBeTrue();
+    }
+
+    private static DataFlow CreateDataFlow(string id = "flow1", string participantId = TestUser)
     {
         return new DataFlow(id)
         {
@@ -83,5 +106,25 @@ public class DataPlaneSignalingApiControllerTest
             AgreementId = "test-agreement",
             State = DataFlowState.Notified
         };
+    }
+}
+
+/// <summary>
+///     uses the in-memory db context
+/// </summary>
+public class InMem : DataPlaneSignalingApiControllerTest, IClassFixture<InMemoryFixture>
+{
+    public InMem(InMemoryFixture fixture) : base(fixture.Context, fixture.Client, fixture.Sdk)
+    {
+    }
+}
+
+/// <summary>
+///     uses the PostgreSQL db context
+/// </summary>
+public class Postgres : DataPlaneSignalingApiControllerTest, IClassFixture<PostgresFixture>
+{
+    public Postgres(PostgresFixture fixture) : base(fixture.Context, fixture.Client, fixture.Sdk)
+    {
     }
 }

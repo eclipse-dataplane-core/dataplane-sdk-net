@@ -1,4 +1,3 @@
-using Sdk.Core.Domain.Interfaces;
 using Sdk.Example.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,8 +28,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-await app.Services.GetRequiredService<IControlApiService>().UnregisterDataPlane("foobar");
-
 
 app.Run();

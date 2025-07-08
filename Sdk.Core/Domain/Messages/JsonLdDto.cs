@@ -14,10 +14,15 @@ public class JsonLdDto
 
     protected JsonLdDto(string type)
     {
-        Type = IConstants.EdcNamespace + type;
+        if (!type.StartsWith(IConstants.EdcNamespace))
+        {
+            type = $"{IConstants.EdcNamespace}:{type}";
+        }
+
+        Type = type;
     }
 
-    [field: JsonPropertyName("@context")]
+    [JsonPropertyName("@context")]
     public Dictionary<string, string> Context { get; } = new()
     {
         { "edc", "https://w3id.org/edc/v0.0.1/ns/" }

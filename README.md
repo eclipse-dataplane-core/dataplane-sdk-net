@@ -9,23 +9,21 @@ and mutual authentication and authorization scaffolding.
 All sample code discussed here is available in the [`Sdk.Example.Web`](Sdk.Example.Web/) project.
 
 <!-- TOC -->
-- [1. Installation and requirements](#1-installation-and-requirements)
-- [2. Usage (with API)](#2-usage-with-api)
-  - [2.1 Configuring the SDK](#21-configuring-the-sdk)
-  - [2.2 Configuring SDK services](#22-configuring-sdk-services)
-  - [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
-  - [2.4 Setting up authorization of
-          _incoming_ HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
-  - [2.5 Setting up authorization of
-          _outgoing_ HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
-    - [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
-- [3. Usage (core only)](#3-usage-core-only)
-- [4. Required configuration](#4-required-configuration)
-- [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
-- [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
-- [7. Using the Control API](#7-using-the-control-api)
-- [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
-
+* [Dataplane SDK .NET](#dataplane-sdk-net)
+  * [1. Installation and requirements](#1-installation-and-requirements)
+  * [2. Usage (with API)](#2-usage-with-api)
+    * [2.1 Configuring the SDK](#21-configuring-the-sdk)
+    * [2.2 Configuring SDK services](#22-configuring-sdk-services)
+    * [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
+    * [2.4 Setting up authorization of incoming HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
+    * [2.5 Setting up authorization of outgoing HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
+      * [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
+  * [3. Usage (core only)](#3-usage-core-only)
+  * [4. Required configuration](#4-required-configuration)
+  * [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
+  * [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
+  * [7. Using the Control API](#7-using-the-control-api)
+  * [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
 <!-- TOC -->
 
 ## 1. Installation and requirements
@@ -36,17 +34,20 @@ To install the SDK, add the following packages to your .NET app:
 
 - install the project's NuGet feed `https://nuget.pkg.github.com/metaform/index.json` (
   see [details](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry))
-- `dotnet add package Sdk.Api --version 0.0.1-alpha` for the API extensions s
-- `dotnet add package Sdk.Core --version 0.0.1-alpha` for the SDK core, can be omitted if `Sdk.Api` is used
+- `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha2` for the API extensions s
+- `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha2` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
+  is used
 
-Note that while the `Sdk.Api` package is not strictly required, it handles all incoming DPS API communication, so it
+Note that while the `DataPlane.Sdk.Api` package is not strictly required, it handles all incoming DPS API communication,
+so it
 should only be omitted if a custom API implementation is used. See [this chapter](#3-usage-core-only) for details.
 
 > The SDK is currently hosted on GitHub's NuGet feed, which requires authorization!
 
 ## 2. Usage (with API)
 
-This is what most SDK users will want. The `Sdk.Api` package adds web controllers to the app that handle incoming DPS
+This is what most SDK users will want. The `DataPlane.Sdk.Api` package adds web controllers to the app that handle
+incoming DPS
 requests and invokes callbacks on the `DataPlaneSdk` object.
 
 A very bare-bones new `webapi` project would look like this (top-level statements, no `Program` class):
@@ -278,11 +279,13 @@ Depending on the type of project (console, webapi) an `IHost` may or may not be 
 still utilize the dependency injection facilities built into the SDK by calling the `AddSdkServices(sdk)` extension
 method.
 
-> The SDK should only be used in the "core-only" configuration in specific circumstances. In most cases the full SDK should be used.
+> The SDK should only be used in the "core-only" configuration in specific circumstances. In most cases the full SDK
+> should be used.
 
 ## 4. Required configuration
 
-The SDK makes use of .NET's configuration mechanism, specifically the `appsettings.json` that usually contains application configuration.
+The SDK makes use of .NET's configuration mechanism, specifically the `appsettings.json` that usually contains
+application configuration.
 We opted for combining all SDK-related configuration in one config object:
 
 ```json
@@ -303,37 +306,48 @@ We opted for combining all SDK-related configuration in one config object:
 }
 ```
 
-With the exception of the `RuntimeId`, which is optional, all entries are _required_, and omitting them will result in a runtime exception.
+With the exception of the `RuntimeId`, which is optional, all entries are _required_, and omitting them will result in a
+runtime exception.
 
-- `ControlApi.BaseUrl`: this is the base URL for the control plane's control API which is used to register and un-register this dataplane
+- `ControlApi.BaseUrl`: this is the base URL for the control plane's control API which is used to register and
+  un-register this dataplane
 - `InstanceId`: this should be a unique ID which identifies this data plane. This is used during data plane registration
 - `RuntimeId`: an internal identifier that is used for various details such as database-level locking of entities
-- `AllowedSourceTypes`: array of types of data sources that this data plane can handle. Influences the control plane's catalog.
-- `AllowedTransferTypes`: array of types of transfer types that this data plane can handle. Influences the control plane's catalog.
+- `AllowedSourceTypes`: array of types of data sources that this data plane can handle. Influences the control plane's
+  catalog.
+- `AllowedTransferTypes`: array of types of transfer types that this data plane can handle. Influences the control
+  plane's catalog.
 
 If PostgreSQL persistence use used, the `appsettings.json` file must contain a connection string:
 
 ```json
+{
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Port=5432;Database=SdkApi;Username=postgres;Password=postgres"
-  },
+  }
+}
 ```
 
 ## 5. DataPlane Signaling API callbacks
 
-The Data Plane SDK defines several callbacks to intercept and influence DataPlane Signaling interactions. The callbacks should be registered when [initializing the SDK](#21-configuring-the-sdk).
+The Data Plane SDK defines several callbacks to intercept and influence DataPlane Signaling interactions. The callbacks
+should be registered when [initializing the SDK](#21-configuring-the-sdk).
 
 When using SDK callbacks, users should keep in mind the following tenets:
 
 - all SDK callbacks are invoked _before_ objects are stored in persistence
 - callbacks are always involved inside a transaction, i.e. before a call to `DbContext.SaveChanges[Async]`
-- as a result, callbacks should not throw any exceptions, instead they should communicate any error using a `StatusResult`
+- as a result, callbacks should not throw any exceptions, instead they should communicate any error using a
+  `StatusResult`
 
 ## 6. In-memory vs PostgreSQL persistence
 
-The Data Plane SDK uses the .NET EntityFramework (EF) for persistent storage, so switching between in-memory and actual database persistence is seamless.
+The Data Plane SDK uses the .NET EntityFramework (EF) for persistent storage, so switching between in-memory and actual
+database persistence is seamless.
 
-In most .NET applications the `DbContext` is provided via dependency injection. While the SDK does use dependency njection, it cannot _require_ it because some applications might not use it. For this reason the `DbContext` is provided via the [factory pattern](https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/#use-a-dbcontext-factory).
+In most .NET applications the `DbContext` is provided via dependency injection. While the SDK does use dependency
+njection, it cannot _require_ it because some applications might not use it. For this reason the `DbContext` is provided
+via the [factory pattern](https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/#use-a-dbcontext-factory).
 
 The entry point is the `DataPlaneSdk` class:
 
@@ -348,15 +362,20 @@ The entry point is the `DataPlaneSdk` class:
 }
 ```
 
-Note that the `DbContext` is still registered as a service in the DI container if the `AddSdkServices(sdk)` extension method is invoked.
+Note that the `DbContext` is still registered as a service in the DI container if the `AddSdkServices(sdk)` extension
+method is invoked.
 
 ## 7. Using the Control API
 
-The Control API is a REST interface of the control plane, that can be used to register, un-register and delete data plane instances.
+The Control API is a REST interface of the control plane, that can be used to register, un-register and delete data
+plane instances.
 
-For convenience, the SDK offers the `ControlApiService` that encapsulates API requests, [authentication and authorization](#25-setting-up-authorization-of-outgoing-http-requests) and deserialization.
+For convenience, the SDK offers the `ControlApiService` that encapsulates API
+requests, [authentication and authorization](#25-setting-up-authorization-of-outgoing-http-requests) and
+deserialization.
 
-This service is intended to be used directly from client code, as the SDK does not invoke it on its own. It does, however, register it with the DI container.
+This service is intended to be used directly from client code, as the SDK does not invoke it on its own. It does,
+however, register it with the DI container.
 
 For example:
 

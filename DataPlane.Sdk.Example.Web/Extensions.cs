@@ -3,7 +3,6 @@ using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
-using Microsoft.IdentityModel.Tokens;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 using Void = DataPlane.Sdk.Core.Domain.Void;
 
@@ -37,25 +36,27 @@ public static class Extensions
 
         // overwrite SDK authentication with KeycloakJWT. Effectively, this sets the default authentication scheme to "KeycloakJWT",
         // foregoing the SDK default authentication scheme ("DataPlaneSdkJWT").
-        services.AddAuthentication("KeycloakJWT")
-            .AddJwtBearer("KeycloakJWT", options =>
-            {
-                // Configure Keycloak as the Identity Provider
-                options.Authority = "http://localhost:8080/realms/master";
-                options.RequireHttpsMetadata = false; // Only for develop
+        // Note that this assumes that KeyCloak is up-and-running. 
 
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = "http://localhost:8080/realms/master",
-                    ValidateAudience = true,
-                    ValidAudience = "dataplane-api",
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true,
-                    ValidateActor = false,
-                    ValidateTokenReplay = true
-                };
-            });
+        // services.AddAuthentication("KeycloakJWT")
+        //     .AddJwtBearer("KeycloakJWT", options =>
+        //     {
+        //         // Configure Keycloak as the Identity Provider
+        //         options.Authority = "http://localhost:8080/realms/master";
+        //         options.RequireHttpsMetadata = false; // Only for develop
+        //
+        //         options.TokenValidationParameters = new TokenValidationParameters
+        //         {
+        //             ValidateIssuer = true,
+        //             ValidIssuer = "http://localhost:8080/realms/master",
+        //             ValidateAudience = true,
+        //             ValidAudience = "dataplane-api",
+        //             ValidateIssuerSigningKey = true,
+        //             ValidateLifetime = true,
+        //             ValidateActor = false,
+        //             ValidateTokenReplay = true
+        //         };
+        //     });
 
         // wire up ASP.net authorization handlers
         services.AddSdkAuthorization();

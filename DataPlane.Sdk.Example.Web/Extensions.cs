@@ -17,7 +17,7 @@ public static class Extensions
         var config = configuration.GetSection("DataPlaneSdk").Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = CreatePostgres(configuration, config.RuntimeId),
+            DataFlowStore = CreateInMem("example-leaser"),
             RuntimeId = config.RuntimeId,
             OnStart = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination }),
             OnRecover = _ => StatusResult<Void>.Success(default),

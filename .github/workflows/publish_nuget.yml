@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'NuGet package version to publish (optional, will read from project if not set)'
+        required: false
+        type: string
 
 jobs:
   publish:
@@ -27,19 +32,30 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Get version
+        id: get_version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # Read version from DataPlane.Sdk.Core.csproj (assumes all projects have same version)
+            version=$(xmllint --xpath "string(//Project/PropertyGroup/Version)" DataPlane.Sdk.Core/DataPlane.Sdk.Core.csproj)
+            echo "version=$version" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build packages
         run: |
-          dotnet build Sdk.Core/Sdk.Core.csproj --configuration Release
-          dotnet build Sdk.Api/Sdk.Api.csproj --configuration Release
+          dotnet build DataPlane.Sdk.Core/DataPlane.Sdk.Core.csproj --configuration Release
+          dotnet build DataPlane.Sdk.Api/DataPlane.Sdk.Api.csproj --configuration Release
 
       - name: Pack projects
         run: |
-          dotnet pack Sdk.Core/Sdk.Core.csproj --configuration Release --output ./nupkgs
-          dotnet pack Sdk.Api/Sdk.Api.csproj --configuration Release --output ./nupkgs
+          dotnet pack DataPlane.Sdk.Core/DataPlane.Sdk.Core.csproj --configuration Release --output ./nupkgs /p:PackageVersion=${{ steps.get_version.outputs.version }}
+          dotnet pack DataPlane.Sdk.Api/DataPlane.Sdk.Api.csproj --configuration Release --output ./nupkgs /p:PackageVersion=${{ steps.get_version.outputs.version }}
 
       - name: Push to GitHub Packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key ${{ secrets.GITHUB_TOKEN }} \
-            --skip-duplicate
+            --skip

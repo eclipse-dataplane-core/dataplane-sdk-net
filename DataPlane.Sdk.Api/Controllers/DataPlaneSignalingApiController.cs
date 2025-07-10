@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using DataPlane.Sdk.Api.Authorization;
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
@@ -29,11 +31,34 @@ public class DataPlaneSignalingApiController(
 
     [Authorize]
     [HttpPost("{participantContextId}/dataflows/")]
-    public async Task<IActionResult> StartDataFlow([FromRoute] string participantContextId, DataFlowStartMessage startMessage)
+    public async Task<IActionResult> StartDataFlow([FromRoute] string participantContextId, JsonObject jsonObject)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, null), "DataFlowAccess")).Succeeded)
         {
             return Forbid();
+        }
+
+        var type = jsonObject["@type"]?.ToString();
+
+        return type switch
+        {
+            nameof(DataFlowStartMessage) => await HandleStartMessage(jsonObject),
+            nameof(DataFlowProvisionMessage) => await HandleProvisionMessage(jsonObject),
+            _ => BadRequest($"Unknown message type {type}")
+        };
+    }
+
+    private Task<IActionResult> HandleProvisionMessage(JsonObject message)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task<IActionResult> HandleStartMessage(JsonObject message)
+    {
+        var startMessage = message.Deserialize<DataFlowStartMessage>();
+        if (startMessage == null)
+        {
+            return BadRequest($"Cannot deserialize {nameof(DataFlowStartMessage)}");
         }
 
         var valid = await signalingService.ValidateStartMessageAsync(startMessage);

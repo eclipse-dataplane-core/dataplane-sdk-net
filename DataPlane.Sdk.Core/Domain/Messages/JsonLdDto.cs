@@ -9,16 +9,11 @@ public class JsonLdDto
 {
     protected JsonLdDto()
     {
-        Type = IConstants.EdcNamespace + GetType().Name;
+        Type = GetType().Name;
     }
 
     protected JsonLdDto(string type)
     {
-        if (!type.StartsWith(IConstants.EdcNamespace))
-        {
-            type = $"{IConstants.EdcNamespace}:{type}";
-        }
-
         Type = type;
     }
 

@@ -4,6 +4,6 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 
 public class DataFlowTerminationMessage : JsonLdDto
 {
-    [JsonPropertyName(IConstants.EdcNamespace + "reason")]
+    [JsonPropertyName("reason")]
     public string? Reason { get; set; }
 }

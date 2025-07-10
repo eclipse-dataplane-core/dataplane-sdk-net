@@ -12,33 +12,33 @@ public class DataFlowProvisionMessage : JsonLdDto
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
-    [JsonPropertyName(IConstants.EdcNamespace + "processId")]
+    [JsonPropertyName("processId")]
     public required string ProcessId { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "datasetId")]
+    [JsonPropertyName("datasetId")]
     public required string AssetId { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "participantId")]
+    [JsonPropertyName("participantId")]
     public required string ParticipantId { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "agreementId")]
+    [JsonPropertyName("agreementId")]
     public required string AgreementId { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "sourceDataAddress")]
+    [JsonPropertyName("sourceDataAddress")]
     public required DataAddress SourceDataAddress { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "destinationDataAddress")]
+    [JsonPropertyName("destinationDataAddress")]
     public required DataAddress DestinationDataAddress { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "callbackAddress")]
+    [JsonPropertyName("callbackAddress")]
     public Uri? CallbackAddress { get; set; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "properties")]
+    [JsonPropertyName("properties")]
     public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-    [JsonPropertyName(IConstants.EdcNamespace + "flowType")]
+    [JsonPropertyName("flowType")]
     public required string TransferType { get; init; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "transferTypeDestination")]
+    [JsonPropertyName("transferTypeDestination")]
     public required string TransferTypeDestination { get; init; }
 }

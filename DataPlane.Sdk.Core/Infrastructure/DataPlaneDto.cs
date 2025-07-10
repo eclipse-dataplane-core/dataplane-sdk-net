@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using DataPlane.Sdk.Core.Domain;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 
@@ -21,18 +20,18 @@ public class DataPlaneDto : JsonLdDto
     public string Id { get; init; }
 
 
-    [JsonPropertyName(IConstants.EdcNamespace + "allowedSourceTypes")]
+    [JsonPropertyName("allowedSourceTypes")]
     public ICollection<string> AllowedSourceTypes { get; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "allowedTransferTypes")]
+    [JsonPropertyName("allowedTransferTypes")]
     public ICollection<string> AllowedTransferTypes { get; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "lastActive")]
+    [JsonPropertyName("lastActive")]
     public long LastActive { get; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "properties")]
+    [JsonPropertyName("properties")]
     public IDictionary<string, object> Properties { get; }
 
-    [JsonPropertyName(IConstants.EdcNamespace + "url")]
+    [JsonPropertyName("url")]
     public Uri? Url { get; }
 }

@@ -7,7 +7,7 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public Uri? CallbackAddress { get; set; }
     public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
-    public required TransferType TransferType { get; set; }
+    public required string TransferType { get; set; }
 
     // public IList<ResourceDefinition> ResourceDefinitions { get; set; }
     public required string RuntimeId { get; set; }

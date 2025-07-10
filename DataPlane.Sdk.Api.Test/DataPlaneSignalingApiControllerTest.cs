@@ -73,7 +73,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             return StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = flow.Destination });
         };
 
-        var msg = new DataflowStartMessage
+        var msg = new DataFlowStartMessage
         {
             ProcessId = "test-pid",
             AssetId = "test-asset",
@@ -81,7 +81,8 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             AgreementId = "test-agreement",
             SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = destinationDataAddress,
-            TransferType = new TransferType("test-type", FlowType.Pull)
+            TransferType = nameof(FlowType.Pull),
+            TransferTypeDestination = "test-type"
         };
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/", JsonContent.Create(msg));
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -99,7 +100,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         {
             Source = new DataAddress("test-type"),
             Destination = new DataAddress("test-type"),
-            TransferType = new TransferType("test-type", FlowType.Pull),
+            TransferType = nameof(FlowType.Pull),
             RuntimeId = "test-runtime-id",
             ParticipantId = participantId,
             AssetId = "test-asset",

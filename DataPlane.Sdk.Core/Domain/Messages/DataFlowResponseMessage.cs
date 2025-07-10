@@ -8,5 +8,6 @@ public class DataFlowResponseMessage : JsonLdDto
     [JsonPropertyName(IConstants.EdcNamespace + "dataAddress")]
     public required DataAddress DataAddress { get; set; }
 
+    [JsonPropertyName(IConstants.EdcNamespace + "provisioning")]
     public bool IsProvisioned { get; set; } = false;
 }

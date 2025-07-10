@@ -11,7 +11,7 @@ public static class TestMethods
         {
             Source = new DataAddress("test-data-address"),
             Destination = new DataAddress("test-data-address"),
-            TransferType = new TransferType("test-type", FlowType.Pull),
+            TransferType = nameof(FlowType.Pull),
             RuntimeId = "test-runtime",
             ParticipantId = "test-participant",
             AssetId = "test-asset",
@@ -20,18 +20,18 @@ public static class TestMethods
         };
     }
 
-    public static DataflowStartMessage CreateStartMessage()
+    public static DataFlowStartMessage CreateStartMessage()
     {
-        var message = new DataflowStartMessage
+        var message = new DataFlowStartMessage
         {
             ProcessId = "test-process-id",
             SourceDataAddress = new DataAddress("test-source-type"),
             DestinationDataAddress = new DataAddress("test-destination-type"),
-            TransferType = new TransferType("test-destination-type",
-                FlowType.Pull),
+            TransferType = nameof(FlowType.Pull),
             ParticipantId = "test-participant-id",
             AssetId = "test-asset-id",
-            AgreementId = "test-agreement-id"
+            AgreementId = "test-agreement-id",
+            TransferTypeDestination = "test-destination-type"
         };
         return message;
     }

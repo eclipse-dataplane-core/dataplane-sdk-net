@@ -6,11 +6,11 @@ namespace DataPlane.Sdk.Core.Domain.Interfaces;
 public interface IDataPlaneSignalingService
 {
     /// <summary>
-    ///     Starts a data flow by sending a DataflowStartMessage to the data plane signaling service.
+    ///     Starts a data flow by sending a DataFlowStartMessage to the data plane signaling service.
     /// </summary>
     /// <param name="message">The start message/></param>
     /// <returns>A status result that contains the response message if successful</returns>
-    Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataflowStartMessage message);
+    Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataFlowStartMessage message);
 
     /// <summary>
     ///     Suspends (pauses) a data flow by its ID.
@@ -36,7 +36,7 @@ public interface IDataPlaneSignalingService
     /// </summary>
     /// <param name="startMessage"></param>
     /// <returns></returns>
-    Task<StatusResult<Void>> ValidateStartMessageAsync(DataflowStartMessage startMessage);
+    Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
 
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 }

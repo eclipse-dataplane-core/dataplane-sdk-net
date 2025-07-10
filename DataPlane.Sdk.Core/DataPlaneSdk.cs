@@ -17,7 +17,7 @@ public class DataPlaneSdk
     public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
     public Func<DataFlow, StatusResult<Void>>? OnSuspend;
     public Func<DataFlow, StatusResult<Void>>? OnTerminate;
-    public Func<DataflowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
+    public Func<DataFlowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
 
     //todo: make the lease id configurable
     public DataFlowContext DataFlowStore { get; set; } = DataFlowContextFactory.CreateInMem("test-lock-id");
@@ -49,7 +49,7 @@ public class DataPlaneSdk
             });
     }
 
-    internal StatusResult<Void> InvokeValidate(DataflowStartMessage startMessage)
+    internal StatusResult<Void> InvokeValidate(DataFlowStartMessage startMessage)
     {
         return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult<Void>.Success(default);
     }
@@ -102,7 +102,7 @@ public class DataPlaneSdk
             return this;
         }
 
-        public SdkBuilder OnValidateStartMessage(Func<DataflowStartMessage, StatusResult<Void>> processor)
+        public SdkBuilder OnValidateStartMessage(Func<DataFlowStartMessage, StatusResult<Void>> processor)
         {
             _dataPlaneSdk.OnValidateStartMessage = processor;
             return this;

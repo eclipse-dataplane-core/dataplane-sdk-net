@@ -8,7 +8,7 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 ///     transfer
 ///     between a consumer and the provider. This message is sent by the control plane to the data plane.
 /// </summary>
-public class DataflowStartMessage : JsonLdDto
+public class DataFlowProvisionMessage : JsonLdDto
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
@@ -37,5 +37,8 @@ public class DataflowStartMessage : JsonLdDto
     public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
     [JsonPropertyName(IConstants.EdcNamespace + "flowType")]
-    public required TransferType TransferType { get; set; }
+    public required string TransferType { get; init; }
+
+    [JsonPropertyName(IConstants.EdcNamespace + "transferTypeDestination")]
+    public required string TransferTypeDestination { get; init; }
 }

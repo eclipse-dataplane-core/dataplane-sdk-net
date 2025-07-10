@@ -17,7 +17,7 @@ namespace DataPlane.Sdk.Core.Infrastructure;
 /// <param name="runtimeId">The Runtime ID of this data plane.</param>
 public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlaneSdk sdk, string runtimeId) : IDataPlaneSignalingService
 {
-    public async Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataflowStartMessage message)
+    public async Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataFlowStartMessage message)
     {
         var existingFlowResult = await dataFlowContext.FindByIdAndLeaseAsync(message.ProcessId);
 
@@ -122,7 +122,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
-    public Task<StatusResult<Domain_Void>> ValidateStartMessageAsync(DataflowStartMessage startMessage)
+    public Task<StatusResult<Domain_Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
     {
         // delegate validation to the SDK callback
         return Task.FromResult(sdk.InvokeValidate(startMessage));
@@ -136,7 +136,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         };
     }
 
-    private DataFlow CreateDataFlow(DataflowStartMessage message)
+    private DataFlow CreateDataFlow(DataFlowStartMessage message)
     {
         return new DataFlow(message.ProcessId)
         {

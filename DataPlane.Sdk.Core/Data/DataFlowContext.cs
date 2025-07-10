@@ -148,8 +148,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.TransferType)
-            .HasConversion(da => ToJson(da),
-                s => JsonSerializer.Deserialize<TransferType>(s, null as JsonSerializerOptions)!);
+            .IsRequired();
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.Properties)

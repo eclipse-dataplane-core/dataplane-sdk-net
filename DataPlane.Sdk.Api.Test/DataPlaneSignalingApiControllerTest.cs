@@ -94,6 +94,38 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         latch.IsSet.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task Provision_VerifySdkCallback()
+    {
+        var destinationDataAddress = new DataAddress("test-type");
+        var latch = new CountdownEvent(1);
+        Sdk.OnProvision = _ =>
+        {
+            latch.Signal();
+            return StatusResult<IList<ProvisionResource>>.Success([]);
+        };
+
+        var msg = new DataFlowProvisionMessage
+        {
+            ProcessId = "test-pid",
+            AssetId = "test-asset",
+            ParticipantId = TestUser,
+            AgreementId = "test-agreement",
+            SourceDataAddress = new DataAddress("test-type"),
+            DestinationDataAddress = destinationDataAddress,
+            TransferType = nameof(FlowType.Pull),
+            TransferTypeDestination = "test-type"
+        };
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/", JsonContent.Create(msg));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var responseMessage = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        responseMessage.ShouldNotBeNull();
+        responseMessage.DataAddress.ShouldBeEquivalentTo(destinationDataAddress);
+
+        (await DataFlowContext.FindByIdAsync("test-pid")).ShouldSatisfyAllConditions(df => df!.AssetId.ShouldBe("test-asset"));
+        latch.IsSet.ShouldBeTrue();
+    }
+
     private static DataFlow CreateDataFlow(string id = "flow1", string participantId = TestUser)
     {
         return new DataFlow(id)

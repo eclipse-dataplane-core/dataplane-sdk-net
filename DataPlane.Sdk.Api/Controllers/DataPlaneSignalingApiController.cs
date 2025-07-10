@@ -48,9 +48,21 @@ public class DataPlaneSignalingApiController(
         };
     }
 
-    private Task<IActionResult> HandleProvisionMessage(JsonObject message)
+    private async Task<IActionResult> HandleProvisionMessage(JsonObject message)
     {
-        throw new NotImplementedException();
+        var startMessage = message.Deserialize<DataFlowProvisionMessage>();
+        if (startMessage == null)
+        {
+            return BadRequest($"Cannot deserialize {nameof(DataFlowProvisionMessage)}");
+        }
+
+        var result = await signalingService.ProvisionAsync(startMessage);
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Failure?.Message);
+        }
+
+        return Ok(result.Content);
     }
 
     private async Task<IActionResult> HandleStartMessage(JsonObject message)

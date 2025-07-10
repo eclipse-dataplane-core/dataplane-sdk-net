@@ -35,8 +35,13 @@ public interface IDataPlaneSignalingService
     ///     valid, etc.
     /// </summary>
     /// <param name="startMessage"></param>
-    /// <returns></returns>
     Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
+
+    /// <summary>
+    ///     Kicks off the provisioning process for a certain set of resources
+    /// </summary>
+    /// <param name="provisionMessage">the provision message</param>
+    Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage);
 
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 }

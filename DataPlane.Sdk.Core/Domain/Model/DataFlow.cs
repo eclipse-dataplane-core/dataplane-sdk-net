@@ -2,24 +2,23 @@ namespace DataPlane.Sdk.Core.Domain.Model;
 
 public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
 {
-    public required DataAddress Source { get; set; }
-    public required DataAddress Destination { get; set; }
-    public Uri? CallbackAddress { get; set; }
-    public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    public required DataAddress Source { get; init; }
+    public required DataAddress Destination { get; init; }
+    public Uri? CallbackAddress { get; init; }
+    public IDictionary<string, string> Properties { get; init; } = new Dictionary<string, string>();
 
-    public required string TransferType { get; set; }
-
-    // public IList<ResourceDefinition> ResourceDefinitions { get; set; }
-    public required string RuntimeId { get; set; }
-    public bool IsProvisionComplete { get; set; } = true;
-    public bool IsProvisionRequested { get; set; } = false;
-    public bool IsDeprovisionComplete { get; set; } = false;
-    public bool IsDeprovisionRequested { get; set; } = false;
-    public bool IsConsumer { get; set; } = false;
-    public required string ParticipantId { get; set; }
-    public required string AssetId { get; set; }
-    public required string AgreementId { get; set; }
+    public required string TransferType { get; init; }
+    public required string RuntimeId { get; init; }
+    public bool IsProvisionComplete { get; init; } = true;
+    public bool IsProvisionRequested { get; init; } = false;
+    public bool IsDeprovisionComplete { get; init; } = false;
+    public bool IsDeprovisionRequested { get; init; } = false;
+    public bool IsConsumer { get; init; } = false;
+    public required string ParticipantId { get; init; }
+    public required string AssetId { get; init; }
+    public required string AgreementId { get; init; }
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
+    public List<ProvisionResource> ResourceDefinitions { get; } = [];
 
     public void Deprovision()
     {
@@ -39,5 +38,20 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public void Start()
     {
         Transition(DataFlowState.Started);
+    }
+
+    public void Notified()
+    {
+        Transition(DataFlowState.Notified);
+    }
+
+    public void Provisioning()
+    {
+        Transition(DataFlowState.Provisioning);
+    }
+
+    public void AddResourceDefinitions(IList<ProvisionResource> resources)
+    {
+        ResourceDefinitions.AddRange(resources);
     }
 }

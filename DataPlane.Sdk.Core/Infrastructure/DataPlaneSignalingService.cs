@@ -2,7 +2,7 @@ using DataPlane.Sdk.Core.Data;
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
-using Domain_Void = DataPlane.Sdk.Core.Domain.Void;
+using Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace DataPlane.Sdk.Core.Infrastructure;
 
@@ -33,7 +33,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
                     return StatusResult<DataFlowResponseMessage>.Failed(sdkResult.Failure!);
                 }
 
-                await dataFlowContext.SaveAsync(dataFlow);
+                await dataFlowContext.UpsertAsync(dataFlow);
                 await dataFlowContext.SaveChangesAsync();
                 return sdkResult;
             }
@@ -55,51 +55,51 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return StatusResult<DataFlowResponseMessage>.Success(CreateResponse(existingFlow));
     }
 
-    public async Task<StatusResult<Domain_Void>> SuspendAsync(string dataFlowId, string? reason = null)
+    public async Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason = null)
     {
         var res = await dataFlowContext.FindByIdAndLeaseAsync(dataFlowId);
         if (res.IsFailed)
         {
-            return StatusResult<Domain_Void>.Failed(res.Failure!);
+            return StatusResult<Void>.Failed(res.Failure!);
         }
 
         var df = res.Content!;
         if (df.State == DataFlowState.Suspended) //de-duplication check
         {
-            return StatusResult<Domain_Void>.Success(default);
+            return StatusResult<Void>.Success(default);
         }
 
         var sdkResult = sdk.InvokeSuspend(df);
         if (sdkResult.IsFailed)
         {
-            return StatusResult<Domain_Void>.Failed(sdkResult.Failure!);
+            return StatusResult<Void>.Failed(sdkResult.Failure!);
         }
 
         df.Suspend(reason);
-        await dataFlowContext.SaveAsync(df);
+        await dataFlowContext.UpsertAsync(df);
         await dataFlowContext.SaveChangesAsync(); // commit transaction
         return sdkResult;
     }
 
-    public async Task<StatusResult<Domain_Void>> TerminateAsync(string dataFlowId, string? reason = null)
+    public async Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null)
     {
         var res = await dataFlowContext.FindByIdAndLeaseAsync(dataFlowId);
         if (res.IsFailed)
         {
-            return StatusResult<Domain_Void>.Failed(res.Failure!);
+            return StatusResult<Void>.Failed(res.Failure!);
         }
 
         var df = res.Content!;
 
         if (df.State == DataFlowState.Terminated) //de-duplication check
         {
-            return StatusResult<Domain_Void>.Success(default);
+            return StatusResult<Void>.Success(default);
         }
 
         var sdkResult = sdk.InvokeTerminate(df);
         if (sdkResult.IsFailed)
         {
-            return StatusResult<Domain_Void>.Failed(sdkResult.Failure!);
+            return StatusResult<Void>.Failed(sdkResult.Failure!);
         }
 
         if (df.State == DataFlowState.Provisioned)
@@ -111,7 +111,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             df.Terminate();
         }
 
-        await dataFlowContext.SaveAsync(df);
+        await dataFlowContext.UpsertAsync(df);
         await dataFlowContext.SaveChangesAsync(); //commit transaction
         return sdkResult;
     }
@@ -122,10 +122,53 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
-    public Task<StatusResult<Domain_Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
+    public Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
     {
         // delegate validation to the SDK callback
         return Task.FromResult(sdk.InvokeValidate(startMessage));
+    }
+
+    public async Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage)
+    {
+        var flow = CreateDataFlow(provisionMessage);
+        var result = sdk.InvokeOnProvision(flow);
+
+        if (result.IsFailed)
+        {
+            return StatusResult<DataFlowResponseMessage>.Failed(result.Failure!);
+        }
+
+        var resources = result.Content;
+        if (resources == null || resources.Count == 0)
+        {
+            flow.Notified();
+        }
+        else
+        {
+            flow.AddResourceDefinitions(resources);
+            flow.Provisioning();
+        }
+
+        await dataFlowContext.UpsertAsync(flow);
+        await dataFlowContext.SaveChangesAsync();
+        return StatusResult<DataFlowResponseMessage>.Success(CreateResponse(flow));
+    }
+
+    private DataFlow CreateDataFlow(DataFlowProvisionMessage message)
+    {
+        return new DataFlow(message.ProcessId)
+        {
+            Source = message.SourceDataAddress,
+            Destination = message.DestinationDataAddress,
+            TransferType = message.TransferType,
+            RuntimeId = runtimeId,
+            ParticipantId = message.ParticipantId,
+            AssetId = message.AssetId,
+            AgreementId = message.AgreementId,
+            CallbackAddress = message.CallbackAddress,
+            Properties = message.Properties,
+            State = DataFlowState.Notified
+        };
     }
 
     private DataFlowResponseMessage CreateResponse(DataFlow existingFlow)

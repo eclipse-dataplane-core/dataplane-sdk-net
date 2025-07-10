@@ -23,7 +23,7 @@ public class DataFlowContextTest
     public async Task SaveAsync_ShouldAddNewDataFlow()
     {
         var dataFlow = TestMethods.CreateDataFlow("test-flow-id");
-        await _context.SaveAsync(dataFlow);
+        await _context.UpsertAsync(dataFlow);
 
         _context.ChangeTracker.HasChanges().ShouldBeTrue();
         var entry = _context.ChangeTracker.Entries<DataFlow>().FirstOrDefault(e => e.Entity.Id == dataFlow.Id);
@@ -43,7 +43,7 @@ public class DataFlowContextTest
 
         // update, call save
         dataFlow.State = DataFlowState.Completed;
-        await _context.SaveAsync(dataFlow);
+        await _context.UpsertAsync(dataFlow);
 
         _context.ChangeTracker.HasChanges().ShouldBeTrue();
         var entry = _context.ChangeTracker.Entries<DataFlow>().FirstOrDefault(e => e.Entity.Id == dataFlow.Id);

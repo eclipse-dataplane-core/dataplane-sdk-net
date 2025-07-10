@@ -12,7 +12,7 @@ using Void = Void;
 
 public class DataPlaneSdk
 {
-    public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnProvision;
+    public Func<DataFlow, StatusResult<IList<ProvisionResource>>>? OnProvision;
     public Func<DataFlow, StatusResult<Void>>? OnRecover;
     public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
     public Func<DataFlow, StatusResult<Void>>? OnSuspend;
@@ -54,6 +54,11 @@ public class DataPlaneSdk
         return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult<Void>.Success(default);
     }
 
+    internal StatusResult<IList<ProvisionResource>> InvokeOnProvision(DataFlow flow)
+    {
+        return OnProvision != null ? OnProvision(flow) : StatusResult<IList<ProvisionResource>>.Success(Array.Empty<ProvisionResource>());
+    }
+
     public class SdkBuilder
     {
         private readonly DataPlaneSdk _dataPlaneSdk = new()
@@ -78,7 +83,7 @@ public class DataPlaneSdk
             return this;
         }
 
-        public SdkBuilder OnProvision(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
+        public SdkBuilder OnProvision(Func<DataFlow, StatusResult<IList<ProvisionResource>>> processor)
         {
             _dataPlaneSdk.OnProvision = processor;
             return this;

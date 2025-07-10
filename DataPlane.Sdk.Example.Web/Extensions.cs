@@ -22,7 +22,7 @@ public static class Extensions
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination })
+            OnProvision = f => StatusResult<IList<ProvisionResource>>.Success([])
         };
 
         // read required configuration from appsettings.json to make it injectable

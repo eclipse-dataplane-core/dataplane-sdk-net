@@ -35,4 +35,20 @@ public static class TestMethods
         };
         return message;
     }
+
+    public static DataFlowProvisionMessage CreateProvisionMessage()
+    {
+        var message = new DataFlowProvisionMessage
+        {
+            ProcessId = "test-process-id",
+            SourceDataAddress = new DataAddress("test-source-type"),
+            DestinationDataAddress = new DataAddress("test-destination-type"),
+            TransferType = nameof(FlowType.Pull),
+            ParticipantId = "test-participant-id",
+            AssetId = "test-asset-id",
+            AgreementId = "test-agreement-id",
+            TransferTypeDestination = "test-destination-type"
+        };
+        return message;
+    }
 }

@@ -36,19 +36,20 @@ public class DataFlowContext : DbContext, IDataPlaneStore
     /// Releases the lease after the operation completes. Does NOT save changes on the db context!
     /// <param name="dataflow">The <see cref="DataFlow" /> instance to save.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
-    public async Task SaveAsync(DataFlow dataflow)
+    public async Task UpsertAsync(DataFlow dataflow)
     {
         var lease = await AcquireLeaseAsync(dataflow.Id);
-        if (DataFlows.Contains(dataflow))
+        var found = await DataFlows.FindAsync(dataflow.Id);
+        if (found != null)
         {
-            DataFlows.Update(dataflow);
+            DataFlows.Entry(found).CurrentValues.SetValues(dataflow);
         }
         else
         {
             DataFlows.Add(dataflow);
         }
 
-        FreeLeaseAsync(lease.EntityId);
+        await FreeLeaseAsync(lease.EntityId);
     }
 
 
@@ -156,6 +157,13 @@ public class DataFlowContext : DbContext, IDataPlaneStore
                 props => ToJson(props),
                 json => JsonSerializer.Deserialize<IDictionary<string, string>>(json, null as JsonSerializerOptions) ?? new Dictionary<string, string>());
 
+        modelBuilder.Entity<DataFlow>()
+            .Property(df => df.ResourceDefinitions)
+            .HasConversion(
+                props => ToJson(props),
+                json => JsonSerializer.Deserialize<List<ProvisionResource>>(json, null as JsonSerializerOptions) ?? new List<ProvisionResource>());
+
+
         modelBuilder.Entity<Lease>()
             .HasKey(l => l.EntityId);
     }
@@ -165,7 +173,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         return JsonSerializer.Serialize(da);
     }
 
-    private async void FreeLeaseAsync(string leaseId)
+    private async Task FreeLeaseAsync(string leaseId)
     {
         var lease = (await Leases.FindAsync(leaseId))!; //track if not tracked
         Leases.Remove(lease);

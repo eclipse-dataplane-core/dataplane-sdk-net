@@ -98,7 +98,7 @@ public static class MyExtensions
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination })
+            OnProvision = f => StatusResult<IList<ProvisionResource>>.Success([])
         };
     }
 

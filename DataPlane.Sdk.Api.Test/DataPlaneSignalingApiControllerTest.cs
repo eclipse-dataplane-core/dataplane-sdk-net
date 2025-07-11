@@ -146,19 +146,13 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 /// <summary>
 ///     uses the in-memory db context
 /// </summary>
-public class InMem : DataPlaneSignalingApiControllerTest, IClassFixture<InMemoryFixture>
+public class InMem(InMemoryFixture fixture) : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>
 {
-    public InMem(InMemoryFixture fixture) : base(fixture.Context, fixture.Client, fixture.Sdk)
-    {
-    }
 }
 
 /// <summary>
 ///     uses the PostgreSQL db context
 /// </summary>
-public class Postgres : DataPlaneSignalingApiControllerTest, IClassFixture<PostgresFixture>
+public class Postgres(PostgresFixture fixture) : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>
 {
-    public Postgres(PostgresFixture fixture) : base(fixture.Context, fixture.Client, fixture.Sdk)
-    {
-    }
 }

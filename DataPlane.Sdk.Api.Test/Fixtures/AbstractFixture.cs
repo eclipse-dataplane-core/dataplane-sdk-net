@@ -9,15 +9,15 @@ namespace DataPlane.Sdk.Api.Test.Fixtures;
 public class AbstractFixture : IDisposable
 {
     private WebApplicationFactory<Program>? _factory;
-    public HttpClient Client { get; private set; }
-    public DataFlowContext Context { get; protected init; }
+    public HttpClient? Client { get; private set; }
+    public DataFlowContext? Context { get; protected init; }
     public DataPlaneSdk Sdk { get; } = new();
 
     public void Dispose()
     {
         _factory?.Dispose();
-        Client.Dispose();
-        Context.Dispose();
+        Client?.Dispose();
+        Context?.Dispose();
     }
 
     internal void InitializeFixture(DataFlowContext context, IDataPlaneSignalingService service)

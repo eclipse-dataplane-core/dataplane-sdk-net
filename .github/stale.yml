@@ -1,0 +1,18 @@
+# Configuration for GitHub StaleBot to close issues with "triage" label after 4 weeks of inactivity
+
+issues:
+  daysUntilStale: 28         # Add 'stale' label after 4 weeks
+  daysUntilClose: 28         # Close 4 weeks after being marked stale
+  staleLabel: stale
+  onlyLabels:
+    - triage
+  exemptAssignees: true
+  closeComment: >
+    This issue has been automatically closed because it has been marked as "triage" and has not had any activity for 4 weeks. If you believe this was closed in error, please reopen or create a new issue.
+
+pulls:
+  daysUntilStale: 28         # Add 'stale' label after 4 weeks
+  daysUntilClose: 28         # Close 4 weeks after being marked stale
+  staleLabel: stale
+  closeComment: >
+    This pull request has been automatically closed due to 8 weeks of inactivity. If you believe this was closed in error, please reopen or create a new pull request.

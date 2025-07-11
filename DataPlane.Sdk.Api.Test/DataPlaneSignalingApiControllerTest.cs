@@ -7,6 +7,7 @@ using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using Shouldly;
 using static DataPlane.Sdk.Api.Test.TestAuthHandler;
+[assembly: CollectionBehavior(MaxParallelThreads = 1)]
 
 namespace DataPlane.Sdk.Api.Test;
 

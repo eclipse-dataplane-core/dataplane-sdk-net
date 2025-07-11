@@ -10,10 +10,10 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public required string TransferType { get; init; }
     public required string RuntimeId { get; init; }
     public bool IsProvisionComplete { get; init; } = true;
-    public bool IsProvisionRequested { get; init; } = false;
-    public bool IsDeprovisionComplete { get; init; } = false;
-    public bool IsDeprovisionRequested { get; init; } = false;
-    public bool IsConsumer { get; init; } = false;
+    public bool IsProvisionRequested { get; init; }
+    public bool IsDeprovisionComplete { get; init; }
+    public bool IsDeprovisionRequested { get; init; }
+    public bool IsConsumer { get; init; }
     public required string ParticipantId { get; init; }
     public required string AssetId { get; init; }
     public required string AgreementId { get; init; }

@@ -1,8 +1,10 @@
+using System.Text;
 using DataPlane.Sdk.Api;
 using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
+using Microsoft.IdentityModel.Tokens;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 using Void = DataPlane.Sdk.Core.Domain.Void;
 
@@ -31,12 +33,13 @@ public static class Extensions
         // add SDK core services
         services.AddSdkServices(sdk);
 
-        // wire up ASP.net authentication services
-        services.AddSdkAuthentication(configuration);
+        // Use JWT Bearer authentication for the SDK API calls. 
+        ConfigureExampleJwtAuthentication(services, configuration);
+
 
         // overwrite SDK authentication with KeycloakJWT. Effectively, this sets the default authentication scheme to "KeycloakJWT",
-        // foregoing the SDK default authentication scheme ("DataPlaneSdkJWT").
-        // Note that this assumes that KeyCloak is up-and-running. 
+        // foregoing the SDK default authentication scheme and using Keycloak as the identity provider. For this to work, Keycloak must be
+        // up-and-running and properly configured. https://github.com/Metaform/dataplane-sdk-net/issues/7 will add the appropriate sample.
 
         // services.AddAuthentication("KeycloakJWT")
         //     .AddJwtBearer("KeycloakJWT", options =>
@@ -60,5 +63,39 @@ public static class Extensions
 
         // wire up ASP.net authorization handlers
         services.AddSdkAuthorization();
+    }
+
+    /// <summary>
+    ///     Configures JWT Bearer authentication for the SDK API calls. This uses a symmetric key for signing, which is
+    ///     configured in appsettings.*.json.
+    ///     Please note that this is only for testing and demo purposes, in real-life scenarios a proper identity provider such
+    ///     as Keycloak should be used.
+    ///     DO NOT DO THIS IN PRODUCTION!
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <exception cref="InvalidOperationException">thrown if appsettings does not contain a Token:SecretKey entry</exception>
+    private static void ConfigureExampleJwtAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtSettings = configuration.GetSection("JwtSettings");
+        // add authentication handler
+        services.AddAuthentication("DataPlaneSdkJWT_example")
+            .AddJwtBearer("DataPlaneSdkJWT_example", options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"] ??
+                                                                        throw new InvalidOperationException("JwtSettings:SecretKey must not be empty"))),
+                    ValidateLifetime = true,
+                    ValidateActor = false,
+                    ValidateTokenReplay = true
+                };
+            });
     }
 }

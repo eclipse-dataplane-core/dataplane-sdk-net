@@ -1,5 +1,4 @@
 using DataPlane.Sdk.Core.Data;
-using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
 using Moq;
@@ -10,6 +9,7 @@ using static DataPlane.Sdk.Core.Domain.Model.DataFlowState;
 using static DataPlane.Sdk.Core.Domain.Model.FailureReason;
 using static DataPlane.Sdk.Core.Test.TestMethods;
 using Void = DataPlane.Sdk.Core.Domain.Void;
+
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]
 
 namespace DataPlane.Sdk.Core.Test;
@@ -67,7 +67,8 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         var result = await _service.StartAsync(message);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
-        result.Content.ShouldSatisfyAllConditions(() => result.Content!.DataAddress.ShouldNotBeNull());
+        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
+        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
 
 
         _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
@@ -88,7 +89,8 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         var result = await _service.StartAsync(message);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
-        result.Content.ShouldSatisfyAllConditions(() => result.Content!.DataAddress.ShouldNotBeNull());
+        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
+        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
 
         _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
         _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
@@ -102,7 +104,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var mock = new Mock<Func<DataFlow, StatusResult<DataFlowResponseMessage>>>();
+        var mock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
         _sdk.OnStart += mock.Object;
 
         var result = await _service.StartAsync(startMessage);
@@ -116,10 +118,10 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     {
         var startMessage = CreateStartMessage();
 
-        var mock = new Mock<Func<DataFlow, StatusResult<DataFlowResponseMessage>>>();
+        var mock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
 
         mock.Setup(m => m.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<DataFlowResponseMessage>.Conflict("error"));
+            .Returns(StatusResult<DataFlow>.Conflict("error"));
         _sdk.OnStart += mock.Object;
 
         var result = await _service.StartAsync(startMessage);
@@ -147,7 +149,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.Leases.AddAsync(lease);
         await _dataFlowContext.SaveChangesAsync();
 
-        var mock = new Mock<Func<DataFlow, StatusResult<DataFlowResponseMessage>>>();
+        var mock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
         _sdk.OnStart += mock.Object;
 
         var result = await _service.StartAsync(startMessage);
@@ -158,67 +160,80 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
-    public async Task ProvisionAsync_ShouldReturnSuccess_WhenNotExists()
+    public async Task Prepare_ShouldReturnSuccess_WhenNotExists()
     {
-        var msg = CreateProvisionMessage();
-        var provisionMock = new Mock<Func<DataFlow, StatusResult<IList<ProvisionResource>>>>();
+        var msg = CreatePrepareMessage();
+        var provisionMock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
         provisionMock.Setup(m => m.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<IList<ProvisionResource>>.Success([
-                new ProvisionResource
-                {
-                    Flow = "flow-id",
-                    Type = "test-type",
-                    DataAddress = new DataAddress("test-type")
-                }
-            ]));
-        _sdk.OnProvision = provisionMock.Object;
-        var result = await _service.ProvisionAsync(msg);
+            .Returns((DataFlow df) =>
+            {
+                df.AddResourceDefinitions([
+                    new ProvisionResource
+                    {
+                        Flow = "flow-id",
+                        Type = "test-type",
+                        DataAddress = new DataAddress("test-type")
+                    }
+                ]);
+                df.State = Prepared;
+                return StatusResult<DataFlow>.Success(df);
+            });
+
+
+        _sdk.OnPrepare = provisionMock.Object;
+        var result = await _service.PrepareAsync(msg);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
         _dataFlowContext.DataFlows.ShouldContain(x => x.ResourceDefinitions.Count == 1 &&
-                                                      x.State == Provisioning);
+                                                      x.State == Prepared);
         _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
     }
 
     [Fact]
-    public async Task ProvisionAsync_ShouldReturnSuccess_WhenAlreadyExists()
+    public async Task Prepare_ShouldReturnSuccess_WhenAlreadyExists()
     {
-        var flow = CreateDataFlow("flow-id1", Provisioning);
+        var flow = CreateDataFlow("flow-id1", Prepared);
         _dataFlowContext.DataFlows.Add(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = CreateProvisionMessage();
+        var msg = CreatePrepareMessage();
 
-        var provisionMock = new Mock<Func<DataFlow, StatusResult<IList<ProvisionResource>>>>();
+        var provisionMock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
         provisionMock.Setup(m => m.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<IList<ProvisionResource>>.Success([
-                new ProvisionResource
-                {
-                    Flow = "flow-id",
-                    Type = "another type",
-                    DataAddress = new DataAddress("some data address type")
-                }
-            ]));
-        _sdk.OnProvision = provisionMock.Object;
+            .Returns((DataFlow df) =>
+            {
+                df.AddResourceDefinitions([
+                    new ProvisionResource
+                    {
+                        Flow = "flow-id",
+                        Type = "another type",
+                        DataAddress = new DataAddress("some data address type")
+                    }
+                ]);
+                df.State = Prepared;
+                return StatusResult<DataFlow>.Success(df);
+            });
+
+        _sdk.OnPrepare = provisionMock.Object;
 
         msg.ProcessId = flow.Id;
-        var result = await _service.ProvisionAsync(msg);
+        var result = await _service.PrepareAsync(msg);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
         _dataFlowContext.DataFlows.ShouldContain(x => x.ResourceDefinitions.Count == 1 &&
-                                                      x.State == Provisioning &&
+                                                      x.State == Prepared &&
                                                       x.ResourceDefinitions.Any(pr => pr.Type == "another type"));
     }
 
     [Fact]
-    public async Task ProvisionAsync_ShouldReturnFailure_WhenSdkReportsFailure()
+    public async Task Prepare_ShouldReturnFailure_WhenSdkReportsFailure()
     {
-        var msg = CreateProvisionMessage();
-        var provisionMock = new Mock<Func<DataFlow, StatusResult<IList<ProvisionResource>>>>();
+        var msg = CreatePrepareMessage();
+        var provisionMock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
         provisionMock.Setup(m => m.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<IList<ProvisionResource>>.FromCode(0, "test-error"));
-        _sdk.OnProvision = provisionMock.Object;
-        var result = await _service.ProvisionAsync(msg);
+            .Returns(StatusResult<DataFlow>.FromCode(0, "test-error"));
+        _sdk.OnPrepare = provisionMock.Object;
+        var result = await _service.PrepareAsync(msg);
         result.IsSucceeded.ShouldBeFalse();
         result.Content.ShouldBeNull();
         result.Failure.ShouldNotBeNull();
@@ -228,14 +243,14 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
-    public async Task ProvisionAsync_ShouldMoveToNotified_WhenNoResources()
+    public async Task Prepare_ShouldMoveToNotified_WhenNoResources()
     {
-        var msg = CreateProvisionMessage();
-        var result = await _service.ProvisionAsync(msg);
+        var msg = CreatePrepareMessage();
+        var result = await _service.PrepareAsync(msg);
         result.IsSucceeded.ShouldBeTrue();
         result.Content.ShouldNotBeNull();
         _dataFlowContext.DataFlows.ShouldContain(x => x.ResourceDefinitions.Count == 0 &&
-                                                      x.State == Notified);
+                                                      x.State == Prepared);
         _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
     }
 
@@ -356,7 +371,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         const string dataFlowId = "test-flow-id";
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
-
+        dataFlow.State = Started;
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
@@ -372,6 +387,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         const string dataFlowId = "test-flow-id";
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
+        dataFlow.State = Started;
 
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();

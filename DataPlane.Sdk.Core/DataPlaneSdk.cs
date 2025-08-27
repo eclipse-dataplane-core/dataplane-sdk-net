@@ -12,9 +12,9 @@ using Void = Void;
 
 public class DataPlaneSdk
 {
-    public Func<DataFlow, StatusResult<IList<ProvisionResource>>>? OnProvision;
+    public Func<DataFlow, StatusResult<DataFlow>>? OnPrepare;
     public Func<DataFlow, StatusResult<Void>>? OnRecover;
-    public Func<DataFlow, StatusResult<DataFlowResponseMessage>>? OnStart;
+    public Func<DataFlow, StatusResult<DataFlow>>? OnStart;
     public Func<DataFlow, StatusResult<Void>>? OnSuspend;
     public Func<DataFlow, StatusResult<Void>>? OnTerminate;
     public Func<DataFlowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
@@ -39,14 +39,15 @@ public class DataPlaneSdk
         return OnSuspend != null ? OnSuspend(df) : StatusResult<Void>.Success(default);
     }
 
-    internal StatusResult<DataFlowResponseMessage> InvokeStart(DataFlow df)
+    internal StatusResult<DataFlow> InvokeStart(DataFlow df)
     {
-        return OnStart != null
-            ? OnStart(df)
-            : StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage
-            {
-                DataAddress = df.Destination
-            });
+        if (OnStart != null)
+        {
+            return OnStart(df);
+        }
+
+        df.State = DataFlowState.Started;
+        return StatusResult<DataFlow>.Success(df);
     }
 
     internal StatusResult<Void> InvokeValidate(DataFlowStartMessage startMessage)
@@ -54,16 +55,22 @@ public class DataPlaneSdk
         return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult<Void>.Success(default);
     }
 
-    internal StatusResult<IList<ProvisionResource>> InvokeOnProvision(DataFlow flow)
+    internal StatusResult<DataFlow> InvokeOnPrepare(DataFlow flow)
     {
-        return OnProvision != null ? OnProvision(flow) : StatusResult<IList<ProvisionResource>>.Success(Array.Empty<ProvisionResource>());
+        if (OnPrepare != null)
+        {
+            return OnPrepare(flow);
+        }
+
+        flow.State = DataFlowState.Prepared;
+        return StatusResult<DataFlow>.Success(flow);
     }
 
     public class SdkBuilder
     {
         private readonly DataPlaneSdk _dataPlaneSdk = new()
         {
-            OnStart = _ => StatusResult<DataFlowResponseMessage>.Success(null)
+            OnStart = StatusResult<DataFlow>.Success
         };
 
         public SdkBuilder Store(DataFlowContext dataPlaneStatefulEntityStore)
@@ -77,15 +84,9 @@ public class DataPlaneSdk
             return _dataPlaneSdk;
         }
 
-        public SdkBuilder OnStart(Func<DataFlow, StatusResult<DataFlowResponseMessage>> processor)
+        public SdkBuilder OnProvision(Func<DataFlow, StatusResult<DataFlow>> processor)
         {
-            _dataPlaneSdk.OnStart = processor;
-            return this;
-        }
-
-        public SdkBuilder OnProvision(Func<DataFlow, StatusResult<IList<ProvisionResource>>> processor)
-        {
-            _dataPlaneSdk.OnProvision = processor;
+            _dataPlaneSdk.OnPrepare = processor;
             return this;
         }
 

@@ -22,7 +22,7 @@ public static class TestMethods
 
     public static DataFlowStartMessage CreateStartMessage()
     {
-        var message = new DataFlowStartMessage
+        return new DataFlowStartMessage
         {
             ProcessId = "test-process-id",
             SourceDataAddress = new DataAddress("test-source-type"),
@@ -33,12 +33,11 @@ public static class TestMethods
             AgreementId = "test-agreement-id",
             TransferTypeDestination = "test-destination-type"
         };
-        return message;
     }
 
-    public static DataFlowProvisionMessage CreateProvisionMessage()
+    public static DataFlowPrepareMessage CreatePrepareMessage()
     {
-        var message = new DataFlowProvisionMessage
+        return new DataFlowPrepareMessage
         {
             ProcessId = "test-process-id",
             SourceDataAddress = new DataAddress("test-source-type"),
@@ -49,6 +48,5 @@ public static class TestMethods
             AgreementId = "test-agreement-id",
             TransferTypeDestination = "test-destination-type"
         };
-        return message;
     }
 }

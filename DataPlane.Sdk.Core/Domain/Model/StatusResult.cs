@@ -2,6 +2,53 @@ using static DataPlane.Sdk.Core.Domain.Model.FailureReason;
 
 namespace DataPlane.Sdk.Core.Domain.Model;
 
+public class StatusResult(StatusFailure? failure)
+    : AbstractResult<object, StatusFailure>(null, failure)
+{
+    public static StatusResult Success()
+    {
+        return new StatusResult(null);
+    }
+
+    public static StatusResult Failed(StatusFailure failure)
+    {
+        return new StatusResult(failure);
+    }
+
+    public static StatusResult NotFound()
+    {
+        return Failed(new StatusFailure
+        {
+            Message = "Not Found",
+            Reason = FailureReason.NotFound
+        });
+    }
+
+    public static StatusResult Conflict(string message)
+    {
+        return Failed(new StatusFailure
+        {
+            Message = message,
+            Reason = FailureReason.Conflict
+        });
+    }
+
+    public static StatusResult FromCode(int resultStatusCode, string? resultReasonPhrase)
+    {
+        return resultStatusCode switch
+        {
+            404 => NotFound(),
+            409 => Conflict(resultReasonPhrase ?? "Conflict occurred"),
+            500 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Internal Server Error", Reason = InternalError }),
+            503 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Service Unavailable", Reason = ServiceUnavailable }),
+            401 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unauthorized", Reason = Unauthorized }),
+            403 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Forbidden", Reason = Forbidden }),
+            400 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Bad Request", Reason = BadRequest }),
+            _ => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unknown Error", Reason = Unrecognized })
+        };
+    }
+}
+
 public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
     : AbstractResult<TContent, StatusFailure>(content, failure)
 {

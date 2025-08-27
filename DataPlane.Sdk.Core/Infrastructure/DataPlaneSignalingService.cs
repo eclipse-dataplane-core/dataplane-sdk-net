@@ -17,10 +17,15 @@ namespace DataPlane.Sdk.Core.Infrastructure;
 /// <param name="runtimeId">The Runtime ID of this data plane.</param>
 public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlaneSdk sdk, string runtimeId) : IDataPlaneSignalingService
 {
-    public async Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataFlowStartMessage message)
+    public async Task<StatusResult<DataFlow>> StartAsync(DataFlowStartMessage message)
     {
-        var existingFlowResult = await dataFlowContext.FindByIdAndLeaseAsync(message.ProcessId);
+        var validation = await ValidateStartMessageAsync(message);
+        if (validation.IsFailed)
+        {
+            return StatusResult<DataFlow>.Failed(validation.Failure!);
+        }
 
+        var existingFlowResult = await dataFlowContext.FindByIdAndLeaseAsync(message.ProcessId);
         if (existingFlowResult.IsFailed)
         {
             if (existingFlowResult.Failure?.Reason == FailureReason.NotFound) // create new data flow
@@ -30,29 +35,35 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
 
                 if (sdkResult.IsFailed)
                 {
-                    return StatusResult<DataFlowResponseMessage>.Failed(sdkResult.Failure!);
+                    return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
                 }
 
                 await dataFlowContext.UpsertAsync(dataFlow);
                 await dataFlowContext.SaveChangesAsync();
-                return sdkResult;
+                return StatusResult<DataFlow>.Success(dataFlow);
             }
 
-            return StatusResult<DataFlowResponseMessage>.Failed(existingFlowResult.Failure!);
+            return StatusResult<DataFlow>.Failed(existingFlowResult.Failure!);
         }
 
         var existingFlow = existingFlowResult.Content!;
         if (existingFlow.State == DataFlowState.Started)
         {
-            return StatusResult<DataFlowResponseMessage>.Success(CreateResponse(existingFlow));
+            return StatusResult<DataFlow>.Success(existingFlow);
         }
 
         //update existing data flow
-        existingFlow.Start();
+        var result = sdk.InvokeStart(existingFlow);
+        if (result.IsFailed)
+        {
+            return StatusResult<DataFlow>.Failed(result.Failure!);
+        }
+
+        existingFlow = result.Content!;
         dataFlowContext.DataFlows.Update(existingFlow);
         await dataFlowContext.SaveChangesAsync();
 
-        return StatusResult<DataFlowResponseMessage>.Success(CreateResponse(existingFlow));
+        return StatusResult<DataFlow>.Success(existingFlow);
     }
 
     public async Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason = null)
@@ -73,6 +84,11 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         if (sdkResult.IsFailed)
         {
             return StatusResult<Void>.Failed(sdkResult.Failure!);
+        }
+
+        if (df.State != DataFlowState.Started)
+        {
+            return StatusResult<Void>.FromCode(400, "DataFlow is not in started state, cannot suspend.");
         }
 
         df.Suspend(reason);
@@ -128,30 +144,53 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return Task.FromResult(sdk.InvokeValidate(startMessage));
     }
 
-    public async Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage)
+    public async Task<StatusResult<DataFlow>> PrepareAsync(DataFlowPrepareMessage prepareMessage)
     {
-        var flow = CreateDataFlow(provisionMessage);
-        var result = sdk.InvokeOnProvision(flow);
+        var existing = await dataFlowContext.FindByIdAsync(prepareMessage.ProcessId);
+        if (existing != null && existing.State != DataFlowState.Prepared && existing.State != DataFlowState.Preparing)
+        {
+            return StatusResult<DataFlow>.Conflict($"A data flow with ID = {existing.Id} already exists!");
+        }
+
+        var flow = existing ?? CreateDataFlow(prepareMessage);
+        var result = sdk.InvokeOnPrepare(flow);
 
         if (result.IsFailed)
         {
-            return StatusResult<DataFlowResponseMessage>.Failed(result.Failure!);
+            return StatusResult<DataFlow>.Failed(result.Failure!);
         }
 
-        var resources = result.Content;
-        if (resources == null || resources.Count == 0)
+        var updatedFlow = result.Content;
+        if (updatedFlow == null)
         {
-            flow.Notified();
-        }
-        else
-        {
-            flow.AddResourceDefinitions(resources);
-            flow.Provisioning();
+            throw new InvalidOperationException("SDK callback must return a non-null DataFlow object");
         }
 
-        await dataFlowContext.UpsertAsync(flow);
+        await dataFlowContext.UpsertAsync(updatedFlow);
         await dataFlowContext.SaveChangesAsync();
-        return StatusResult<DataFlowResponseMessage>.Success(CreateResponse(flow));
+        return StatusResult<DataFlow>.Success(updatedFlow);
+    }
+
+    public Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage)
+    {
+        throw new NotSupportedException("Not supported anymore, use PrepareAsync instead");
+    }
+
+    private DataFlow CreateDataFlow(DataFlowPrepareMessage message)
+    {
+        return new DataFlow(message.ProcessId)
+        {
+            Source = message.SourceDataAddress,
+            Destination = message.DestinationDataAddress,
+            TransferType = message.TransferType,
+            RuntimeId = runtimeId,
+            ParticipantId = message.ParticipantId,
+            AssetId = message.AssetId,
+            AgreementId = message.AgreementId,
+            CallbackAddress = message.CallbackAddress,
+            Properties = message.Properties,
+            State = DataFlowState.Initialized
+        };
     }
 
     private DataFlow CreateDataFlow(DataFlowProvisionMessage message)
@@ -192,7 +231,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
             Properties = message.Properties,
-            State = DataFlowState.Notified
+            State = DataFlowState.Initialized
         };
     }
 }

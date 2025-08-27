@@ -1,7 +1,6 @@
 using System.Text;
 using DataPlane.Sdk.Api;
 using DataPlane.Sdk.Core;
-using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
@@ -20,11 +19,15 @@ public static class Extensions
         {
             DataFlowStore = CreateInMem("example-leaser"),
             RuntimeId = config.RuntimeId,
-            OnStart = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination }),
+            OnStart = f =>
+            {
+                f.State = DataFlowState.Started;
+                return StatusResult<DataFlow>.Success(f);
+            },
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = f => StatusResult<IList<ProvisionResource>>.Success([])
+            OnPrepare = StatusResult<DataFlow>.Success
         };
 
         // read required configuration from appsettings.json to make it injectable

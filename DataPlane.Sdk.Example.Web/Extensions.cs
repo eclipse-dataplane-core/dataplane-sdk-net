@@ -2,7 +2,6 @@ using System.Text;
 using DataPlane.Sdk.Api;
 using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Model;
-using DataPlane.Sdk.Core.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 using Void = DataPlane.Sdk.Core.Domain.Void;
@@ -14,7 +13,8 @@ public static class Extensions
     public static void AddDataPlaneSdk(this IServiceCollection services, IConfiguration configuration)
     {
         // initialize and configure the DataPlaneSdk
-        var config = configuration.GetSection("DataPlaneSdk").Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
+        var dataplaneConfig = configuration.GetSection("DataPlaneSdk");
+        var config = dataplaneConfig.Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
             DataFlowStore = CreateInMem("example-leaser"),
@@ -24,17 +24,15 @@ public static class Extensions
                 f.State = DataFlowState.Started;
                 return StatusResult<DataFlow>.Success(f);
             },
-            OnRecover = _ => StatusResult<Void>.Success(default),
-            OnTerminate = _ => StatusResult<Void>.Success(default),
-            OnSuspend = _ => StatusResult<Void>.Success(default),
+            OnRecover = _ => StatusResult.Success(),
+            OnTerminate = _ => StatusResult.Success(),
+            OnSuspend = _ => StatusResult.Success(),
             OnPrepare = StatusResult<DataFlow>.Success
         };
 
-        // read required configuration from appsettings.json to make it injectable
-        services.Configure<ControlApiOptions>(configuration.GetSection("DataPlaneSdk:ControlApi"));
 
         // add SDK core services
-        services.AddSdkServices(sdk);
+        services.AddSdkServices(sdk, dataplaneConfig);
 
         // Use JWT Bearer authentication for the SDK API calls. 
         ConfigureExampleJwtAuthentication(services, configuration);

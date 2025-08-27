@@ -280,9 +280,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<Void>.Success(default));
+            .Returns(StatusResult.Success());
 
         _sdk.OnTerminate += eventMock.Object;
 
@@ -312,9 +312,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<Void>.Conflict("foobartestmessage"));
+            .Returns(StatusResult.Conflict("foobartestmessage"));
 
         _sdk.OnTerminate += eventMock.Object;
 
@@ -339,7 +339,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         _sdk.OnSuspend += eventMock.Object;
 
         var result = await _service.TerminateAsync(dataFlowId, reason);
@@ -392,9 +392,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<Void>.Success(default));
+            .Returns(StatusResult.Success());
 
         _sdk.OnSuspend += eventMock.Object;
 
@@ -424,9 +424,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         eventMock.Setup(f => f.Invoke(It.IsAny<DataFlow>()))
-            .Returns(StatusResult<Void>.Conflict("foobartestmessage"));
+            .Returns(StatusResult.Conflict("foobartestmessage"));
 
         _sdk.OnSuspend += eventMock.Object;
 
@@ -451,7 +451,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var eventMock = new Mock<Func<DataFlow, StatusResult<Void>>>();
+        var eventMock = new Mock<Func<DataFlow, StatusResult>>();
         _sdk.OnSuspend += eventMock.Object;
 
         var result = await _service.SuspendAsync(dataFlowId, reason);

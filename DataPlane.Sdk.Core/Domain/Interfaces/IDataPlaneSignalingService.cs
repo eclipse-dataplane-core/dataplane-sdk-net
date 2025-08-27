@@ -15,14 +15,14 @@ public interface IDataPlaneSignalingService
     /// <summary>
     ///     Suspends (pauses) a data flow by its ID.
     /// </summary>
-    Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason = null);
+    Task<StatusResult> SuspendAsync(string dataFlowId, string? reason = null);
 
     /// <summary>
     ///     Terminates (aborts) a data flow by its ID.
     /// </summary>
     /// <param name="dataFlowId">Data flow ID</param>
     /// <param name="reason">Optional reason</param>
-    Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null);
+    Task<StatusResult> TerminateAsync(string dataFlowId, string? reason = null);
 
     /// <summary>
     ///     Returns the transfer state for the process.
@@ -35,7 +35,7 @@ public interface IDataPlaneSignalingService
     ///     valid, etc.
     /// </summary>
     /// <param name="startMessage"></param>
-    Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
+    Task<StatusResult> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
 
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 

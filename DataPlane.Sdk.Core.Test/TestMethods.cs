@@ -29,9 +29,8 @@ public static class TestMethods
             DestinationDataAddress = new DataAddress("test-destination-type"),
             TransferType = nameof(FlowType.Pull),
             ParticipantId = "test-participant-id",
-            AssetId = "test-asset-id",
-            AgreementId = "test-agreement-id",
-            TransferTypeDestination = "test-destination-type"
+            DatasetId = "test-asset-id",
+            AgreementId = "test-agreement-id"
         };
     }
 
@@ -44,9 +43,8 @@ public static class TestMethods
             DestinationDataAddress = new DataAddress("test-destination-type"),
             TransferType = nameof(FlowType.Pull),
             ParticipantId = "test-participant-id",
-            AssetId = "test-asset-id",
-            AgreementId = "test-agreement-id",
-            TransferTypeDestination = "test-destination-type"
+            DatasetId = "test-asset-id",
+            AgreementId = "test-agreement-id"
         };
     }
 }

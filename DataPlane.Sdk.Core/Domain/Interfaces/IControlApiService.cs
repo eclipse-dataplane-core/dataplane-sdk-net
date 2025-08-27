@@ -16,12 +16,12 @@ public interface IControlApiService
     /// <summary>
     ///     Unregisters a data plane instance from the control plane.
     /// </summary>
-    /// <param name="dataPlaneInstanceId">The ID of the data plane</param>
-    Task<StatusResult<Void>> UnregisterDataPlane(string dataPlaneInstanceId);
+    /// <param name="dataPlaneId">The ID of the data plane</param>
+    Task<StatusResult> UnregisterDataPlane(string dataPlaneId);
 
     /// <summary>
     ///     Deletes the specified data plane instance.
     /// </summary>
-    /// <param name="dataPlaneInstanceId">The unique identifier of the data plane instance to delete.</param>
-    Task<StatusResult<Void>> DeleteDataPlane(string dataPlaneInstanceId);
+    /// <param name="dataPlaneId">The unique identifier of the data plane instance to delete.</param>
+    Task<StatusResult> DeleteDataPlane(string dataPlaneId);
 }

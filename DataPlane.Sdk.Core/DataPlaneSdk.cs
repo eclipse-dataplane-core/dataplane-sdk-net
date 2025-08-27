@@ -13,11 +13,11 @@ using Void = Void;
 public class DataPlaneSdk
 {
     public Func<DataFlow, StatusResult<DataFlow>>? OnPrepare;
-    public Func<DataFlow, StatusResult<Void>>? OnRecover;
+    public Func<DataFlow, StatusResult>? OnRecover;
     public Func<DataFlow, StatusResult<DataFlow>>? OnStart;
-    public Func<DataFlow, StatusResult<Void>>? OnSuspend;
-    public Func<DataFlow, StatusResult<Void>>? OnTerminate;
-    public Func<DataFlowStartMessage, StatusResult<Void>>? OnValidateStartMessage;
+    public Func<DataFlow, StatusResult>? OnSuspend;
+    public Func<DataFlow, StatusResult>? OnTerminate;
+    public Func<DataFlowStartMessage, StatusResult>? OnValidateStartMessage;
 
     //todo: make the lease id configurable
     public DataFlowContext DataFlowStore { get; set; } = DataFlowContextFactory.CreateInMem("test-lock-id");
@@ -29,14 +29,14 @@ public class DataPlaneSdk
         return new SdkBuilder();
     }
 
-    internal StatusResult<Void> InvokeTerminate(DataFlow df)
+    internal StatusResult InvokeTerminate(DataFlow df)
     {
-        return OnTerminate != null ? OnTerminate(df) : StatusResult<Void>.Success(default);
+        return OnTerminate != null ? OnTerminate(df) : StatusResult.Success();
     }
 
-    internal StatusResult<Void> InvokeSuspend(DataFlow df)
+    internal StatusResult InvokeSuspend(DataFlow df)
     {
-        return OnSuspend != null ? OnSuspend(df) : StatusResult<Void>.Success(default);
+        return OnSuspend != null ? OnSuspend(df) : StatusResult.Success();
     }
 
     internal StatusResult<DataFlow> InvokeStart(DataFlow df)
@@ -50,9 +50,9 @@ public class DataPlaneSdk
         return StatusResult<DataFlow>.Success(df);
     }
 
-    internal StatusResult<Void> InvokeValidate(DataFlowStartMessage startMessage)
+    internal StatusResult InvokeValidate(DataFlowStartMessage startMessage)
     {
-        return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult<Void>.Success(default);
+        return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult.Success();
     }
 
     internal StatusResult<DataFlow> InvokeOnPrepare(DataFlow flow)
@@ -90,25 +90,25 @@ public class DataPlaneSdk
             return this;
         }
 
-        public SdkBuilder OnTerminate(Func<DataFlow, StatusResult<Void>> processor)
+        public SdkBuilder OnTerminate(Func<DataFlow, StatusResult> processor)
         {
             _dataPlaneSdk.OnTerminate = processor;
             return this;
         }
 
-        public SdkBuilder OnSuspend(Func<DataFlow, StatusResult<Void>> processor)
+        public SdkBuilder OnSuspend(Func<DataFlow, StatusResult> processor)
         {
             _dataPlaneSdk.OnSuspend = processor;
             return this;
         }
 
-        public SdkBuilder OnRecover(Func<DataFlow, StatusResult<Void>> processor)
+        public SdkBuilder OnRecover(Func<DataFlow, StatusResult> processor)
         {
             _dataPlaneSdk.OnRecover = processor;
             return this;
         }
 
-        public SdkBuilder OnValidateStartMessage(Func<DataFlowStartMessage, StatusResult<Void>> processor)
+        public SdkBuilder OnValidateStartMessage(Func<DataFlowStartMessage, StatusResult> processor)
         {
             _dataPlaneSdk.OnValidateStartMessage = processor;
             return this;

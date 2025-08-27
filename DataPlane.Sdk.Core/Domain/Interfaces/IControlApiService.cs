@@ -3,6 +3,7 @@ using DataPlane.Sdk.Core.Domain.Model;
 
 namespace DataPlane.Sdk.Core.Domain.Interfaces;
 
+[Obsolete("This interface is deprecated and will be removed in a future version.")]
 public interface IControlApiService
 {
     /// <summary>

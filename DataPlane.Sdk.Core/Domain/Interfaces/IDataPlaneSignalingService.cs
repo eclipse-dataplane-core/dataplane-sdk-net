@@ -10,7 +10,7 @@ public interface IDataPlaneSignalingService
     /// </summary>
     /// <param name="message">The start message/></param>
     /// <returns>A status result that contains the response message if successful</returns>
-    Task<StatusResult<DataFlowResponseMessage>> StartAsync(DataFlowStartMessage message);
+    Task<StatusResult<DataFlow>> StartAsync(DataFlowStartMessage message);
 
     /// <summary>
     ///     Suspends (pauses) a data flow by its ID.
@@ -37,11 +37,15 @@ public interface IDataPlaneSignalingService
     /// <param name="startMessage"></param>
     Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
 
-    /// <summary>
-    ///     Kicks off the provisioning process for a certain set of resources
-    /// </summary>
-    /// <param name="provisionMessage">the provision message</param>
-    Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage);
-
     //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
+
+    /// <summary>
+    ///     Initialize the preparation phase of the data transmission.
+    /// </summary>
+    /// <param name="prepareMessage"></param>
+    /// <returns>
+    ///     A DataFlow that reflects the current state: if the current state is PREPARING, then the caller must assume the
+    ///     preparation to happen asynchronously. If the state is PREPARED, then the caller can proceed normally.
+    /// </returns>
+    Task<StatusResult<DataFlow>> PrepareAsync(DataFlowPrepareMessage prepareMessage);
 }

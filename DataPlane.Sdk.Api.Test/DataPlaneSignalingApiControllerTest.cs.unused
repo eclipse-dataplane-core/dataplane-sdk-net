@@ -7,6 +7,7 @@ using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using Shouldly;
 using static DataPlane.Sdk.Api.Test.TestAuthHandler;
+
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]
 
 namespace DataPlane.Sdk.Api.Test;
@@ -100,10 +101,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         var destinationDataAddress = new DataAddress("test-type");
         var latch = new CountdownEvent(1);
-        Sdk.OnProvision = _ =>
+        Sdk.OnPrepare = _ =>
         {
             latch.Signal();
-            return StatusResult<IList<ProvisionResource>>.Success([]);
+            return StatusResult<DataFlow>.Success(null);
         };
 
         var msg = new DataFlowProvisionMessage
@@ -146,13 +147,15 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 /// <summary>
 ///     uses the in-memory db context
 /// </summary>
-public class InMem(InMemoryFixture fixture) : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>
+public class InMem(InMemoryFixture fixture)
+    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>
 {
 }
 
 /// <summary>
 ///     uses the PostgreSQL db context
 /// </summary>
-public class Postgres(PostgresFixture fixture) : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>
+public class Postgres(PostgresFixture fixture)
+    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>
 {
 }

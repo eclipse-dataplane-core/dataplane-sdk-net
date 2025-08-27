@@ -43,7 +43,7 @@ public static class SdkExtensions
 
         services.AddSingleton<IDataPlaneStore>(sdk.DataFlowStore);
         services.AddSingleton<IDataPlaneSignalingService>(new DataPlaneSignalingService(sdk.DataFlowStore, sdk, sdk.RuntimeId));
-        services.AddTransient<IControlApiService, ControlApiService>();
+        services.AddTransient<IRegistrationService, RegistrationService>();
         services.AddTransient<IControlPlaneSignalingClient, ControlPlaneSignalingClient>();
     }
 }

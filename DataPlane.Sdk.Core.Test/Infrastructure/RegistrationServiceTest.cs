@@ -12,21 +12,21 @@ using static System.Text.Json.JsonSerializer;
 
 namespace DataPlane.Sdk.Core.Test.Infrastructure;
 
-[TestSubject(typeof(ControlApiService))]
-public class ControlApiServiceTest : IDisposable
+[TestSubject(typeof(RegistrationService))]
+public class RegistrationServiceTest : IDisposable
 {
     private const string TestDataPlaneId = "dotnet-sdk-test-dataplane";
     private readonly WireMockServer _mockServer = WireMockServer.Start();
 
-    private readonly ControlApiService _service;
+    private readonly RegistrationService _service;
 
-    public ControlApiServiceTest()
+    public RegistrationServiceTest()
     {
         var httpClientFactory = new Mock<IHttpClientFactory>();
 
         httpClientFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
 
-        _service = new ControlApiService(httpClientFactory.Object, Options.Create(new ControlApiOptions
+        _service = new RegistrationService(httpClientFactory.Object, Options.Create(new ControlApiOptions
         {
             BaseUrl = $"http://localhost:{_mockServer.Port}/api/control"
             // BaseUrl = "http://localhost:8083/api/control"

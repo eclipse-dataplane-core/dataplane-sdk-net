@@ -4,20 +4,19 @@ using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using Microsoft.Extensions.Options;
-using Domain_Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace DataPlane.Sdk.Core.Infrastructure;
 
 /// <summary>
 ///     Client service to communicate with an EDC Control Plane's Control API.
 /// </summary>
-public class ControlApiService : IControlApiService
+public class RegistrationService : IRegistrationService
 {
     private readonly string _baseUrl;
     private readonly HttpClient _httpClient;
 
 
-    public ControlApiService(IHttpClientFactory factory, IOptions<ControlApiOptions> options)
+    public RegistrationService(IHttpClientFactory factory, IOptions<ControlApiOptions> options)
     {
         _baseUrl = options.Value.BaseUrl ?? throw new ArgumentException("BaseUrl must be set in ControlApiOptions");
         // must use named HTTP client to make use of all configuration etc.

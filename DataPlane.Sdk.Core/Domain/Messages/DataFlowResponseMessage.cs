@@ -6,8 +6,14 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 public class DataFlowResponseMessage : JsonLdDto
 {
     [JsonPropertyName("dataAddress")]
-    public required DataAddress DataAddress { get; init; }
+    public DataAddress? DataAddress { get; init; }
 
-    [JsonPropertyName("provisioning")]
-    public bool IsProvisioned { get; init; }
+    [JsonPropertyName("dataplaneId")]
+    public required string DataplaneId { get; init; }
+
+    [JsonPropertyName("state")]
+    public string? State { get; init; }
+
+    [JsonPropertyName("error")]
+    public string? Error { get; init; }
 }

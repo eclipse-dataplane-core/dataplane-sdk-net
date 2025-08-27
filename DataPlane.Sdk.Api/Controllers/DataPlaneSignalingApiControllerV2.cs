@@ -1,9 +1,11 @@
 using DataPlane.Sdk.Api.Authorization;
+using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace DataPlane.Sdk.Api.Controllers;
 
@@ -11,7 +13,8 @@ namespace DataPlane.Sdk.Api.Controllers;
 [Route("/api/v1/{participantContextId}/dataflows")]
 public class DataPlaneSignalingApiControllerV2(
     IDataPlaneSignalingService signalingService,
-    IAuthorizationService authorizationService)
+    IAuthorizationService authorizationService,
+    IOptions<DataPlaneSdkOptions> options)
     : ControllerBase
 {
     [Authorize]
@@ -31,7 +34,11 @@ public class DataPlaneSignalingApiControllerV2(
             return dataFlow.State switch
             {
                 DataFlowState.Preparing => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
-                    new DataFlowResponseMessage { DataAddress = dataFlow.Destination }),
+                    new DataFlowResponseMessage
+                    {
+                        State = nameof(DataFlowState.Preparing),
+                        DataplaneId = options.Value.DataplaneId
+                    }),
                 DataFlowState.Prepared => Ok(),
                 _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
             };

@@ -49,27 +49,27 @@ public class ControlApiService : IControlApiService
         return StatusResult<IdResponse>.FromCode((int)result.StatusCode, result.ReasonPhrase);
     }
 
-    public async Task<StatusResult<Domain_Void>> UnregisterDataPlane(string dataPlaneInstanceId)
+    public async Task<StatusResult> UnregisterDataPlane(string dataPlaneId)
     {
-        var result = await _httpClient.PutAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneInstanceId}/unregister", null);
+        var result = await _httpClient.PutAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneId}/unregister", null);
         return Response(result);
     }
 
-    public async Task<StatusResult<Domain_Void>> DeleteDataPlane(string dataPlaneInstanceId)
+    public async Task<StatusResult> DeleteDataPlane(string dataPlaneId)
     {
-        var result = await _httpClient.DeleteAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneInstanceId}");
+        var result = await _httpClient.DeleteAsync($"{_baseUrl}/v1/dataplanes/{dataPlaneId}");
         return Response(result);
     }
 
-    private static StatusResult<Domain_Void> Response(HttpResponseMessage result)
+    private static StatusResult Response(HttpResponseMessage result)
     {
         return result.IsSuccessStatusCode
-            ? StatusResult<Domain_Void>.Success(default)
-            : StatusResult<Domain_Void>.FromCode((int)result.StatusCode, result.ReasonPhrase);
+            ? StatusResult.Success()
+            : StatusResult.FromCode((int)result.StatusCode, result.ReasonPhrase);
     }
 }
 
 public class ControlApiOptions
 {
-    public string? BaseUrl { get; init; }
+    public required string BaseUrl { get; init; }
 }

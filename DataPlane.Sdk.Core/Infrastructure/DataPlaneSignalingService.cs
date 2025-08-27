@@ -66,29 +66,29 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(existingFlow);
     }
 
-    public async Task<StatusResult<Void>> SuspendAsync(string dataFlowId, string? reason = null)
+    public async Task<StatusResult> SuspendAsync(string dataFlowId, string? reason = null)
     {
         var res = await dataFlowContext.FindByIdAndLeaseAsync(dataFlowId);
         if (res.IsFailed)
         {
-            return StatusResult<Void>.Failed(res.Failure!);
+            return StatusResult.Failed(res.Failure!);
         }
 
         var df = res.Content!;
         if (df.State == DataFlowState.Suspended) //de-duplication check
         {
-            return StatusResult<Void>.Success(default);
+            return StatusResult.Success();
         }
 
         var sdkResult = sdk.InvokeSuspend(df);
         if (sdkResult.IsFailed)
         {
-            return StatusResult<Void>.Failed(sdkResult.Failure!);
+            return StatusResult.Failed(sdkResult.Failure!);
         }
 
         if (df.State != DataFlowState.Started)
         {
-            return StatusResult<Void>.FromCode(400, "DataFlow is not in started state, cannot suspend.");
+            return StatusResult.FromCode(400, "DataFlow is not in started state, cannot suspend.");
         }
 
         df.Suspend(reason);
@@ -97,25 +97,25 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return sdkResult;
     }
 
-    public async Task<StatusResult<Void>> TerminateAsync(string dataFlowId, string? reason = null)
+    public async Task<StatusResult> TerminateAsync(string dataFlowId, string? reason = null)
     {
         var res = await dataFlowContext.FindByIdAndLeaseAsync(dataFlowId);
         if (res.IsFailed)
         {
-            return StatusResult<Void>.Failed(res.Failure!);
+            return StatusResult.Failed(res.Failure!);
         }
 
         var df = res.Content!;
 
         if (df.State == DataFlowState.Terminated) //de-duplication check
         {
-            return StatusResult<Void>.Success(default);
+            return StatusResult.Success();
         }
 
         var sdkResult = sdk.InvokeTerminate(df);
         if (sdkResult.IsFailed)
         {
-            return StatusResult<Void>.Failed(sdkResult.Failure!);
+            return StatusResult.Failed(sdkResult.Failure!);
         }
 
         if (df.State == DataFlowState.Provisioned)
@@ -138,7 +138,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
-    public Task<StatusResult<Void>> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
+    public Task<StatusResult> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
     {
         // delegate validation to the SDK callback
         return Task.FromResult(sdk.InvokeValidate(startMessage));
@@ -171,11 +171,6 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
-    public Task<StatusResult<DataFlowResponseMessage>> ProvisionAsync(DataFlowProvisionMessage provisionMessage)
-    {
-        throw new NotSupportedException("Not supported anymore, use PrepareAsync instead");
-    }
-
     private DataFlow CreateDataFlow(DataFlowPrepareMessage message)
     {
         return new DataFlow(message.ProcessId)
@@ -185,36 +180,11 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             TransferType = message.TransferType,
             RuntimeId = runtimeId,
             ParticipantId = message.ParticipantId,
-            AssetId = message.AssetId,
+            AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
             Properties = message.Properties,
             State = DataFlowState.Initialized
-        };
-    }
-
-    private DataFlow CreateDataFlow(DataFlowProvisionMessage message)
-    {
-        return new DataFlow(message.ProcessId)
-        {
-            Source = message.SourceDataAddress,
-            Destination = message.DestinationDataAddress,
-            TransferType = message.TransferType,
-            RuntimeId = runtimeId,
-            ParticipantId = message.ParticipantId,
-            AssetId = message.AssetId,
-            AgreementId = message.AgreementId,
-            CallbackAddress = message.CallbackAddress,
-            Properties = message.Properties,
-            State = DataFlowState.Notified
-        };
-    }
-
-    private DataFlowResponseMessage CreateResponse(DataFlow existingFlow)
-    {
-        return new DataFlowResponseMessage
-        {
-            DataAddress = existingFlow.Destination
         };
     }
 
@@ -227,10 +197,9 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             TransferType = message.TransferType,
             RuntimeId = runtimeId,
             ParticipantId = message.ParticipantId,
-            AssetId = message.AssetId,
+            AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
-            Properties = message.Properties,
             State = DataFlowState.Initialized
         };
     }

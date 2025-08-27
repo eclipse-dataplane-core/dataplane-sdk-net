@@ -1,5 +1,6 @@
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using static DataPlane.Sdk.Core.Domain.IConstants;
 
@@ -15,6 +16,7 @@ public static class SdkExtensions
     /// </summary>
     /// <param name="services">The service collection to add the SDK services to.</param>
     /// <param name="sdk">The <see cref="DataPlaneSdk" /> instance containing configuration and dependencies.</param>
+    /// <param name="config"></param>
     /// <remarks>
     ///     This method configures:
     ///     <list type="bullet">
@@ -25,8 +27,14 @@ public static class SdkExtensions
     ///         <item>Transient registration of the control API service.</item>
     ///     </list>
     /// </remarks>
-    public static void AddSdkServices(this IServiceCollection services, DataPlaneSdk sdk)
+    public static void AddSdkServices(this IServiceCollection services, DataPlaneSdk sdk, IConfigurationSection config)
     {
+        // configure Data Plane SDK
+        services.Configure<DataPlaneSdkOptions>(config); //make it injectable
+
+        // provide the nested control API configuration
+        services.Configure<ControlApiOptions>(config.GetSection("ControlApi"));
+
         // configure HTTP Client for outgoing requests, both Control API and Data Plane Signaling
         services.AddSingleton(sdk.TokenProvider);
         services.AddTransient<AuthHeaderHandler>();
@@ -36,5 +44,6 @@ public static class SdkExtensions
         services.AddSingleton<IDataPlaneStore>(sdk.DataFlowStore);
         services.AddSingleton<IDataPlaneSignalingService>(new DataPlaneSignalingService(sdk.DataFlowStore, sdk, sdk.RuntimeId));
         services.AddTransient<IControlApiService, ControlApiService>();
+        services.AddTransient<IControlPlaneSignalingClient, ControlPlaneSignalingClient>();
     }
 }

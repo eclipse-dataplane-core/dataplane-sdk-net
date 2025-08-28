@@ -4,7 +4,6 @@ using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Model;
 using Microsoft.IdentityModel.Tokens;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
-using Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace DataPlane.Sdk.Example.Web;
 

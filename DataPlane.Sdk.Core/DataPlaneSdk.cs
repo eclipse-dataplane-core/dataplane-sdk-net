@@ -4,11 +4,8 @@ using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace DataPlane.Sdk.Core;
-
-using Void = Void;
 
 public class DataPlaneSdk
 {

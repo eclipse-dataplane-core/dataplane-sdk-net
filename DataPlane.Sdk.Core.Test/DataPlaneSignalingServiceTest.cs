@@ -8,7 +8,6 @@ using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 using static DataPlane.Sdk.Core.Domain.Model.DataFlowState;
 using static DataPlane.Sdk.Core.Domain.Model.FailureReason;
 using static DataPlane.Sdk.Core.Test.TestMethods;
-using Void = DataPlane.Sdk.Core.Domain.Void;
 
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]
 

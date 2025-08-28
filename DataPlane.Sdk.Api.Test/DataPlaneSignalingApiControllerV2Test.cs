@@ -7,7 +7,6 @@ using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using Shouldly;
 using static DataPlane.Sdk.Api.Test.TestAuthHandler;
-using Void = DataPlane.Sdk.Core.Domain.Void;
 
 
 namespace DataPlane.Sdk.Api.Test;

@@ -39,7 +39,7 @@ public class ControlPlaneSignalingClient(HttpClient httpClient, IOptions<DataPla
         var response = await httpClient.PostAsJsonAsync(url, body);
         return response.IsSuccessStatusCode
             ? StatusResult.Success()
-            : StatusResult.FromCode((int)response.StatusCode, response.ReasonPhrase);
+            : StatusResult.FromCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
     }
 
 

@@ -11,7 +11,7 @@ namespace DataPlane.Sdk.Api.Controllers;
 
 [ApiController]
 [Route("/api/v1/{participantContextId}/dataflows")]
-public class DataPlaneSignalingApiControllerV2(
+public class DataPlaneSignalingApiController(
     IDataPlaneSignalingService signalingService,
     IAuthorizationService authorizationService,
     IOptions<DataPlaneSdkOptions> options)
@@ -39,7 +39,7 @@ public class DataPlaneSignalingApiControllerV2(
                         State = nameof(DataFlowState.Preparing),
                         DataplaneId = options.Value.DataplaneId
                     }),
-                DataFlowState.Prepared => Ok(),
+                DataFlowState.Prepared => Ok(new IdResponse(dataFlow.Id)),
                 _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
             };
         }

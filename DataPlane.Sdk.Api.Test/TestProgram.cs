@@ -19,7 +19,7 @@ services.Configure<AuthenticationOptions>(options =>
     options.DefaultChallengeScheme = testAuthScheme;
 });
 services.AddControllers()
-    .AddApplicationPart(typeof(DataPlaneSignalingApiControllerV2).Assembly);
+    .AddApplicationPart(typeof(DataPlaneSignalingApiController).Assembly);
 
 services.AddSdkAuthorization();
 

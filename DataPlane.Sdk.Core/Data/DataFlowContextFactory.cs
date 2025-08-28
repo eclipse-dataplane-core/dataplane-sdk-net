@@ -37,7 +37,7 @@ public static class DataFlowContextFactory
     ///     the connection string and the auto-create flag is taken.
     /// </summary>
     /// <param name="configuration"></param>
-    /// <param name="leaseId">The lease ID of this instance</param>
+    /// <param name="lockId">The lease ID of this instance</param>
     public static DataFlowContext CreatePostgres(IConfiguration configuration, string lockId)
     {
         if (configuration == null)

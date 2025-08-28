@@ -14,7 +14,7 @@ namespace DataPlane.Sdk.Api.Test;
 /// <summary>
 ///     Base class for DPS API controller tests
 /// </summary>
-public abstract class DataPlaneSignalingApiControllerV2Test(DataFlowContext dataFlowContext, HttpClient httpClient, DataPlaneSdk sdk) : IDisposable
+public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFlowContext, HttpClient httpClient, DataPlaneSdk sdk) : IDisposable
 {
     private DataFlowContext DataFlowContext { get; } = dataFlowContext;
     private HttpClient HttpClient { get; } = httpClient;
@@ -450,11 +450,11 @@ public abstract class DataPlaneSignalingApiControllerV2Test(DataFlowContext data
 /// <summary>
 ///     uses the in-memory db context
 /// </summary>
-public class InMemV2(InMemoryFixture fixture)
-    : DataPlaneSignalingApiControllerV2Test(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>;
+public class InMem(InMemoryFixture fixture)
+    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>;
 
 /// <summary>
 ///     uses the PostgreSQL db context
 /// </summary>
-public class PostgresV2(PostgresFixture fixture)
-    : DataPlaneSignalingApiControllerV2Test(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>;
+public class Postgres(PostgresFixture fixture)
+    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>;

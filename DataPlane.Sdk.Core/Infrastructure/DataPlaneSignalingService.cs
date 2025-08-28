@@ -1,4 +1,3 @@
-using DataPlane.Sdk.Core.Data;
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
@@ -13,9 +12,10 @@ namespace DataPlane.Sdk.Core.Infrastructure;
 ///     service acts as transaction boundary.
 /// </param>
 /// <param name="sdk">An instance of the <see cref="DataPlaneSdk" /> to invoke callbacks</param>
-/// <param name="runtimeId">The Runtime ID of this data plane.</param>
-public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlaneSdk sdk, string runtimeId) : IDataPlaneSignalingService
+public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlaneSdk sdk) : IDataPlaneSignalingService
 {
+    private readonly string _runtimeId = sdk.RuntimeId;
+
     public async Task<StatusResult<DataFlow>> StartAsync(DataFlowStartMessage message)
     {
         var validation = await ValidateStartMessageAsync(message);
@@ -37,8 +37,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
                     return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
                 }
 
-                await dataFlowContext.UpsertAsync(dataFlow);
-                await dataFlowContext.SaveChangesAsync();
+                await dataFlowContext.UpsertAsync(dataFlow, true);
                 return StatusResult<DataFlow>.Success(dataFlow);
             }
 
@@ -59,8 +58,8 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         }
 
         existingFlow = result.Content!;
-        dataFlowContext.DataFlows.Update(existingFlow);
-        await dataFlowContext.SaveChangesAsync();
+        await dataFlowContext.UpdateFlow(existingFlow);
+
 
         return StatusResult<DataFlow>.Success(existingFlow);
     }
@@ -91,8 +90,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
         }
 
         df.Suspend(reason);
-        await dataFlowContext.UpsertAsync(df);
-        await dataFlowContext.SaveChangesAsync(); // commit transaction
+        await dataFlowContext.UpsertAsync(df, true);
         return sdkResult;
     }
 
@@ -126,14 +124,13 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             df.Terminate();
         }
 
-        await dataFlowContext.UpsertAsync(df);
-        await dataFlowContext.SaveChangesAsync(); //commit transaction
+        await dataFlowContext.UpsertAsync(df, true);
         return sdkResult;
     }
 
     public async Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId)
     {
-        var flow = await dataFlowContext.DataFlows.FindAsync(processId);
+        var flow = await dataFlowContext.FindByIdAsync(processId);
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
@@ -165,8 +162,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             throw new InvalidOperationException("SDK callback must return a non-null DataFlow object");
         }
 
-        await dataFlowContext.UpsertAsync(updatedFlow);
-        await dataFlowContext.SaveChangesAsync();
+        await dataFlowContext.UpsertAsync(updatedFlow, true);
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
@@ -177,7 +173,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             Source = message.SourceDataAddress,
             Destination = message.DestinationDataAddress,
             TransferType = message.TransferType,
-            RuntimeId = runtimeId,
+            RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,
             AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
@@ -194,7 +190,7 @@ public class DataPlaneSignalingService(DataFlowContext dataFlowContext, DataPlan
             Source = message.SourceDataAddress,
             Destination = message.DestinationDataAddress,
             TransferType = message.TransferType,
-            RuntimeId = runtimeId,
+            RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,
             AssetId = message.DatasetId,
             AgreementId = message.AgreementId,

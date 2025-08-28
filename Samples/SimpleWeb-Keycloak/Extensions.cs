@@ -15,9 +15,8 @@ public static class Extensions
         var config = dataplaneConfig.Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = CreatePostgres(
-                configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Missing DefaultConnection config"),
-                config.RuntimeId, true),
+            DataFlowStore = () =>
+                CreatePostgres(configuration, config.RuntimeId),
             RuntimeId = config.RuntimeId,
             OnStart = f =>
             {

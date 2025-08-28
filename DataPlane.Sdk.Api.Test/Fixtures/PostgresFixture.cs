@@ -11,7 +11,7 @@ public class PostgresFixture : AbstractFixture, IAsyncDisposable
     public PostgresFixture()
     {
         Context = CreateDbContext();
-        var signalingService = new DataPlaneSignalingService(Context, Sdk, "test-runtime-id");
+        var signalingService = new DataPlaneSignalingService(Context, Sdk);
         InitializeFixture(Context, signalingService);
     }
 

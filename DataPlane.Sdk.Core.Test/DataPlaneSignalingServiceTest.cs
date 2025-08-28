@@ -32,9 +32,10 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         _dataFlowContext = dataFlowContext;
         _sdk = new DataPlaneSdk
         {
-            DataFlowStore = _dataFlowContext
+            RuntimeId = runtimeId,
+            DataFlowStore = () => _dataFlowContext
         };
-        _service = new DataPlaneSignalingService(_dataFlowContext, _sdk, runtimeId);
+        _service = new DataPlaneSignalingService(_dataFlowContext, _sdk);
     }
 
     [Fact]

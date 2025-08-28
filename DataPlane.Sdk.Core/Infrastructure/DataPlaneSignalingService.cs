@@ -2,7 +2,6 @@ using DataPlane.Sdk.Core.Data;
 using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
-using Void = DataPlane.Sdk.Core.Domain.Void;
 
 namespace DataPlane.Sdk.Core.Infrastructure;
 

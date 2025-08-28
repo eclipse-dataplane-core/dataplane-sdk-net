@@ -14,7 +14,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A4B4E17A-8E91-45A0-BD5B-70EA9CA1B76D}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
-		Samples\keycloak\realm-export.json = Samples\keycloak\realm-export.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Api.Test", "DataPlane.Sdk.Api.Test\DataPlane.Sdk.Api.Test.csproj", "{C95272D3-3046-4C26-A422-C19EC45C7800}"

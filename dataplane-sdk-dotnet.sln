@@ -14,9 +14,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A4B4E17A-8E91-45A0-BD5B-70EA9CA1B76D}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
+		Samples\keycloak\realm-export.json = Samples\keycloak\realm-export.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Api.Test", "DataPlane.Sdk.Api.Test\DataPlane.Sdk.Api.Test.csproj", "{C95272D3-3046-4C26-A422-C19EC45C7800}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{32055AC6-C4BE-4B7C-A829-F268AB12E577}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWeb-Keycloak", "Samples\SimpleWeb-Keycloak\SimpleWeb-Keycloak.csproj", "{534284F6-8E17-4774-95FA-7E133AF346F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,5 +52,12 @@ Global
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Release|Any CPU.Build.0 = Release|Any CPU
+		{534284F6-8E17-4774-95FA-7E133AF346F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{534284F6-8E17-4774-95FA-7E133AF346F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{534284F6-8E17-4774-95FA-7E133AF346F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{534284F6-8E17-4774-95FA-7E133AF346F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{534284F6-8E17-4774-95FA-7E133AF346F7} = {32055AC6-C4BE-4B7C-A829-F268AB12E577}
 	EndGlobalSection
 EndGlobal

@@ -11,7 +11,11 @@ public class AbstractFixture : IDisposable
     private WebApplicationFactory<Program>? _factory;
     public HttpClient? Client { get; private set; }
     public DataFlowContext? Context { get; protected init; }
-    public DataPlaneSdk Sdk { get; } = new();
+
+    public DataPlaneSdk Sdk { get; } = new()
+    {
+        RuntimeId = "test-runtime-id"
+    };
 
     public void Dispose()
     {

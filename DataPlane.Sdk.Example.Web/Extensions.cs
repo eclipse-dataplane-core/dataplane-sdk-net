@@ -16,7 +16,7 @@ public static class Extensions
         var config = dataplaneConfig.Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = CreateInMem("example-leaser"),
+            DataFlowStore = () => CreateInMem("example-leaser"),
             RuntimeId = config.RuntimeId,
             OnStart = f =>
             {

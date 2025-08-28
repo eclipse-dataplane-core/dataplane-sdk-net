@@ -16,6 +16,8 @@ public class Lease
     [JsonIgnore]
     public required string EntityId { get; init; }
 
+    public string ValidUntil => DateTimeOffset.FromUnixTimeMilliseconds(LeasedAt + LeaseDurationMillis).ToString("o");
+
     public bool IsExpired(long? now = null)
     {
         now ??= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

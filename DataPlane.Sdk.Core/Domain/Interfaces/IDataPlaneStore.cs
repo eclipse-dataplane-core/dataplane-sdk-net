@@ -32,7 +32,7 @@ public interface IDataPlaneStore
     /// <summary>
     ///     Persists the entity. This follows UPSERT semantics, so if the object didn't exit before, it's created.
     /// </summary>
-    Task UpsertAsync(DataFlow dataflow);
+    Task UpsertAsync(DataFlow dataflow, bool autocommit = false);
 
 
     static Criterion StateFilter(int state)
@@ -44,4 +44,10 @@ public interface IDataPlaneStore
     {
         return new Criterion("pending", "=", false);
     }
+
+    /// <summary>
+    ///     Updates the DataFlow, failing if not already exists. If the update was successful, the transaction is committed.
+    /// </summary>
+    /// <param name="existingFlow"></param>
+    Task UpdateFlow(DataFlow existingFlow);
 }

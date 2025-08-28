@@ -35,8 +35,9 @@ public class DataFlowContext : DbContext, IDataPlaneStore
     /// Acquires a lease for the given DataFlow, updates it if it exists, or adds it if it does not.
     /// Releases the lease after the operation completes. Does NOT save changes on the db context!
     /// <param name="dataflow">The <see cref="DataFlow" /> instance to save.</param>
+    /// <param name="autocommit">if saveChangesAsync should be called or not</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
-    public async Task UpsertAsync(DataFlow dataflow)
+    public async Task UpsertAsync(DataFlow dataflow, bool autocommit = false)
     {
         var lease = await AcquireLeaseAsync(dataflow.Id);
         var found = await DataFlows.FindAsync(dataflow.Id);
@@ -50,6 +51,17 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         }
 
         await FreeLeaseAsync(lease.EntityId);
+
+        if (autocommit)
+        {
+            await SaveChangesAsync();
+        }
+    }
+
+    public async Task UpdateFlow(DataFlow existingFlow)
+    {
+        DataFlows.Update(existingFlow);
+        await SaveChangesAsync();
     }
 
 
@@ -193,33 +205,30 @@ public class DataFlowContext : DbContext, IDataPlaneStore
             LeasedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             LeaseDurationMillis = (long)leaseDuration.TotalMilliseconds
         };
-        if (!await IsLeasedAsync(entityId))
+        var existingLease = await Leases.FindAsync(entityId);
+
+        // no lease found, create new
+        if (existingLease == null)
         {
             await Leases.AddAsync(lease);
+            return lease;
         }
-        else if (await IsLeasedByAsync(entityId, lockId))
+
+        // leased by us, update lease (reset lease time)
+        if (existingLease.LeasedBy == lockId)
         {
-            // load tracked entity and update its values
-            var existing = await Leases.FindAsync(entityId);
-            Entry(existing!).CurrentValues.SetValues(lease);
+            Entry(existingLease).CurrentValues.SetValues(lease);
+            return lease;
         }
-        else
+
+        // not leased by us, but already expired? if so -> update lease
+        if (existingLease.IsExpired(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()))
         {
-            throw new ArgumentException("Cannot acquire lease, entity ${entityId} is already leased by another process.");
+            Entry(existingLease).CurrentValues.SetValues(lease);
+            return lease;
         }
 
-        return lease;
-    }
-
-    private async Task<bool> IsLeasedByAsync(string entityId, string lockId)
-    {
-        var lease = await Leases.FindAsync(entityId);
-        return lease != null && !lease.IsExpired(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) && lease.LeasedBy == lockId;
-    }
-
-    private async Task<bool> IsLeasedAsync(string entityId)
-    {
-        var lease = await Leases.FindAsync(entityId);
-        return lease != null && !lease.IsExpired(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        throw new ArgumentException(
+            $"Lease with ID {entityId} is held until [{existingLease.ValidUntil}] by '{existingLease.LeasedBy}'.");
     }
 }

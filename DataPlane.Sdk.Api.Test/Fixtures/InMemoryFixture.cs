@@ -11,7 +11,7 @@ public class InMemoryFixture : AbstractFixture
     public InMemoryFixture()
     {
         Context = DataFlowContextFactory.CreateInMem("test-leaser");
-        var signalingService = new DataPlaneSignalingService(Context, Sdk, "test-runtime-id");
+        var signalingService = new DataPlaneSignalingService(Context, Sdk);
         InitializeFixture(Context, signalingService);
     }
 }

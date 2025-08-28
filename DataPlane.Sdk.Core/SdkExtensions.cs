@@ -41,9 +41,13 @@ public static class SdkExtensions
         services.AddHttpClient(HttpClientName)
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
-        services.AddSingleton<IDataPlaneStore>(sdk.DataFlowStore);
-        services.AddSingleton<IDataPlaneSignalingService>(new DataPlaneSignalingService(sdk.DataFlowStore, sdk, sdk.RuntimeId));
-        services.AddTransient<IRegistrationService, RegistrationService>();
-        services.AddTransient<IControlPlaneSignalingClient, ControlPlaneSignalingClient>();
+        // make the context available as both its interface and concrete implementation
+        services.AddScoped<IDataPlaneStore>(_ => sdk.DataFlowStore.Invoke());
+        // make SDK injectable
+        services.AddSingleton(sdk);
+        // services are scoped per request
+        services.AddScoped<IDataPlaneSignalingService, DataPlaneSignalingService>();
+        services.AddScoped<IRegistrationService, RegistrationService>();
+        services.AddScoped<IControlPlaneSignalingClient, ControlPlaneSignalingClient>();
     }
 }

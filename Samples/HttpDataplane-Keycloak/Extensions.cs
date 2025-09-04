@@ -1,10 +1,11 @@
 using DataPlane.Sdk.Api;
 using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Model;
+using HttpDataplane.Services;
 using Microsoft.IdentityModel.Tokens;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 
-namespace SimpleWeb_Keycloak;
+namespace HttpDataplane;
 
 public static class Extensions
 {
@@ -13,16 +14,13 @@ public static class Extensions
         // initialize and configure the DataPlaneSdk
         var dataplaneConfig = configuration.GetSection("DataPlaneSdk");
         var config = dataplaneConfig.Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
+        var permissionService = new DataService();
         var sdk = new DataPlaneSdk
         {
             DataFlowStore = () =>
                 CreatePostgres(configuration, config.RuntimeId),
             RuntimeId = config.RuntimeId,
-            OnStart = f =>
-            {
-                f.State = DataFlowState.Started;
-                return StatusResult<DataFlow>.Success(f);
-            },
+            OnStart = f => StatusResult<DataFlow>.Success(permissionService.SetPublicEndpoint(f)),
             OnRecover = _ => StatusResult.Success(),
             OnTerminate = _ => StatusResult.Success(),
             OnSuspend = _ => StatusResult.Success(),
@@ -32,6 +30,9 @@ public static class Extensions
                 return StatusResult<DataFlow>.Success(f);
             }
         };
+
+        services.AddSingleton<IDataService>(permissionService);
+        services.AddSingleton<IHttpProxyService, HttpProxyService>();
 
 
         // add SDK core services

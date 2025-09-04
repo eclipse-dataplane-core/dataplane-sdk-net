@@ -8,7 +8,8 @@ namespace DataPlane.Sdk.Core.Domain.Model;
 /// </summary>
 public class DataAddress(string type) : JsonLdDto(type)
 {
-    public IDictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+    [JsonPropertyName("properties")]
+    public IDictionary<string, object> Properties { get; init; } = new Dictionary<string, object>();
 
     [JsonPropertyName("@id")]
     public string Id { get; init; } = Guid.NewGuid().ToString();

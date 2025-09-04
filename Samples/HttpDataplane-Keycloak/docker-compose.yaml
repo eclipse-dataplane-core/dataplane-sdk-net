@@ -1,6 +1,6 @@
 services:
   
-  dataplane:
+  http-dataplane:
     build:
       context: .
       dockerfile: Dockerfile

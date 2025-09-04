@@ -16,4 +16,7 @@ public class DataFlowResponseMessage : JsonLdDto
 
     [JsonPropertyName("error")]
     public string? Error { get; init; }
+
+    [JsonPropertyName("dataFlowId")]
+    public required string DataFlowId { get; init; }
 }

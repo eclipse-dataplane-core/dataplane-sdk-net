@@ -131,6 +131,8 @@ public class DataFlowContext : DbContext, IDataPlaneStore
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var serializerOptions = new JsonSerializerOptions();
+
         modelBuilder.Entity<DataFlow>()
             .HasKey(df => df.Id);
 
@@ -152,12 +154,12 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.Source)
             .HasConversion(da => ToJson(da),
-                s => JsonSerializer.Deserialize<DataAddress>(s, null as JsonSerializerOptions)!);
+                s => DeserializeDataAddress(s, serializerOptions)!);
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.Destination)
             .HasConversion(da => ToJson(da),
-                s => JsonSerializer.Deserialize<DataAddress>(s, null as JsonSerializerOptions)!);
+                s => DeserializeDataAddress(s, serializerOptions)!);
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.TransferType)
@@ -167,17 +169,22 @@ public class DataFlowContext : DbContext, IDataPlaneStore
             .Property(df => df.Properties)
             .HasConversion(
                 props => ToJson(props),
-                json => JsonSerializer.Deserialize<IDictionary<string, string>>(json, null as JsonSerializerOptions) ?? new Dictionary<string, string>());
+                json => JsonSerializer.Deserialize<IDictionary<string, string>>(json, serializerOptions) ?? new Dictionary<string, string>());
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.ResourceDefinitions)
             .HasConversion(
                 props => ToJson(props),
-                json => JsonSerializer.Deserialize<List<ProvisionResource>>(json, null as JsonSerializerOptions) ?? new List<ProvisionResource>());
+                json => JsonSerializer.Deserialize<List<ProvisionResource>>(json, serializerOptions) ?? new List<ProvisionResource>());
 
 
         modelBuilder.Entity<Lease>()
             .HasKey(l => l.EntityId);
+    }
+
+    private static DataAddress? DeserializeDataAddress(string s, JsonSerializerOptions serializerOptions)
+    {
+        return JsonSerializer.Deserialize<DataAddress>(s, serializerOptions);
     }
 
     private static string ToJson(dynamic da)

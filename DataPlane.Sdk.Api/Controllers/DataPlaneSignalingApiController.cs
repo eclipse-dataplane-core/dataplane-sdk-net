@@ -36,13 +36,15 @@ public class DataPlaneSignalingApiController(
                 DataFlowState.Preparing => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
                     new DataFlowResponseMessage
                     {
-                        State = nameof(DataFlowState.Preparing),
+                        DataFlowId = dataFlow.Id,
+                        State = dataFlow.State.ToString(),
                         DataplaneId = options.Value.DataplaneId
                     }),
                 DataFlowState.Prepared => Ok(new DataFlowResponseMessage
                 {
+                    DataFlowId = dataFlow.Id,
                     DataplaneId = options.Value.DataplaneId,
-                    State = nameof(DataFlowState.Prepared)
+                    State = dataFlow.State.ToString()
                 }),
                 _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
             };
@@ -70,12 +72,14 @@ public class DataPlaneSignalingApiController(
                 DataFlowState.Starting => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
                     new DataFlowResponseMessage
                     {
+                        DataFlowId = dataFlowId,
                         DataplaneId = options.Value.DataplaneId,
                         State = dataFlow.State.ToString(),
                         DataAddress = dataFlow.Destination
                     }),
                 DataFlowState.Started => Ok(new DataFlowResponseMessage
                 {
+                    DataFlowId = dataFlowId,
                     DataAddress = dataFlow.Destination,
                     DataplaneId = options.Value.DataplaneId,
                     State = dataFlow.State.ToString()

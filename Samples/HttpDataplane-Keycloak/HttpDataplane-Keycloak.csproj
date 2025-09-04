@@ -4,14 +4,15 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>SimpleWeb_Keycloak</RootNamespace>
+        <RootNamespace>HttpDataplane</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <!--        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha5"/>-->
+        <!--        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha6"/>-->
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
     </ItemGroup>
 
+    <!--    uncomment when debugging the local SDK-->
     <ItemGroup>
         <ProjectReference Include="..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>
     </ItemGroup>

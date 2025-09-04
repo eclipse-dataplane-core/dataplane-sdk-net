@@ -150,6 +150,11 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        body.ShouldNotBeNull();
+        body.State.ShouldBe(nameof(DataFlowState.Prepared));
+        body.DataAddress.ShouldBeNull();
     }
 
     [Fact]
@@ -157,7 +162,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnPrepare = flow =>
         {
-            flow.State = DataFlowState.Preparing;
+            flow.State = DataFlowState.Prepared;
             return StatusResult<DataFlow>.Success(flow);
         };
         var prepareMsg = new DataFlowPrepareMessage
@@ -172,9 +177,12 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
-        response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        response.Headers.Location.ShouldNotBeNull();
-        response.Headers.Location!.ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/test-process");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.Location.ShouldBeNull();
+        var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        body.ShouldNotBeNull();
+        body.State.ShouldBe(nameof(DataFlowState.Prepared));
+        body.DataAddress.ShouldBeNull();
     }
 
     [Fact]
@@ -200,6 +208,11 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         response.Headers.Location.ShouldNotBeNull();
         response.Headers.Location!.ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/test-process");
+
+        var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        body.ShouldNotBeNull();
+        body.State.ShouldBe(nameof(DataFlowState.Preparing));
+        body.DataAddress.ShouldBeNull();
     }
 
     [Fact]
@@ -327,6 +340,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        body.ShouldNotBeNull();
+        body.State.ShouldBe(nameof(DataFlowState.Started));
+        body.DataAddress.ShouldNotBeNull();
     }
 
     [Fact]
@@ -442,6 +459,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         response.Headers.Location.ShouldNotBeNull()
             .ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}");
+        var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
+        body.ShouldNotBeNull();
+        body.State.ShouldBe(nameof(DataFlowState.Starting));
+        body.DataAddress.ShouldNotBeNull();
     }
 
     #endregion

@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Api.Test", "D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{32055AC6-C4BE-4B7C-A829-F268AB12E577}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWeb-Keycloak", "Samples\SimpleWeb-Keycloak\SimpleWeb-Keycloak.csproj", "{534284F6-8E17-4774-95FA-7E133AF346F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpDataplane-Keycloak", "Samples\HttpDataplane-Keycloak\HttpDataplane-Keycloak.csproj", "{534284F6-8E17-4774-95FA-7E133AF346F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

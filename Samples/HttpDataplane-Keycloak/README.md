@@ -11,7 +11,7 @@ Protocol (DSP) with secure authentication using Keycloak.
 
 Typically, a data plane that implements the DSP protocol communicates with a control plane that sends the DSP
 messages. Here, the "control plane" is implemented by sending plain HTTP requests, see the
-accompanying [Postman collection](./postman) for details.
+accompanying [Postman collection](./Resources/Postman) for details.
 
 ## Getting started
 
@@ -29,7 +29,7 @@ for details.
 ## Application configuration
 
 If Docker Compose is used, the Keycloak instance is configured automatically mapping/importing the
-provided [Keycloak Realm file](./keycloak/dataplane-api-realm.json).
+provided [Keycloak Realm file](./Resources/Keycloak/dataplane-api-realm.json).
 
 In addition, Keycloak is configured to use port 8088 for the HTTP endpoint, rather than the default 8080. This is
 because 8080 is the default convention in .NET Core/ASP.NET Core.

@@ -16,11 +16,11 @@ RUN dotnet nuget add source "https://nuget.pkg.github.com/metaform/index.json" \
     --username $NUGET_USERNAME \
     --password $NUGET_PASSWORD \
     --store-password-in-clear-text \
- && dotnet restore SimpleWeb-Keycloak.csproj \
+ && dotnet restore HttpDataplane-Keycloak.csproj \
  && dotnet nuget remove source Metaform
 
 # Publish (framework-dependent)
-RUN dotnet publish SimpleWeb-Keycloak.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish HttpDataplane-Keycloak.csproj -c Release -o /app/publish --no-restore
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
@@ -37,4 +37,4 @@ COPY --from=build /app/publish ./
 EXPOSE 8080
 
 # Start the app
-ENTRYPOINT ["dotnet", "./SimpleWeb-Keycloak.dll"]
+ENTRYPOINT ["dotnet", "./HttpDataplane-Keycloak.dll"]

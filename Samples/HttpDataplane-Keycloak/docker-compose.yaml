@@ -47,7 +47,7 @@ services:
     networks:
       - sample-network
     volumes:
-      - ./keycloak/dataplane-api-realm.json:/opt/keycloak/data/import/realm-export.json
+      - ./Resources/Keycloak/dataplane-api-realm.json:/opt/keycloak/data/import/realm-export.json
 
 volumes:
   postgres_data:

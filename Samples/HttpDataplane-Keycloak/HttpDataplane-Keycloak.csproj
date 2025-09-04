@@ -8,14 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha6"/>-->
+        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha7"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
     </ItemGroup>
 
-    <!--    uncomment when debugging the local SDK-->
     <ItemGroup>
-        <ProjectReference Include="..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>
+        <Folder Include="Resources\"/>
     </ItemGroup>
+
+    <!--    uncomment when debugging the local SDK-->
+    <!--    <ItemGroup>-->
+    <!--        <ProjectReference Include="..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>-->
+    <!--    </ItemGroup>-->
 
 
 </Project>

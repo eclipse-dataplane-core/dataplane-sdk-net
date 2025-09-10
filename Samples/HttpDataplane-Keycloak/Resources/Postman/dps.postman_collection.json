@@ -91,7 +91,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"processId\": \"{{DATAFLOW_ID}}\",\n    \"datasetId\": \"test-asset\",\n    \"participantId\": \"4363900f-3451-48a1-b2eb-b92dbc47677e\",\n    \"agreementId\": \"test-agreement\",\n    \"sourceDataAddress\": {\n        \"@type\": \"HttpData\",\n        \"properties\":{\n            \"baseUrl\": \"https://jsonplaceholder.typicode.com/comments/42\"\n        }\n    },\n    \"destinationDataAddress\": {\n        \"@type\": \"HttpData\"\n    },\n    \"transferType\": \"Push\"\n}",
+					"raw": "{\n    \"processId\": \"{{DATAFLOW_ID}}\",\n    \"datasetId\": \"test-asset\",\n    \"participantId\": \"4363900f-3451-48a1-b2eb-b92dbc47677e\",\n    \"agreementId\": \"test-agreement\",\n    \"sourceDataAddress\": {\n        \"@type\": \"HttpData\",\n        \"properties\":{\n            \"baseUrl\": \"https://jsonplaceholder.typicode.com/comments/22\"\n        }\n    },\n    \"destinationDataAddress\": {\n        \"@type\": \"HttpData\"\n    },\n    \"transferType\": \"Push\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -138,9 +138,6 @@
 		},
 		{
 			"name": "Access Public API",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
 				"auth": {
 					"type": "apikey",
@@ -159,15 +156,6 @@
 				},
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
 					"raw": "{{PUBLIC_URL}}",
 					"host": [

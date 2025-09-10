@@ -17,7 +17,7 @@ public class DataPlaneSdk
     public Func<DataFlowStartMessage, StatusResult>? OnValidateStartMessage;
 
     //todo: make the lease id configurable
-    public Func<DataFlowContext> DataFlowStore { get; set; } = () => DataFlowContextFactory.CreateInMem("test-lock-id");
+    public Func<IDataPlaneStore> DataFlowStore { get; set; } = () => DataFlowContextFactory.CreateInMem("test-lock-id");
     public string RuntimeId { get; set; } = Guid.NewGuid().ToString();
     public ITokenProvider TokenProvider { get; set; } = new NoopTokenProvider(LoggerFactory.Create(_ => { }).CreateLogger<NoopTokenProvider>());
 

@@ -9,21 +9,23 @@ and mutual authentication and authorization scaffolding.
 All sample code discussed here is available in the [`DataPlane.Sdk.Example.Web`](DataPlane.Sdk.Example.Web/) project.
 
 <!-- TOC -->
+
 * [Dataplane SDK .NET](#dataplane-sdk-net)
-  * [1. Installation and requirements](#1-installation-and-requirements)
-  * [2. Usage (with API)](#2-usage-with-api)
-    * [2.1 Configuring the SDK](#21-configuring-the-sdk)
-    * [2.2 Configuring SDK services](#22-configuring-sdk-services)
-    * [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
-    * [2.4 Setting up authorization of incoming HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
-    * [2.5 Setting up authorization of outgoing HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
-      * [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
-  * [3. Usage (core only)](#3-usage-core-only)
-  * [4. Required configuration](#4-required-configuration)
-  * [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
-  * [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
-  * [7. Using the Control API](#7-using-the-control-api)
-  * [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
+    * [1. Installation and requirements](#1-installation-and-requirements)
+    * [2. Usage (with API)](#2-usage-with-api)
+        * [2.1 Configuring the SDK](#21-configuring-the-sdk)
+        * [2.2 Configuring SDK services](#22-configuring-sdk-services)
+        * [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
+        * [2.4 Setting up authorization of incoming HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
+        * [2.5 Setting up authorization of outgoing HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
+            * [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
+    * [3. Usage (core only)](#3-usage-core-only)
+    * [4. Required configuration](#4-required-configuration)
+    * [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
+    * [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
+    * [7. Using the Control API](#7-using-the-control-api)
+    * [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
+
 <!-- TOC -->
 
 ## 1. Installation and requirements
@@ -34,8 +36,8 @@ To install the SDK, add the following packages to your .NET app:
 
 * install the project's NuGet feed `https://nuget.pkg.github.com/metaform/index.json` (
   see [details](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry))
-* `dotnet add package DataPlane.DataPlane.Sdk.Api --version 0.0.1-alpha2` for the API extensions s
-* `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha2` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
+* `dotnet add package DataPlane.DataPlane.Sdk.Api --version X.Y.Z` for the API extensions s
+* `dotnet add package DataPlane.Sdk.Core --version X.Y.Z` for the SDK core, can be omitted if `DataPlane.Sdk.Api`
   is used
 
 Note that while the `DataPlane.Sdk.Api` package is not strictly required, it handles all incoming DPS API communication,
@@ -46,34 +48,13 @@ should only be omitted if a custom API implementation is used. See [this chapter
 
 ## 2. Usage (with API)
 
-This is what most SDK users will want. The `DataPlane.Sdk.Api` package adds web controllers to the app that handle
-incoming DPS
-requests and invokes callbacks on the `DataPlaneSdk` object.
-
-A very bare-bones new `webapi` project would look like this (top-level statements, no `Program` class):
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
-```
+The best way to see how the SDK used is to check out one of the [Samples](./Samples).
 
 ### 2.1 Configuring the SDK
 
-This example uses .NET's built-in webserver Kestrel to service any API requests and the recommended way is to register
-all SDK-related services in an extension method. Let's write a simple extension method:
+In a typical .NET/ASP.NET Core application that uses .NET's native dependency injection mechanism, the recommended
+way is to register all SDK-related services with the DI container, preferably in an extension method to keep things
+clean. Let's write a simple extension method:
 
 ```csharp
 using DataPlane.Sdk.Core;
@@ -92,13 +73,17 @@ public static class MyExtensions
         var config = configuration.GetSection("DataPlaneSdk").Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = DataFlowContextFactory.CreatePostgres(configuration, config.RuntimeId),
+            DataFlowStore = () => DataFlowContextFactory.CreatePostgres(configuration, config.RuntimeId),
             RuntimeId = config.RuntimeId,
             OnStart = f => StatusResult<DataFlowResponseMessage>.Success(new DataFlowResponseMessage { DataAddress = f.Destination }),
             OnRecover = _ => StatusResult<Void>.Success(default),
             OnTerminate = _ => StatusResult<Void>.Success(default),
             OnSuspend = _ => StatusResult<Void>.Success(default),
-            OnProvision = f => StatusResult<IList<ProvisionResource>>.Success([])
+            OnPrepare = f => 
+            {
+                f.State = DataFlowState.Prepared;
+                return StatusResult<DataFlow>.Success(f);
+            }
         };
     }
 
@@ -106,12 +91,12 @@ public static class MyExtensions
 }
 ```
 
-There are several noteworthy things going on:
+There are several noteworthy things going on here:
 
-1. Binding the application config (`appsettings[.*].json`) to a configuration object (
-   see [this chapter](#4-required-configuration) for details)
-2. Registering API callbacks: these are invoked when respective DPS API requests are received (
-   see [this chapter](#5-dataplane-signaling-api-callbacks) for details)
+1. Binding the application config (`appsettings[.*].json`) to a configuration object
+   (see [this chapter](#4-required-configuration) for details)
+2. Registering API callbacks: these are invoked when respective DPS API requests are received
+   (see [this chapter](#5-dataplane-signaling-api-callbacks) for details)
 3. Initialization of the PostgreSQL-based data storage (see [this chapter](#6-in-memory-vs-postgresql-persistence) for
    details)
 
@@ -121,70 +106,32 @@ The DataPlane SDK integrates well with .NET's dependency injection mechanism, an
 are registered with the DI container (the `IHost`):
 
 ```csharp
-// read required configuration from appsettings.json to make it injectable
-services.Configure<ControlApiOptions>(configuration.GetSection("DataPlaneSdk:ControlApi"));
-
 // add SDK core services
-services.AddSdkServices(sdk);
+var dataplaneConfig = configuration.GetSection("DataPlaneSdk");
+services.AddSdkServices(sdk, dataplaneConfig);
 ```
 
-Registering the `ControlApiOptions` object is necessary, because other services will want to inject it to read
-configuration.
+The SDK takes care of registering all configuration objects and services it needs internally.
 
 The `AddSdkServices` extension method is provided by the SDK and registers SDK services like persistence, token
-providers and API clients.
+providers and API clients and configuration.
 
 ### 2.3 Setting up authentication for incoming requests
 
 Next, we need to configure API authentication and authorization. The SDK does bring most of the scaffolding and glue
-code, but clients still need to implement the following:
+code, but client apps still need to implement the following:
 
 * API authentication logic: validating incoming auth tokens and their signatures
-* authorization of outgoing HTTP requests: this is relevant when the data plane sends DPS or other HTTP requests to the
+* decorating outgoing HTTP requests: this is needed when the data plane sends DPS or other HTTP requests to the
   control plane: an authorization token header must be added.
 
 ```csharp
 // wire up ASP.net authentication services
-services.AddSdkAuthentication(configuration);
+services.AddAuthentication(...)
 ```
 
-this sets up default SDK token validation, which will validate:
-
-* the issuer (valid issuer is configured via `Token:ValidIssuer`)
-* the audience (`Token:ValidAudience`)
-* the token signing key
-* token lifetime
-* token replay (`jti` claims)
-
-In cases where a third-party IdP like KeyCloak is used, this can be customized. Instead of using the
-`AddSdkAuthentication` method, authentication parameters must be overridden:
-
-```csharp
-
-// overwrite SDK authentication with KeycloakJWT. Effectively, this sets the default authentication scheme to "KeycloakJWT", foregoing the SDK default authentication scheme ("DataPlaneSdkJWT").
-services.AddAuthentication("KeycloakJWT")
-        .AddJwtBearer("KeycloakJWT", options =>
-        {
-            // Configure Keycloak as the Identity Provider
-            options.Authority = "http://localhost:8080/realms/master";
-            options.RequireHttpsMetadata = false; // Only for dev!
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = "http://localhost:8080/realms/master",
-                ValidateAudience = true,
-                ValidAudience = "dataplane-api", // or whatever is configured in KeyCloak
-                ValidateIssuerSigningKey = true,
-                ValidateLifetime = true,
-                ValidateActor = false,
-                ValidateTokenReplay = true
-            };
-        });
-```
-
-Note that this example assumes that KeyCloak is running on `localhost:8080` and has a client configured with an audience
-mapper injecting `"aud" : "dataplane-api"` into the JWT. Details of how to do that can be obtained from KeyCloaks
-documentation.
+For a more comprehensive example that uses Keycloak as authentication provider, see
+the [example project](./Samples/HttpDataplane-Keycloak).
 
 ### 2.4 Setting up authorization of incoming HTTP requests
 
@@ -200,13 +147,14 @@ services.AddSdkAuthorization();
 This registers authorization handlers for all resource types, that reject any request, where the `participantContextId`
 does not match the auth token's `sub` claim, for example:
 
-* `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant123` -> accepted, if `participant123` owns
+* `/api/v1/participant123/dataflows/dataflowXYZ` and `sub: participant123` -> accepted, if `participant123` owns
   `dataflowXYZ`
-* `/api/v1/participant123/dataflows/dataflowXYZ/state` and `sub: participant456` -> rejected
+* `/api/v1/participant123/dataflows/dataflowXYZ` and `sub: participant456` -> rejected, if `participant123` does not
+  own `dataflowXYZ`
 
 ### 2.5 Setting up authorization of outgoing HTTP requests
 
-The data plane needs to send HTTP requests to the control plane on several occasions, for example when sending
+The data plane needs to send HTTP requests to the control plane on several occasions, for example, when sending
 asynchronous DPS messages, or to register and un-register the data plane with the control plane.
 
 These requests must be authenticated, i.e. carry an `Authorization: Bearer ey...` header. Fortunately, the DataPlane SDK
@@ -218,8 +166,8 @@ To configure this, add the following to your extension method or `Program.cs`:
 services.AddSingleton<ITokenProvider, MyTokenProvider>();
 ```
 
-it is imperative to register the provider as singleton, so that the default (no-op) token provider from the SDK gets
-overwritten properly. The token provider's job is to obtain an access token from a third-party IdP such as KeyCloak. The
+It is imperative to register the provider as a singleton so that the default (no-op) token provider from the SDK gets
+overwritten properly. The token provider's job is to get an access token from a third-party IdP such as KeyCloak. The
 specifics of that are beyond the scope of this document, but the following general sequence could be implemented:
 
 ```csharp
@@ -230,7 +178,7 @@ public class MyTokenProvider(HttpClient httpClient) : ITokenProvider
     {
         var clientId = GetSecretFromVault("client_id");
         var clientSecret = GetSecretFromVault("client_secret");
-        var tokenEndpoint = "http://localhost:8080/realms/master/protocol/openid-connect/token";
+        var tokenEndpoint = "http://identity.yourcompany.com/openid-connect/token";
 
         var request = new HttpRequestMessage(HttpMethod.Post, _tokenEndpoint);
         request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -265,13 +213,15 @@ To avoid conflicts and potential infinite loops during token generation, the tok
 named" `HttpClient` (name = `"SdkHttpClient"`). As a general rule of thumb, client code should:
 
 * use _named_ `HttpClient` objects by using `IHttpClientFactory.CreateClient("SdkHttpClient")` when making HTTP requests
-  to the DataPlane Signaling Api, the Control API or other control plane APIs
-* use _unnamed_ `HttpClient` objects when making arbitrary HTTP requests to external services, like an IdP
+  to the DataPlane Signaling Api, or other control plane APIs
+* use _unnamed_ `HttpClient` objects when making arbitrary HTTP requests to external services, like an IdP or
+  third-party APIs
 
 ## 3. Usage (core only)
 
 In situations where the built-in API server for DataPlane Signaling cannot be used, it may be an option to use only the
-`DataPlane.Sdk.Core` module. While this will forego all API controllers, authentication and authorization, it will still provide
+`DataPlane.Sdk.Core` module. While this will forego all API controllers, authentication and authorization, it will still
+provide
 core services and persistence. To do that, add the `DataPlane.Sdk.Core` package to your .NET project:
 `dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha`.
 

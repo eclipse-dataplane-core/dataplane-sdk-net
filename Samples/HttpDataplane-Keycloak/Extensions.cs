@@ -14,13 +14,17 @@ public static class Extensions
         // initialize and configure the DataPlaneSdk
         var dataplaneConfig = configuration.GetSection("DataPlaneSdk");
         var config = dataplaneConfig.Get<DataPlaneSdkOptions>() ?? throw new ArgumentException("Configuration invalid!");
-        var permissionService = new DataService();
+        var dataFlowContext = () => CreatePostgres(configuration, config.RuntimeId);
+        var permissionService = new DataService(dataFlowContext.Invoke());
         var sdk = new DataPlaneSdk
         {
-            DataFlowStore = () =>
-                CreatePostgres(configuration, config.RuntimeId),
+            DataFlowStore = dataFlowContext,
             RuntimeId = config.RuntimeId,
-            OnStart = f => StatusResult<DataFlow>.Success(permissionService.SetPublicEndpoint(f)),
+            OnStart = f =>
+            {
+                permissionService.CreatePublicEndpoint(f).Wait(); // yeah... Wait() ain't pretty, but no other option here. Async delegates can't return values
+                return StatusResult<DataFlow>.Success(f);
+            },
             OnRecover = _ => StatusResult.Success(),
             OnTerminate = _ => StatusResult.Success(),
             OnSuspend = _ => StatusResult.Success(),

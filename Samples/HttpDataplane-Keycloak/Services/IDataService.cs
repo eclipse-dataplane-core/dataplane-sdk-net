@@ -11,8 +11,8 @@ public interface IDataService
     ///     Configures the specified data flow with a public endpoint.
     /// </summary>
     /// <param name="dataFlow">The data flow object to be configured with a public endpoint.</param>
-    /// <returns>Returns the updated <see cref="DataFlow" /> object after setting the public endpoint.</returns>
-    DataFlow SetPublicEndpoint(DataFlow dataFlow);
+    /// <returns>Returns the updated <see cref="DataFlow" /> object after creating the public endpoint.</returns>
+    Task<DataFlow> CreatePublicEndpoint(DataFlow dataFlow);
 
     /// <summary>
     ///     Determines whether the specified API key has permission to access the given data flow.

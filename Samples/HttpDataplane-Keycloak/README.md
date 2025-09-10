@@ -1,17 +1,21 @@
 # Example: HTTP Dataplane with Keycloak
 
-This example implements a data plane using HTTP as data transport, that fetches data from a private backend API and
-makes it available via a public endpoint.
-Keycloak is used as authentication provider for the Dataplane Signaling Protocol between data plane and control plane.
+This example implements a data plane using HTTP as data transport that fetches data from a private backend
+API (https://jsonplaceholder.typicode.com) and
+makes it available via a public endpoint. A service called `IDataService` takes care of handling permissions, the
+`IHttpProxyService` acts as a (very minimal and simple) proxy for the private API.
+
+Keycloak is used as an authentication provider to authenticate the Dataplane Signaling Protocol between data plane and
+control plane.
 
 ## Overview
 
-The project implements a DataPlane application that handles data transfer operations via the Dataplane Signaling
+The project implements a DataPlane that handles data transfer operations via the Dataplane Signaling
 Protocol (DSP) with secure authentication using Keycloak.
 
 Typically, a data plane that implements the DSP protocol communicates with a control plane that sends the DSP
-messages. Here, the "control plane" is implemented by sending plain HTTP requests, see the
-accompanying [Postman collection](./Resources/Postman) for details.
+messages. Here, we don't have an actual control plane, instead it is simulated by sending HTTP requests from Postman,
+see the accompanying [Postman collection](./Resources/Postman) for details.
 
 ## Getting started
 

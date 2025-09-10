@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Core", "DataP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Core.Test", "DataPlane.Sdk.Core.Test\DataPlane.Sdk.Core.Test.csproj", "{C9F8CEE9-F96C-41B5-B58D-3D0B82B87258}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Example.Web", "DataPlane.Sdk.Example.Web\DataPlane.Sdk.Example.Web.csproj", "{A4F5ED36-5884-4319-83E7-C85626332099}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A4B4E17A-8E91-45A0-BD5B-70EA9CA1B76D}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
@@ -43,10 +41,6 @@ Global
 		{C9F8CEE9-F96C-41B5-B58D-3D0B82B87258}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9F8CEE9-F96C-41B5-B58D-3D0B82B87258}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9F8CEE9-F96C-41B5-B58D-3D0B82B87258}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4F5ED36-5884-4319-83E7-C85626332099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4F5ED36-5884-4319-83E7-C85626332099}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4F5ED36-5884-4319-83E7-C85626332099}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4F5ED36-5884-4319-83E7-C85626332099}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C95272D3-3046-4C26-A422-C19EC45C7800}.Release|Any CPU.ActiveCfg = Release|Any CPU

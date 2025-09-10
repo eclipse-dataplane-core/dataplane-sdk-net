@@ -1,27 +1,24 @@
+using DataPlane.Sdk.Core.Domain.Interfaces;
 using DataPlane.Sdk.Core.Domain.Model;
 
 namespace HttpDataplane.Services;
 
-public class DataService : IDataService
+public class DataService(IDataPlaneStore dataFlowStore) : IDataService
 {
-    private readonly IDictionary<string, DataFlow> _permissions = new Dictionary<string, DataFlow>();
-
     public Task<bool> IsPermitted(string apiKey, DataFlow dataFlow)
     {
         return Task.FromResult(dataFlow.Destination.Properties["token"] as string == apiKey);
     }
 
-    public Task<DataFlow?> GetFlow(string id)
+    public async Task<DataFlow?> GetFlow(string id)
     {
-        _permissions.TryGetValue(id, out var flow);
-        return Task.FromResult(flow);
+        return await dataFlowStore.FindByIdAsync(id);
     }
 
-    public DataFlow SetPublicEndpoint(DataFlow dataFlow)
+    public async Task<DataFlow> CreatePublicEndpoint(DataFlow dataFlow)
     {
         var id = dataFlow.Id; //todo: should this be the DataAddress ID or even randomly generated?
         var apiToken = Guid.NewGuid().ToString();
-        _permissions[id] = dataFlow;
 
         dataFlow.State = DataFlowState.Started;
         dataFlow.Destination = new DataAddress("HttpData")
@@ -32,6 +29,7 @@ public class DataService : IDataService
                 ["token"] = apiToken
             }
         };
+        await dataFlowStore.UpsertAsync(dataFlow, true);
         return dataFlow;
     }
 }

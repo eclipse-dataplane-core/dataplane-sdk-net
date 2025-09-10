@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha7"/>
+        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha8"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
     </ItemGroup>
 

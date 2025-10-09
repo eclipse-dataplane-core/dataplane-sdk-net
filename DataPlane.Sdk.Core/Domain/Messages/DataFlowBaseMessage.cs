@@ -30,7 +30,7 @@ public abstract class DataFlowBaseMessage : JsonLdDto
     public Uri? CallbackAddress { get; set; }
 
     [JsonPropertyName("transferType")]
-    public required string TransferType { get; init; }
+    public required TransferType TransferType { get; init; }
 
     [JsonPropertyName("destinationDataAddress")]
     public required DataAddress DestinationDataAddress { get; init; }

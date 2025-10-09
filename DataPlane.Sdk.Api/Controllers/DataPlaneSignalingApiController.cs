@@ -36,15 +36,13 @@ public class DataPlaneSignalingApiController(
                 DataFlowState.Preparing => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
                     new DataFlowResponseMessage
                     {
-                        DataFlowId = dataFlow.Id,
-                        State = dataFlow.State.ToString(),
+                        State = dataFlow.State,
                         DataplaneId = options.Value.DataplaneId
                     }),
                 DataFlowState.Prepared => Ok(new DataFlowResponseMessage
                 {
-                    DataFlowId = dataFlow.Id,
                     DataplaneId = options.Value.DataplaneId,
-                    State = dataFlow.State.ToString()
+                    State = dataFlow.State
                 }),
                 _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
             };
@@ -72,17 +70,15 @@ public class DataPlaneSignalingApiController(
                 DataFlowState.Starting => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
                     new DataFlowResponseMessage
                     {
-                        DataFlowId = dataFlowId,
                         DataplaneId = options.Value.DataplaneId,
-                        State = dataFlow.State.ToString(),
+                        State = dataFlow.State,
                         DataAddress = dataFlow.Destination
                     }),
                 DataFlowState.Started => Ok(new DataFlowResponseMessage
                 {
-                    DataFlowId = dataFlowId,
                     DataAddress = dataFlow.Destination,
                     DataplaneId = options.Value.DataplaneId,
-                    State = dataFlow.State.ToString()
+                    State = dataFlow.State
                 }),
                 _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
             };
@@ -107,7 +103,7 @@ public class DataPlaneSignalingApiController(
     [Authorize]
     [HttpPost("{dataFlowId}/terminate")]
     public async Task<IActionResult> Terminate([FromRoute] string participantContextId, [FromRoute] string dataFlowId,
-        DataFlowTerminationMessage terminateMessage)
+        DataFlowTerminateMessage terminateMessage)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
         {
@@ -132,7 +128,7 @@ public class DataPlaneSignalingApiController(
         return state.IsSucceeded
             ? Ok(new DataFlowStatusResponseMessage
             {
-                Id = dataFlowId,
+                DataFlowId = dataFlowId,
                 State = state.Content
             })
             : StatusCode((int)state.Failure!.Reason, state);

@@ -27,4 +27,8 @@
         <ProjectReference Include="..\DataPlane.Sdk.Core\DataPlane.Sdk.Core.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Domain\Messages\"/>
+    </ItemGroup>
+
 </Project>

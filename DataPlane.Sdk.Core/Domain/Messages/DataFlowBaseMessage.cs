@@ -8,7 +8,7 @@ public abstract class DataFlowBaseMessage : JsonLdDto
     [JsonPropertyName("messageID")]
     public string MessageId { get; set; } = Guid.NewGuid().ToString();
 
-    [JsonPropertyName("participantId")]
+    [JsonPropertyName("participantID")]
     public required string ParticipantId { get; init; }
 
     [JsonPropertyName("counterPartyID")]
@@ -17,13 +17,13 @@ public abstract class DataFlowBaseMessage : JsonLdDto
     [JsonPropertyName("dataspaceContext")]
     public string? DataspaceContext { get; set; }
 
-    [JsonPropertyName("processId")]
+    [JsonPropertyName("processID")]
     public required string ProcessId { get; set; }
 
-    [JsonPropertyName("agreementId")]
+    [JsonPropertyName("agreementID")]
     public required string AgreementId { get; init; }
 
-    [JsonPropertyName("datasetId")]
+    [JsonPropertyName("datasetID")]
     public required string DatasetId { get; init; }
 
     [JsonPropertyName("callbackAddress")]

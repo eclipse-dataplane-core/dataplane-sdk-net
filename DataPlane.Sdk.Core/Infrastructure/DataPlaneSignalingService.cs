@@ -170,7 +170,6 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     {
         return new DataFlow(message.ProcessId)
         {
-            Source = message.SourceDataAddress,
             Destination = message.DestinationDataAddress,
             TransferType = message.TransferType,
             RuntimeId = _runtimeId,
@@ -178,7 +177,6 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
-            Properties = message.Properties,
             State = DataFlowState.Initialized
         };
     }

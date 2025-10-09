@@ -39,7 +39,6 @@ public static class TestMethods
         return new DataFlowPrepareMessage
         {
             ProcessId = "test-process-id",
-            SourceDataAddress = new DataAddress("test-source-type"),
             DestinationDataAddress = new DataAddress("test-destination-type"),
             TransferType = nameof(FlowType.Pull),
             ParticipantId = "test-participant-id",

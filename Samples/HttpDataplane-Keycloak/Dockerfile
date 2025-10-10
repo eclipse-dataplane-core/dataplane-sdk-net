@@ -11,13 +11,13 @@ COPY . .
 ARG NUGET_USERNAME
 ARG NUGET_PASSWORD
 
-RUN dotnet nuget add source "https://nuget.pkg.github.com/metaform/index.json" \
-    --name Metaform \
+RUN dotnet nuget add source "https://nuget.pkg.github.com/eclipse-dataplane-core/index.json" \
+    --name dcore \
     --username $NUGET_USERNAME \
     --password $NUGET_PASSWORD \
     --store-password-in-clear-text \
  && dotnet restore HttpDataplane-Keycloak.csproj \
- && dotnet nuget remove source Metaform
+ && dotnet nuget remove source dcore
 
 # Publish (framework-dependent)
 RUN dotnet publish HttpDataplane-Keycloak.csproj -c Release -o /app/publish --no-restore

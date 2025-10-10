@@ -1,6 +1,5 @@
 using DataPlane.Sdk.Core.Data;
 using DataPlane.Sdk.Core.Domain.Interfaces;
-using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -10,11 +9,9 @@ namespace DataPlane.Sdk.Core;
 public class DataPlaneSdk
 {
     public Func<DataFlow, StatusResult<DataFlow>>? OnPrepare;
-    public Func<DataFlow, StatusResult>? OnRecover;
     public Func<DataFlow, StatusResult<DataFlow>>? OnStart;
     public Func<DataFlow, StatusResult>? OnSuspend;
     public Func<DataFlow, StatusResult>? OnTerminate;
-    public Func<DataFlowStartMessage, StatusResult>? OnValidateStartMessage;
 
     //todo: make the lease id configurable
     public Func<IDataPlaneStore> DataFlowStore { get; set; } = () => DataFlowContextFactory.CreateInMem("test-lock-id");
@@ -38,18 +35,8 @@ public class DataPlaneSdk
 
     internal StatusResult<DataFlow> InvokeStart(DataFlow df)
     {
-        if (OnStart != null)
-        {
-            return OnStart(df);
-        }
-
         df.State = DataFlowState.Started;
-        return StatusResult<DataFlow>.Success(df);
-    }
-
-    internal StatusResult InvokeValidate(DataFlowStartMessage startMessage)
-    {
-        return OnValidateStartMessage?.Invoke(startMessage) ?? StatusResult.Success();
+        return OnStart != null ? OnStart(df) : StatusResult<DataFlow>.Success(df);
     }
 
     internal StatusResult<DataFlow> InvokeOnPrepare(DataFlow flow)
@@ -96,18 +83,6 @@ public class DataPlaneSdk
         public SdkBuilder OnSuspend(Func<DataFlow, StatusResult> processor)
         {
             _dataPlaneSdk.OnSuspend = processor;
-            return this;
-        }
-
-        public SdkBuilder OnRecover(Func<DataFlow, StatusResult> processor)
-        {
-            _dataPlaneSdk.OnRecover = processor;
-            return this;
-        }
-
-        public SdkBuilder OnValidateStartMessage(Func<DataFlowStartMessage, StatusResult> processor)
-        {
-            _dataPlaneSdk.OnValidateStartMessage = processor;
             return this;
         }
 

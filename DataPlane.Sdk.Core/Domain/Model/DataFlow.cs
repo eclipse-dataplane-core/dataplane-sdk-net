@@ -20,10 +20,6 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
     public List<ProvisionResource> ResourceDefinitions { get; } = [];
 
-    public void Deprovision()
-    {
-        Transition(DataFlowState.Deprovisioning);
-    }
 
     public void Terminate()
     {
@@ -40,18 +36,14 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
         Transition(DataFlowState.Started);
     }
 
-    public void Notified()
-    {
-        Transition(DataFlowState.Notified);
-    }
-
-    public void Provisioning()
-    {
-        Transition(DataFlowState.Provisioning);
-    }
 
     public void AddResourceDefinitions(IList<ProvisionResource> resources)
     {
         ResourceDefinitions.AddRange(resources);
+    }
+
+    public void Starting()
+    {
+        Transition(DataFlowState.Starting);
     }
 }

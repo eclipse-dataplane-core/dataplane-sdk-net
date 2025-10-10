@@ -52,15 +52,9 @@ public class DataPlaneSignalingApiController(
     }
 
     [Authorize]
-    [HttpPost("{dataFlowId}/start")]
-    public async Task<IActionResult> Start([FromRoute] string participantContextId, [FromRoute] string dataFlowId, DataFlowStartMessage startMessage)
+    [HttpPost("start")]
+    public async Task<IActionResult> Start([FromRoute] string participantContextId, DataFlowStartMessage startMessage)
     {
-        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
-        {
-            return Forbid();
-        }
-
-
         var statusResult = await signalingService.StartAsync(startMessage);
         if (statusResult.IsSucceeded)
         {
@@ -86,6 +80,42 @@ public class DataPlaneSignalingApiController(
 
         return StatusCode((int)statusResult.Failure!.Reason, statusResult);
     }
+
+    [Authorize]
+    [HttpPost("{dataFlowId}/start")]
+    public async Task<IActionResult> StartById([FromRoute] string participantContextId, [FromRoute] string dataFlowId, DataFlowStartByIdMessage startMessage)
+    {
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
+        {
+            return Forbid();
+        }
+
+        var statusResult = await signalingService.StartByIdAsync(dataFlowId, startMessage);
+        if (statusResult.IsSucceeded)
+        {
+            var dataFlow = statusResult.Content!;
+            return dataFlow.State switch
+            {
+                DataFlowState.Starting => Accepted(new Uri($"/api/v1/{participantContextId}/dataflows/{dataFlow.Id}", UriKind.Relative),
+                    new DataFlowResponseMessage
+                    {
+                        DataplaneId = options.Value.DataplaneId,
+                        State = dataFlow.State,
+                        DataAddress = dataFlow.Destination
+                    }),
+                DataFlowState.Started => Ok(new DataFlowResponseMessage
+                {
+                    DataAddress = dataFlow.Destination,
+                    DataplaneId = options.Value.DataplaneId,
+                    State = dataFlow.State
+                }),
+                _ => BadRequest($"DataFlow state {dataFlow.State} is not expected")
+            };
+        }
+
+        return StatusCode((int)statusResult.Failure!.Reason, statusResult);
+    }
+
 
     [Authorize]
     [HttpPost("{dataFlowId}/suspend")]
@@ -115,7 +145,7 @@ public class DataPlaneSignalingApiController(
     }
 
     [Authorize]
-    [HttpGet("{dataFlowId}")]
+    [HttpGet("{dataFlowId}/status")]
     public async Task<IActionResult> GetStatus([FromRoute] string dataFlowId, [FromRoute] string participantContextId)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)

@@ -141,11 +141,11 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     public async Task NextNotLeased()
     {
         var f1 = TestMethods.CreateDataFlow("test-flow-id1", DataFlowState.Started);
-        var f2 = TestMethods.CreateDataFlow("test-flow-id2", DataFlowState.Provisioned);
-        var f3 = TestMethods.CreateDataFlow("test-flow-id3", DataFlowState.Notified);
+        var f2 = TestMethods.CreateDataFlow("test-flow-id2", DataFlowState.Starting);
+        var f3 = TestMethods.CreateDataFlow("test-flow-id3", DataFlowState.Completed);
         var f4 = TestMethods.CreateDataFlow("test-flow-id4", DataFlowState.Terminated);
         var f5 = TestMethods.CreateDataFlow("test-flow-id5", DataFlowState.Started);
-        var f6 = TestMethods.CreateDataFlow("test-flow-id6", DataFlowState.Notified);
+        var f6 = TestMethods.CreateDataFlow("test-flow-id6", DataFlowState.Uninitialized);
         context.DataFlows.AddRange(f1, f2, f3, f4, f5, f6);
         await context.SaveChangesAsync();
 
@@ -155,7 +155,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
         notLeased.ShouldContain(f1);
         notLeased.ShouldContain(f5);
 
-        var notified = await context.NextNotLeased(1, DataFlowState.Notified);
+        var notified = await context.NextNotLeased(1, DataFlowState.Completed);
         notified.ShouldNotBeNull();
         notified.Count.ShouldBe(1);
         notified.ShouldContain(f3);

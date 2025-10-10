@@ -80,6 +80,15 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
         });
     }
 
+    public static StatusResult<TContent> BadRequest(string message)
+    {
+        return Failed(new StatusFailure
+        {
+            Message = message,
+            Reason = FailureReason.BadRequest
+        });
+    }
+
     public static StatusResult<TContent> FromCode(int resultStatusCode, string? resultReasonPhrase)
     {
         return resultStatusCode switch
@@ -90,7 +99,7 @@ public class StatusResult<TContent>(TContent? content, StatusFailure? failure)
             503 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Service Unavailable", Reason = ServiceUnavailable }),
             401 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unauthorized", Reason = Unauthorized }),
             403 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Forbidden", Reason = Forbidden }),
-            400 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Bad Request", Reason = BadRequest }),
+            400 => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Bad Request", Reason = FailureReason.BadRequest }),
             _ => Failed(new StatusFailure { Message = resultReasonPhrase ?? "Unknown Error", Reason = Unrecognized })
         };
     }

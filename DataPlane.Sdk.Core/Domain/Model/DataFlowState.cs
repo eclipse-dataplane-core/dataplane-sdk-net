@@ -5,7 +5,7 @@ public enum DataFlowState
     /// <summary>
     ///     The state machine has been initialized.
     /// </summary>
-    Initialized = 100,
+    Uninitialized = 100,
 
     /// <summary>
     ///     A consumer or provider data plane are in the process of preparing to receive or send data using a wire protocol.
@@ -46,15 +46,5 @@ public enum DataFlowState
     ///     A data transfer has terminated before completion, has failed or experienced an error and cannot be resumed. This is
     ///     a terminal state.
     /// </summary>
-    Terminated = 800,
-
-    #region Deprecated states
-
-    Provisioning = 25,
-    Provisioned = 50,
-    Received = 60,
-    Notified = 70,
-    Deprovisioning = 80,
-
-    #endregion
+    Terminated = 800
 }

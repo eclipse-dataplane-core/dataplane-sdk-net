@@ -163,10 +163,11 @@ public class DataFlowContext : DbContext, IDataPlaneStore
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.TransferType)
+            .IsRequired()
             .HasConversion(
                 tt => ToJson(tt),
-                json => JsonSerializer.Deserialize<TransferType>(json, serializerOptions) ?? null)
-            .IsRequired();
+                json => JsonSerializer.Deserialize<TransferType>(json, serializerOptions)!);
+
 
         modelBuilder.Entity<DataFlow>()
             .Property(df => df.Properties)
@@ -190,7 +191,7 @@ public class DataFlowContext : DbContext, IDataPlaneStore
         return JsonSerializer.Deserialize<DataAddress>(s, serializerOptions);
     }
 
-    private static string ToJson(dynamic da)
+    private static string ToJson(dynamic? da)
     {
         return JsonSerializer.Serialize(da);
     }

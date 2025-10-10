@@ -528,7 +528,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_Success()
     {
-        sdk.OnStart = null;
+        Sdk.OnStart = null;
         var flow = CreateDataFlow();
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
@@ -551,7 +551,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_WhenNotFound_ExpectError()
     {
-        sdk.OnStart = null;
+        Sdk.OnStart = null;
 
         var startMsg = new DataFlowStartByIdMessage
         {
@@ -567,7 +567,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_InvalidState_ExpectConflict()
     {
-        sdk.OnStart = null;
+        Sdk.OnStart = null;
         var flow = CreateDataFlow();
         flow.State = DataFlowState.Completed; // invalid state
         DataFlowContext.DataFlows.Add(flow);
@@ -587,7 +587,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_WhenSdkReturnsStarting_Success()
     {
-        sdk.OnStart = df =>
+        Sdk.OnStart = df =>
         {
             df.State = DataFlowState.Starting;
             return StatusResult<DataFlow>.Success(df);
@@ -616,7 +616,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_WhenSdkReturnsStarted_Success()
     {
-        sdk.OnStart = df =>
+        Sdk.OnStart = df =>
         {
             df.State = DataFlowState.Started;
             return StatusResult<DataFlow>.Success(df);
@@ -643,7 +643,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task StartById_SdkHandlerWrongState_ExpectBadRequest()
     {
-        sdk.OnStart = df =>
+        Sdk.OnStart = df =>
         {
             df.State = DataFlowState.Suspended; // invalid state
             return StatusResult<DataFlow>.Success(df);
@@ -670,10 +670,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 ///     uses the in-memory db context
 /// </summary>
 public class InMem(InMemoryFixture fixture)
-    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>;
+    : DataPlaneSignalingApiControllerTest(fixture.Context, fixture.Client!, fixture.Sdk), IClassFixture<InMemoryFixture>;
 
 /// <summary>
 ///     uses the PostgreSQL db context
 /// </summary>
 public class Postgres(PostgresFixture fixture)
-    : DataPlaneSignalingApiControllerTest(fixture.Context!, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>;
+    : DataPlaneSignalingApiControllerTest(fixture.Context, fixture.Client!, fixture.Sdk), IClassFixture<PostgresFixture>;

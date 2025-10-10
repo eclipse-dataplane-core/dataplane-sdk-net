@@ -99,7 +99,6 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         // _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
     }
 
-
     [Fact]
     public async Task StartAsync_WhenSdkReportsFailure_ShouldReturnFailure()
     {

@@ -27,25 +27,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
 
         var dataFlow = CreateDataFlow(message);
 
-        // invoke SDK handler
-        var sdkResult = sdk.InvokeStart(dataFlow);
-
-        if (sdkResult.IsFailed)
-        {
-            return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
-        }
-
-        // check correct state
-        var state = sdkResult.Content?.State;
-        if (state != DataFlowState.Started && state != DataFlowState.Starting)
-        {
-            return StatusResult<DataFlow>.Conflict($"Wrong state from SDK handler: {state}");
-        }
-
-        dataFlow = sdkResult.Content!;
-
-        await dataFlowContext.UpsertAsync(dataFlow, true);
-        return StatusResult<DataFlow>.Success(dataFlow);
+        return await StartExistingFlow(dataFlow, sdk.InvokeStart);
     }
 
 
@@ -63,26 +45,10 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             return StatusResult<DataFlow>.Success(existing);
         }
 
-        // check the correct state
+        // check the correct state of the existing DF
         if (existing.State is DataFlowState.Starting or DataFlowState.Prepared or DataFlowState.Uninitialized)
         {
-            var sdkResult = sdk.InvokeStart(existing);
-            if (sdkResult.IsFailed)
-            {
-                return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
-            }
-
-            // check correct state
-            var state = sdkResult.Content?.State;
-            if (state != DataFlowState.Started && state != DataFlowState.Starting)
-            {
-                return StatusResult<DataFlow>.Conflict($"Wrong state from SDK handler: {state}");
-            }
-
-            existing = sdkResult.Content!;
-
-            await dataFlowContext.UpsertAsync(existing, true);
-            return StatusResult<DataFlow>.Success(existing);
+            return await StartExistingFlow(existing, sdk.InvokeStart);
         }
 
         return StatusResult<DataFlow>.Conflict($"DataFlow in wrong state: {existing.State}, expected one of: Starting, Prepared, Uninitialized");
@@ -178,19 +144,27 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
-    private StatusResult<DataFlow> SetStartState(DataFlow dataFlow, DataFlowState targetState)
+    private async Task<StatusResult<DataFlow>> StartExistingFlow(DataFlow existingFlow, Func<DataFlow, StatusResult<DataFlow>> sdkHandler)
     {
-        switch (targetState)
+        // invoke SDK handler
+        var sdkResult = sdkHandler(existingFlow);
+
+        if (sdkResult.IsFailed)
         {
-            case DataFlowState.Starting:
-                dataFlow.Starting();
-                return StatusResult<DataFlow>.Success(dataFlow);
-            case DataFlowState.Started:
-                dataFlow.Start();
-                return StatusResult<DataFlow>.Success(dataFlow);
+            return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
         }
 
-        return StatusResult<DataFlow>.Conflict($"Wrong target state: {targetState}");
+        // check the correct state from the SDK handler
+        var state = sdkResult.Content?.State;
+        if (state != DataFlowState.Started && state != DataFlowState.Starting)
+        {
+            return StatusResult<DataFlow>.Conflict($"Wrong state from SDK handler: {state}");
+        }
+
+        existingFlow = sdkResult.Content!;
+
+        await dataFlowContext.UpsertAsync(existingFlow, true);
+        return StatusResult<DataFlow>.Success(existingFlow);
     }
 
     private DataFlow CreateDataFlow(DataFlowPrepareMessage message)

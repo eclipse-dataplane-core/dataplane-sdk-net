@@ -10,7 +10,10 @@ public static class TestMethods
         return new DataFlow(id)
         {
             Source = new DataAddress("test-data-address"),
-            Destination = new DataAddress("test-data-address"),
+            Destination = new DataAddress("test-data-address")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
             TransferType = new TransferType
             {
                 DestinationType = "test-type",

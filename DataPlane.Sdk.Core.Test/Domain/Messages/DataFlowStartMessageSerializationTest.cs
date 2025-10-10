@@ -83,7 +83,7 @@ public class DataFlowStartMessageTest
                    """;
 
         // Act
-        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json);
+        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         message.ShouldNotBeNull();
@@ -94,12 +94,12 @@ public class DataFlowStartMessageTest
         message.AgreementId.ShouldBe("agreement-def");
         message.SourceDataAddress.ShouldNotBeNull();
         message.SourceDataAddress.Type.ShouldBe("S3");
-        message.SourceDataAddress.Properties["bucketName"].ToString().ShouldBe("source-bucket");
-        message.SourceDataAddress.Properties["region"].ToString().ShouldBe("us-east-1");
+        message.SourceDataAddress.Properties["bucketName"].ShouldBeEquivalentTo("source-bucket");
+        message.SourceDataAddress.Properties["region"].ShouldBeEquivalentTo("us-east-1");
         message.DestinationDataAddress.ShouldNotBeNull();
         message.DestinationDataAddress.Type.ShouldBe("AzureBlob");
-        message.DestinationDataAddress.Properties["container"].ToString().ShouldBe("dest-container");
-        message.DestinationDataAddress.Properties["account"].ToString().ShouldBe("myaccount");
+        message.DestinationDataAddress.Properties["container"].ShouldBeEquivalentTo("dest-container");
+        message.DestinationDataAddress.Properties["account"].ShouldBeEquivalentTo("myaccount");
         message.TransferType.FlowType.ShouldBe(FlowType.Push);
     }
 
@@ -127,7 +127,7 @@ public class DataFlowStartMessageTest
                    """;
 
         // Act
-        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json);
+        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         message.ShouldNotBeNull();
@@ -170,7 +170,7 @@ public class DataFlowStartMessageTest
 
         // Act
         var json = JsonSerializer.Serialize(original);
-        var deserialized = JsonSerializer.Deserialize<DataFlowStartMessage>(json);
+        var deserialized = JsonSerializer.Deserialize<DataFlowStartMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         deserialized.ShouldNotBeNull();
@@ -180,11 +180,11 @@ public class DataFlowStartMessageTest
         deserialized.ParticipantId.ShouldBe(original.ParticipantId);
         deserialized.AgreementId.ShouldBe(original.AgreementId);
         deserialized.SourceDataAddress.Type.ShouldBe(original.SourceDataAddress.Type);
-        deserialized.SourceDataAddress.Properties["path"].ToString().ShouldBe("/data/source");
-        deserialized.SourceDataAddress.Properties["format"].ToString().ShouldBe("csv");
+        deserialized.SourceDataAddress.Properties["path"].ShouldBeEquivalentTo("/data/source");
+        deserialized.SourceDataAddress.Properties["format"].ShouldBeEquivalentTo("csv");
         deserialized.DestinationDataAddress.Type.ShouldBe(original.DestinationDataAddress.Type);
-        deserialized.DestinationDataAddress.Properties["connectionString"].ToString().ShouldBe("Server=localhost");
-        deserialized.DestinationDataAddress.Properties["table"].ToString().ShouldBe("dest_table");
+        deserialized.DestinationDataAddress.Properties["connectionString"].ShouldBeEquivalentTo("Server=localhost");
+        deserialized.DestinationDataAddress.Properties["table"].ShouldBeEquivalentTo("dest_table");
         deserialized.TransferType.ShouldBeEquivalentTo(original.TransferType);
     }
 
@@ -214,7 +214,7 @@ public class DataFlowStartMessageTest
                    """;
 
         // Act
-        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json);
+        var message = JsonSerializer.Deserialize<DataFlowStartMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         message.ShouldNotBeNull();

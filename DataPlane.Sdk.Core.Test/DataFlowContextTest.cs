@@ -31,6 +31,7 @@ public class DataFlowContextTest
         entry.State.ShouldBe(EntityState.Added);
 
         entry.Entity.Id.ShouldBe(dataFlow.Id);
+        entry.Entity.ShouldBeEquivalentTo(dataFlow);
     }
 
     [Fact]

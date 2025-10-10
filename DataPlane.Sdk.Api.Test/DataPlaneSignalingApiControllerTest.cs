@@ -280,7 +280,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         return new DataFlow(id)
         {
             Source = new DataAddress("test-type"),
-            Destination = new DataAddress("test-type"),
+            Destination = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -352,8 +355,14 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
+            DestinationDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
             TransferType = new TransferType
             {
                 DestinationType = "test-type",

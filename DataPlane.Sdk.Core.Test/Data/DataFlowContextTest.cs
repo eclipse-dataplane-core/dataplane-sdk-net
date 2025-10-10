@@ -11,7 +11,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     [Fact]
     public async Task SaveAsync_ShouldAddNewDataFlow()
     {
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.UpsertAsync(dataFlow);
 
         context.ChangeTracker.HasChanges().ShouldBeTrue();
@@ -21,13 +21,14 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
 
         entry.Entity.Id.ShouldBe(dataFlow.Id);
         entry.Entity.ShouldBeEquivalentTo(dataFlow);
+        entry.Entity.Destination.Properties["test-key"].ShouldBeEquivalentTo("test-value");
     }
 
     [Fact]
     public async Task SaveAsync_ShouldUpdateExistingDataFlow()
     {
         //create data flow
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.DataFlows.AddAsync(dataFlow);
         await context.SaveChangesAsync();
 
@@ -45,7 +46,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     [Fact]
     public async Task FindByIdAsync_ShouldReturnDataFlow_WhenExists()
     {
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.DataFlows.AddAsync(dataFlow);
         await context.SaveChangesAsync();
 
@@ -65,7 +66,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     [Fact]
     public async Task FindByIdAndLeaseAsync_ShouldReturnDataFlow_WhenExistsAndLeaseAcquired()
     {
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.DataFlows.AddAsync(dataFlow);
         await context.SaveChangesAsync();
 
@@ -95,7 +96,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     [Fact]
     public async Task FindByIdAndLeaseAsync_ShouldFail_WhenAlreadyLeased()
     {
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.DataFlows.AddAsync(dataFlow);
         await context.Leases.AddAsync(new Lease
             {
@@ -115,7 +116,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
     [Fact]
     public async Task FindByIdAndLeaseAsync_ShouldSucceed_WhenAlreadyLeasedBySelf()
     {
-        var dataFlow = TestMethods.CreateDataFlow("id-"+Guid.NewGuid());
+        var dataFlow = TestMethods.CreateDataFlow("id-" + Guid.NewGuid());
         await context.DataFlows.AddAsync(dataFlow);
         var originalLease = new Lease
         {
@@ -163,5 +164,5 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
 public class InMem(InMemoryFixture fixture)
     : DataFlowContextTest(fixture.Context, fixture.LockId), IClassFixture<InMemoryFixture>;
 
-public class Postgres(PostgresFixture fixture) 
+public class Postgres(PostgresFixture fixture)
     : DataFlowContextTest(fixture.Context, fixture.LockId), IClassFixture<PostgresFixture>;

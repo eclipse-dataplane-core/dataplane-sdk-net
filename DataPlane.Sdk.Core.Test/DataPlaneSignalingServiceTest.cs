@@ -1,4 +1,5 @@
 using DataPlane.Sdk.Core.Data;
+using DataPlane.Sdk.Core.Domain.Messages;
 using DataPlane.Sdk.Core.Domain.Model;
 using DataPlane.Sdk.Core.Infrastructure;
 using Moq;
@@ -41,12 +42,12 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     [Fact]
     public async Task GetState_WhenExists()
     {
-        var flow = CreateDataFlow("test-process-id", Provisioning);
+        var flow = CreateDataFlow("test-process-id", Prepared);
         _dataFlowContext.DataFlows.Add(flow);
         await _dataFlowContext.SaveChangesAsync();
         var result = await _service.GetTransferStateAsync(flow.Id);
         result.ShouldNotBeNull();
-        result.Content.ShouldBe(Provisioning);
+        result.Content.ShouldBe(Prepared);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_ShouldReturnSuccess_WhenDataFlowIsCreated()
+    public async Task StartAsync_WhenDataFlowIsCreated_ShouldReturnSuccess()
     {
         var message = CreateStartMessage();
 
@@ -76,7 +77,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_ShouldReturnSuccess_WhenDataFlowExists()
+    public async Task StartAsync_WhenDataFlowExists_ShouldReturnConflict()
     {
         const string id = "test-process-id";
         var message = CreateStartMessage();
@@ -87,34 +88,20 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.SaveChangesAsync();
 
         var result = await _service.StartAsync(message);
-        result.IsSucceeded.ShouldBeTrue();
-        result.Content.ShouldNotBeNull();
-        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
-        result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
+        result.IsSucceeded.ShouldBeFalse();
+        result.Failure.ShouldNotBeNull();
+        result.Failure.Reason.ShouldBe(Conflict);
 
-        _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
+        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
+        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
+
+        // _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
+        // _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
     }
 
-    [Fact]
-    public async Task StartAsync_ShouldReturnSuccess_WhenDataFlowIsAlreadyStarted()
-    {
-        var startMessage = CreateStartMessage();
-        var dataFlow = CreateDataFlow(startMessage.ProcessId, Started);
-        await _dataFlowContext.AddAsync(dataFlow);
-        await _dataFlowContext.SaveChangesAsync();
-
-        var mock = new Mock<Func<DataFlow, StatusResult<DataFlow>>>();
-        _sdk.OnStart += mock.Object;
-
-        var result = await _service.StartAsync(startMessage);
-        result.IsSucceeded.ShouldBeTrue();
-        result.Content.ShouldNotBeNull();
-        mock.Verify(m => m.Invoke(dataFlow), Times.Never);
-    }
 
     [Fact]
-    public async Task StartAsync_ShouldReturnFailure_WhenSdkReportsFailure()
+    public async Task StartAsync_WhenSdkReportsFailure_ShouldReturnFailure()
     {
         var startMessage = CreateStartMessage();
 
@@ -135,7 +122,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_ShouldReturnFailure_WhenDataFlowIsLeased()
+    public async Task StartAsync_WhenDataFlowIsLeased_ShouldReturnFailure()
     {
         var startMessage = CreateStartMessage();
         var dataFlow = CreateDataFlow(startMessage.ProcessId, Started);
@@ -157,6 +144,83 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(Conflict);
         mock.Verify(m => m.Invoke(dataFlow), Times.Never);
+    }
+
+    [Fact]
+    public async Task StartByIdAsync_WhenExists_ShouldReturnSuccess()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Uninitialized);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var msg = new DataFlowStartByIdMessage
+        {
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync(flow.Id, msg);
+        result.IsSucceeded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task StartByIdAsync_WhenNotExists_ShouldReturnFailure()
+    {
+        var msg = new DataFlowStartByIdMessage
+        {
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync("not-exist", msg);
+        result.IsFailed.ShouldBeTrue();
+        result.Failure.ShouldNotBeNull();
+        result.Failure.Reason.ShouldBe(NotFound);
+    }
+
+    [Fact]
+    public async Task StartByIdAsync_WhenWrongState_ShouldReturnFailure()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Completed); // can't start from Terminated
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var msg = new DataFlowStartByIdMessage
+        {
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync(flow.Id, msg);
+        result.IsFailed.ShouldBeTrue();
+        result.Failure.ShouldNotBeNull();
+        result.Failure.Reason.ShouldBe(Conflict);
+    }
+
+    [Fact]
+    public async Task StartByIdAsync_WhenAlreadyStarted_ShouldReturnSuccess()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var msg = new DataFlowStartByIdMessage
+        {
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync(flow.Id, msg);
+        result.IsSucceeded.ShouldBeTrue();
+        result.Content.ShouldNotBeNull();
     }
 
     [Fact]
@@ -354,7 +418,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         const string dataFlowId = "test-flow-id";
         const string reason = "Test Suspend";
         var dataFlow = CreateDataFlow(dataFlowId);
-        dataFlow.State = Provisioned;
+        dataFlow.State = Prepared;
 
         _dataFlowContext.DataFlows.Add(dataFlow);
         await _dataFlowContext.SaveChangesAsync();
@@ -362,7 +426,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         var result = await _service.TerminateAsync(dataFlowId, reason);
 
         result.IsSucceeded.ShouldBeTrue();
-        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId && x.State == Deprovisioning);
+        _dataFlowContext.DataFlows.ShouldContain(x => x.Id == dataFlowId && x.State == Terminated);
     }
 
     [Fact]

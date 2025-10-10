@@ -13,6 +13,13 @@ public interface IDataPlaneSignalingService
     Task<StatusResult<DataFlow>> StartAsync(DataFlowStartMessage message);
 
     /// <summary>
+    ///     Starts a data flow that already exists.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="message">The start message</param>
+    Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartByIdMessage message);
+
+    /// <summary>
     ///     Suspends (pauses) a data flow by its ID.
     /// </summary>
     Task<StatusResult> SuspendAsync(string dataFlowId, string? reason = null);
@@ -29,15 +36,6 @@ public interface IDataPlaneSignalingService
     /// </summary>
     /// <param name="processId"></param>
     Task<StatusResult<DataFlowState>> GetTransferStateAsync(string processId);
-
-    /// <summary>
-    ///     Validate the start message, i.e. check if the data flow already exists, if source and destination addresses are
-    ///     valid, etc.
-    /// </summary>
-    /// <param name="startMessage"></param>
-    Task<StatusResult> ValidateStartMessageAsync(DataFlowStartMessage startMessage);
-
-    //todo: add restart flows, resourceProvisioned, resourceDeprovisioned, etc.
 
     /// <summary>
     ///     Initialize the preparation phase of the data transmission.

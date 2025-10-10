@@ -96,7 +96,7 @@ public class DataFlowAuthorizationHandlerTest
             ParticipantId = participantContextId,
             AssetId = "test-asset",
             AgreementId = "test-agreement",
-            State = DataFlowState.Received
+            State = DataFlowState.Uninitialized
         };
     }
 

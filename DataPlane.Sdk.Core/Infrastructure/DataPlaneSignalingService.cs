@@ -18,50 +18,74 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
 
     public async Task<StatusResult<DataFlow>> StartAsync(DataFlowStartMessage message)
     {
-        var validation = await ValidateStartMessageAsync(message);
-        if (validation.IsFailed)
+        var existingFlowResult = await dataFlowContext.FindByIdAsync(message.ProcessId);
+
+        if (existingFlowResult != null)
         {
-            return StatusResult<DataFlow>.Failed(validation.Failure!);
+            return StatusResult<DataFlow>.Conflict("A data flow with ID = " + message.ProcessId + " already exists!");
         }
 
-        var existingFlowResult = await dataFlowContext.FindByIdAndLeaseAsync(message.ProcessId);
-        if (existingFlowResult.IsFailed)
+        var dataFlow = CreateDataFlow(message);
+
+        // invoke SDK handler
+        var sdkResult = sdk.InvokeStart(dataFlow);
+
+        if (sdkResult.IsFailed)
         {
-            if (existingFlowResult.Failure?.Reason == FailureReason.NotFound) // create new data flow
+            return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
+        }
+
+        // check correct state
+        var state = sdkResult.Content?.State;
+        if (state != DataFlowState.Started && state != DataFlowState.Starting)
+        {
+            return StatusResult<DataFlow>.Conflict($"Wrong state from SDK handler: {state}");
+        }
+
+        dataFlow = sdkResult.Content!;
+
+        await dataFlowContext.UpsertAsync(dataFlow, true);
+        return StatusResult<DataFlow>.Success(dataFlow);
+    }
+
+
+    public async Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartByIdMessage message)
+    {
+        var existing = await dataFlowContext.FindByIdAsync(id);
+
+        if (existing == null)
+        {
+            return StatusResult<DataFlow>.NotFound();
+        }
+
+        if (existing.State == DataFlowState.Started) // de-duplication check
+        {
+            return StatusResult<DataFlow>.Success(existing);
+        }
+
+        // check the correct state
+        if (existing.State is DataFlowState.Starting or DataFlowState.Prepared or DataFlowState.Uninitialized)
+        {
+            var sdkResult = sdk.InvokeStart(existing);
+            if (sdkResult.IsFailed)
             {
-                var dataFlow = CreateDataFlow(message);
-                var sdkResult = sdk.InvokeStart(dataFlow);
-
-                if (sdkResult.IsFailed)
-                {
-                    return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
-                }
-
-                await dataFlowContext.UpsertAsync(dataFlow, true);
-                return StatusResult<DataFlow>.Success(dataFlow);
+                return StatusResult<DataFlow>.Failed(sdkResult.Failure!);
             }
 
-            return StatusResult<DataFlow>.Failed(existingFlowResult.Failure!);
+            // check correct state
+            var state = sdkResult.Content?.State;
+            if (state != DataFlowState.Started && state != DataFlowState.Starting)
+            {
+                return StatusResult<DataFlow>.Conflict($"Wrong state from SDK handler: {state}");
+            }
+
+            existing = sdkResult.Content!;
+
+            await dataFlowContext.UpsertAsync(existing, true);
+            return StatusResult<DataFlow>.Success(existing);
         }
 
-        var existingFlow = existingFlowResult.Content!;
-        if (existingFlow.State == DataFlowState.Started)
-        {
-            return StatusResult<DataFlow>.Success(existingFlow);
-        }
-
-        //update existing data flow
-        var result = sdk.InvokeStart(existingFlow);
-        if (result.IsFailed)
-        {
-            return StatusResult<DataFlow>.Failed(result.Failure!);
-        }
-
-        existingFlow = result.Content!;
-        await dataFlowContext.UpdateFlow(existingFlow);
-
-
-        return StatusResult<DataFlow>.Success(existingFlow);
+        return StatusResult<DataFlow>.Conflict($"DataFlow in wrong state: {existing.State}, expected one of: Starting, Prepared, Uninitialized");
     }
 
     public async Task<StatusResult> SuspendAsync(string dataFlowId, string? reason = null)
@@ -115,14 +139,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             return StatusResult.Failed(sdkResult.Failure!);
         }
 
-        if (df.State == DataFlowState.Provisioned)
-        {
-            df.Deprovision();
-        }
-        else
-        {
-            df.Terminate();
-        }
+        df.Terminate();
 
         await dataFlowContext.UpsertAsync(df, true);
         return sdkResult;
@@ -134,11 +151,6 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         return flow == null ? StatusResult<DataFlowState>.NotFound() : StatusResult<DataFlowState>.Success(flow.State);
     }
 
-    public Task<StatusResult> ValidateStartMessageAsync(DataFlowStartMessage startMessage)
-    {
-        // delegate validation to the SDK callback
-        return Task.FromResult(sdk.InvokeValidate(startMessage));
-    }
 
     public async Task<StatusResult<DataFlow>> PrepareAsync(DataFlowPrepareMessage prepareMessage)
     {
@@ -166,6 +178,21 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
+    private StatusResult<DataFlow> SetStartState(DataFlow dataFlow, DataFlowState targetState)
+    {
+        switch (targetState)
+        {
+            case DataFlowState.Starting:
+                dataFlow.Starting();
+                return StatusResult<DataFlow>.Success(dataFlow);
+            case DataFlowState.Started:
+                dataFlow.Start();
+                return StatusResult<DataFlow>.Success(dataFlow);
+        }
+
+        return StatusResult<DataFlow>.Conflict($"Wrong target state: {targetState}");
+    }
+
     private DataFlow CreateDataFlow(DataFlowPrepareMessage message)
     {
         return new DataFlow(message.ProcessId)
@@ -177,7 +204,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
-            State = DataFlowState.Initialized
+            State = DataFlowState.Uninitialized
         };
     }
 
@@ -193,7 +220,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             AssetId = message.DatasetId,
             AgreementId = message.AgreementId,
             CallbackAddress = message.CallbackAddress,
-            State = DataFlowState.Initialized
+            State = DataFlowState.Uninitialized
         };
     }
 }

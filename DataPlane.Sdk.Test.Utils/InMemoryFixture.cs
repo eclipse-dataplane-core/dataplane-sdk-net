@@ -1,7 +1,7 @@
 using DataPlane.Sdk.Core.Data;
 using JetBrains.Annotations;
 
-namespace DataPlane.Sdk.Core.Test.Data;
+namespace DataPlane.Sdk.Test.Utils;
 
 [UsedImplicitly]
 public class InMemoryFixture

@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>
+        <ProjectReference Include="..\DataPlane.Sdk.Test.Utils\DataPlane.Sdk.Test.Utils.csproj"/>
     </ItemGroup>
 
     <PropertyGroup>

@@ -10,9 +10,13 @@ namespace DataPlane.Sdk.Api.Test.Fixtures;
 [UsedImplicitly]
 public class InMemoryFixture : AbstractFixture
 {
+    private static readonly Sdk.Test.Utils.InMemoryFixture RootFixture = new();
+
+    // this must be constant per fixture lifetime, so a property accessor (=>) would not work, b/c that would potentially re-instantiate the context
+    public readonly DataFlowContext Context = RootFixture.Context;
+
     public InMemoryFixture()
     {
-        Context = DataFlowContextFactory.CreateInMem("test-leaser");
         var signalingService = new DataPlaneSignalingService(Context, Sdk);
         InitializeFixture(Context, signalingService);
     }

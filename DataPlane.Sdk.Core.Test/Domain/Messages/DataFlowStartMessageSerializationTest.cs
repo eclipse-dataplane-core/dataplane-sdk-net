@@ -179,9 +179,9 @@ public class DataFlowStartMessageTest
         deserialized.DatasetId.ShouldBe(original.DatasetId);
         deserialized.ParticipantId.ShouldBe(original.ParticipantId);
         deserialized.AgreementId.ShouldBe(original.AgreementId);
-        deserialized.SourceDataAddress.Type.ShouldBe(original.SourceDataAddress.Type);
-        deserialized.SourceDataAddress.Properties["path"].ShouldBeEquivalentTo("/data/source");
-        deserialized.SourceDataAddress.Properties["format"].ShouldBeEquivalentTo("csv");
+        deserialized.SourceDataAddress?.Type.ShouldBe(original.SourceDataAddress.Type);
+        deserialized.SourceDataAddress?.Properties["path"].ShouldBeEquivalentTo("/data/source");
+        deserialized.SourceDataAddress?.Properties["format"].ShouldBeEquivalentTo("csv");
         deserialized.DestinationDataAddress.Type.ShouldBe(original.DestinationDataAddress.Type);
         deserialized.DestinationDataAddress.Properties["connectionString"].ShouldBeEquivalentTo("Server=localhost");
         deserialized.DestinationDataAddress.Properties["table"].ShouldBeEquivalentTo("dest_table");

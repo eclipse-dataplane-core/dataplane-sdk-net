@@ -275,8 +275,10 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
-    private static DataFlow CreateDataFlow(string id = "flow1", string participantId = TestUser)
+    private static DataFlow CreateDataFlow(string? id = null, string participantId = TestUser)
     {
+        id ??= Guid.NewGuid().ToString();
+
         return new DataFlow(id)
         {
             Source = new DataAddress("test-type"),
@@ -304,27 +306,30 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task GetState_Success()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        var dataFlow = CreateDataFlow();
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetState_WrongParticipantInUrlPath()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        var dataFlow = CreateDataFlow();
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync("/api/v1/invalid-participant/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/invalid-participant/dataflows/{dataFlow.Id}");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
     public async Task GetState_DoesNotOwnDataFlow()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow(participantId: "another-user"));
+        var dataFlow = CreateDataFlow(participantId: "another-user");
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/" + dataFlow.Id);
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
@@ -333,7 +338,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         await DataFlowContext.DataFlows.AddAsync(CreateDataFlow("another-flow"));
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/not-exist");
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 

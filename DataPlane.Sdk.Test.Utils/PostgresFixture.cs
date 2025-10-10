@@ -2,7 +2,7 @@ using DataPlane.Sdk.Core.Data;
 using JetBrains.Annotations;
 using Testcontainers.PostgreSql;
 
-namespace DataPlane.Sdk.Core.Test.Data;
+namespace DataPlane.Sdk.Test.Utils;
 
 [UsedImplicitly]
 public class PostgresFixture : IAsyncDisposable
@@ -26,6 +26,8 @@ public class PostgresFixture : IAsyncDisposable
             await _postgreSqlContainer.DisposeAsync();
             await _postgreSqlContainer.DisposeAsync();
         }
+
+        await Context.DisposeAsync();
     }
 
     private DataFlowContext CreateDbContext()

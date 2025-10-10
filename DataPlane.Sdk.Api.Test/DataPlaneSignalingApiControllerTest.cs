@@ -97,7 +97,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         dataFlow.State = DataFlowState.Started;
         await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/terminate", new DataFlowTerminationMessage
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/terminate", new DataFlowTerminateMessage
         {
             Reason = "test reason"
         });
@@ -107,7 +107,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task Terminate_Notfound_Expect404()
     {
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/terminate", new DataFlowTerminationMessage
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/terminate", new DataFlowTerminateMessage
         {
             Reason = "test reason"
         });
@@ -143,9 +143,12 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
@@ -153,7 +156,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
-        body.State.ShouldBe(nameof(DataFlowState.Prepared));
+        body.State.ShouldBe(DataFlowState.Prepared);
         body.DataAddress.ShouldBeNull();
     }
 
@@ -171,9 +174,12 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
@@ -181,7 +187,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         response.Headers.Location.ShouldBeNull();
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
-        body.State.ShouldBe(nameof(DataFlowState.Prepared));
+        body.State.ShouldBe(DataFlowState.Prepared);
         body.DataAddress.ShouldBeNull();
     }
 
@@ -199,9 +205,12 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
@@ -211,7 +220,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
-        body.State.ShouldBe(nameof(DataFlowState.Preparing));
+        body.State.ShouldBe(DataFlowState.Preparing);
         body.DataAddress.ShouldBeNull();
     }
 
@@ -229,9 +238,12 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
@@ -251,22 +263,34 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
         var jsonContent = JsonContent.Create(prepareMsg);
         var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/prepare", jsonContent);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
-    private static DataFlow CreateDataFlow(string id = "flow1", string participantId = TestUser)
+    private static DataFlow CreateDataFlow(string? id = null, string participantId = TestUser)
     {
+        id ??= Guid.NewGuid().ToString();
+
         return new DataFlow(id)
         {
             Source = new DataAddress("test-type"),
-            Destination = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Pull),
+            Destination = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            },
             RuntimeId = "test-runtime-id",
             ParticipantId = participantId,
             AssetId = "test-asset",
@@ -282,27 +306,30 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     [Fact]
     public async Task GetState_Success()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        var dataFlow = CreateDataFlow();
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetState_WrongParticipantInUrlPath()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow());
+        var dataFlow = CreateDataFlow();
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync("/api/v1/invalid-participant/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/invalid-participant/dataflows/{dataFlow.Id}");
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]
     public async Task GetState_DoesNotOwnDataFlow()
     {
-        await DataFlowContext.DataFlows.AddAsync(CreateDataFlow(participantId: "another-user"));
+        var dataFlow = CreateDataFlow(participantId: "another-user");
+        await DataFlowContext.DataFlows.AddAsync(dataFlow);
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/" + dataFlow.Id);
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
@@ -311,7 +338,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         await DataFlowContext.DataFlows.AddAsync(CreateDataFlow("another-flow"));
         await DataFlowContext.SaveChangesAsync();
-        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/flow1");
+        var response = await HttpClient.GetAsync($"/api/v1/{TestUser}/dataflows/not-exist");
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -328,21 +355,31 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         await DataFlowContext.SaveChangesAsync();
         var message = new DataFlowStartMessage
         {
-            Id = dataFlow.Id,
+            MessageId = dataFlow.Id,
             ProcessId = "test-process",
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
+            DestinationDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
-        body.State.ShouldBe(nameof(DataFlowState.Started));
+        body.State.ShouldBe(DataFlowState.Started);
         body.DataAddress.ShouldNotBeNull();
     }
 
@@ -356,14 +393,18 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         await DataFlowContext.SaveChangesAsync();
         var message = new DataFlowStartMessage
         {
-            Id = dataFlow.Id,
+            MessageId = dataFlow.Id,
             ProcessId = "test-process",
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
             SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
@@ -386,14 +427,18 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
         var message = new DataFlowStartMessage
         {
-            Id = dataFlow.Id,
+            MessageId = dataFlow.Id,
             ProcessId = "test-process",
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
             SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
@@ -415,14 +460,18 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
         var message = new DataFlowStartMessage
         {
-            Id = dataFlow.Id,
+            MessageId = dataFlow.Id,
             ProcessId = "test-process",
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
             SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
@@ -451,7 +500,11 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             AgreementId = "test-agreement",
             SourceDataAddress = new DataAddress("test-type"),
             DestinationDataAddress = new DataAddress("test-type"),
-            TransferType = nameof(FlowType.Push)
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            }
         };
 
         var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}/start", message);
@@ -461,7 +514,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             .ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/{dataFlow.Id}");
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
-        body.State.ShouldBe(nameof(DataFlowState.Starting));
+        body.State.ShouldBe(DataFlowState.Starting);
         body.DataAddress.ShouldNotBeNull();
     }
 

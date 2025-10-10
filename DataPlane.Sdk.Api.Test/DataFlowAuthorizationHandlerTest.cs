@@ -87,7 +87,11 @@ public class DataFlowAuthorizationHandlerTest
         {
             Source = new DataAddress("source-type"),
             Destination = new DataAddress("destination-type"),
-            TransferType = nameof(FlowType.Pull),
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            },
             RuntimeId = Guid.NewGuid().ToString(),
             ParticipantId = participantContextId,
             AssetId = "test-asset",

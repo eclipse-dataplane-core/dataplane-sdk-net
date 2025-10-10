@@ -2,12 +2,12 @@ namespace DataPlane.Sdk.Core.Domain.Model;
 
 public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
 {
-    public required DataAddress Source { get; set; }
+    public DataAddress? Source { get; set; }
     public required DataAddress Destination { get; set; }
     public Uri? CallbackAddress { get; init; }
     public IDictionary<string, string> Properties { get; init; } = new Dictionary<string, string>();
 
-    public required string TransferType { get; init; }
+    public required TransferType TransferType { get; init; }
     public required string RuntimeId { get; init; }
     public bool IsProvisionComplete { get; init; } = true;
     public bool IsProvisionRequested { get; init; }

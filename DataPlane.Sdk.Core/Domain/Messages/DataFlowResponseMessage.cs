@@ -8,15 +8,13 @@ public class DataFlowResponseMessage : JsonLdDto
     [JsonPropertyName("dataAddress")]
     public DataAddress? DataAddress { get; init; }
 
-    [JsonPropertyName("dataplaneId")]
+    [JsonPropertyName("dataplaneID")]
     public required string DataplaneId { get; init; }
 
     [JsonPropertyName("state")]
-    public string? State { get; init; }
+    [JsonConverter(typeof(JsonNumberEnumConverter<DataFlowState>))]
+    public required DataFlowState State { get; init; }
 
     [JsonPropertyName("error")]
     public string? Error { get; init; }
-
-    [JsonPropertyName("dataFlowId")]
-    public required string DataFlowId { get; init; }
 }

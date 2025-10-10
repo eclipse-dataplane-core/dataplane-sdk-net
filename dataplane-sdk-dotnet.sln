@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{3205
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpDataplane-Keycloak", "Samples\HttpDataplane-Keycloak\HttpDataplane-Keycloak.csproj", "{534284F6-8E17-4774-95FA-7E133AF346F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Test.Utils", "DataPlane.Sdk.Test.Utils\DataPlane.Sdk.Test.Utils.csproj", "{391E2C8C-7806-40CC-A847-2ECD25FE73CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{534284F6-8E17-4774-95FA-7E133AF346F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{534284F6-8E17-4774-95FA-7E133AF346F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{534284F6-8E17-4774-95FA-7E133AF346F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{534284F6-8E17-4774-95FA-7E133AF346F7} = {32055AC6-C4BE-4B7C-A829-F268AB12E577}

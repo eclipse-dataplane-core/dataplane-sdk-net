@@ -5,11 +5,10 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 
 /// <summary>
 ///     Represents a data flow start message from the Dataplane Signaling API protocol. It is used to initiate a data
-///     transfer
-///     between a consumer and the provider. This message is sent by the control plane to the data plane.
+///     transfer between a consumer and the provider. This message is sent by the control plane to the data plane.
 /// </summary>
-public class DataFlowStartMessage : DataFlowBaseMessage
+public class DataFlowStartByIdMessage : JsonLdDto
 {
     [JsonPropertyName("sourceDataAddress")]
-    public DataAddress? SourceDataAddress { get; init; }
+    public required DataAddress SourceDataAddress { get; init; }
 }

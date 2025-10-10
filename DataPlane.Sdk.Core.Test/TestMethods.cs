@@ -10,8 +10,15 @@ public static class TestMethods
         return new DataFlow(id)
         {
             Source = new DataAddress("test-data-address"),
-            Destination = new DataAddress("test-data-address"),
-            TransferType = nameof(FlowType.Pull),
+            Destination = new DataAddress("test-data-address")
+            {
+                Properties = { ["test-key"] = "test-value" }
+            },
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            },
             RuntimeId = "test-runtime",
             ParticipantId = "test-participant",
             AssetId = "test-asset",
@@ -27,7 +34,11 @@ public static class TestMethods
             ProcessId = "test-process-id",
             SourceDataAddress = new DataAddress("test-source-type"),
             DestinationDataAddress = new DataAddress("test-destination-type"),
-            TransferType = nameof(FlowType.Pull),
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            },
             ParticipantId = "test-participant-id",
             DatasetId = "test-asset-id",
             AgreementId = "test-agreement-id"
@@ -39,9 +50,12 @@ public static class TestMethods
         return new DataFlowPrepareMessage
         {
             ProcessId = "test-process-id",
-            SourceDataAddress = new DataAddress("test-source-type"),
             DestinationDataAddress = new DataAddress("test-destination-type"),
-            TransferType = nameof(FlowType.Pull),
+            TransferType = new TransferType
+            {
+                DestinationType = "test-type",
+                FlowType = FlowType.Pull
+            },
             ParticipantId = "test-participant-id",
             DatasetId = "test-asset-id",
             AgreementId = "test-agreement-id"

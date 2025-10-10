@@ -13,7 +13,7 @@ public class ControlPlaneSignalingClient(HttpClient httpClient, IOptions<DataPla
 
     public async Task<StatusResult> NotifyStarted(string dataFlowId)
     {
-        return await SendRequest($"{_baseUrl}/transfers/{dataFlowId}/dataflow/started", CreateResponse(dataFlowId));
+        return await SendRequest($"{_baseUrl}/transfers/{dataFlowId}/dataflow/started", CreateResponse(DataFlowState.Started));
     }
 
     public async Task<StatusResult> NotifyCompleted(string dataFlowId)
@@ -31,7 +31,7 @@ public class ControlPlaneSignalingClient(HttpClient httpClient, IOptions<DataPla
 
     public async Task<StatusResult> NotifyPrepared(string dataFlowId)
     {
-        return await SendRequest($"{_baseUrl}/transfers/{dataFlowId}/dataflow/prepared", CreateResponse(dataFlowId));
+        return await SendRequest($"{_baseUrl}/transfers/{dataFlowId}/dataflow/prepared", CreateResponse(DataFlowState.Prepared));
     }
 
     private async Task<StatusResult> SendRequest(string url, object body)
@@ -43,11 +43,11 @@ public class ControlPlaneSignalingClient(HttpClient httpClient, IOptions<DataPla
     }
 
 
-    private DataFlowResponseMessage CreateResponse(string id)
+    private DataFlowResponseMessage CreateResponse(DataFlowState state)
     {
         return new DataFlowResponseMessage
         {
-            DataFlowId = id,
+            State = state,
             DataplaneId = _dataplaneId
         };
     }

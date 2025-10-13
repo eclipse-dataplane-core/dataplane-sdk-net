@@ -10,6 +10,12 @@ on:
         description: 'NuGet package version to publish (optional, will read from project if not set)'
         required: false
         type: string
+  workflow_call:
+    inputs:
+      version:
+        description: 'NuGet package version to publish (optional, will read from project if not set)'
+        required: false
+        type: string
 
 jobs:
   publish:
@@ -38,7 +44,9 @@ jobs:
           --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          dotnet restore DataPlane.Sdk.Core/DataPlane.Sdk.Core.csproj
+          dotnet restore DataPlane.Sdk.Api/DataPlane.Sdk.Api.csproj
 
       - name: Get version
         id: get_version

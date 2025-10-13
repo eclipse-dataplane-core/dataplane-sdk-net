@@ -7,21 +7,23 @@ Planes via the Data Plane Signaling API (DPS API). The SDK includes callbacks on
 and mutual authentication and authorization scaffolding.
 
 <!-- TOC -->
+
 * [Dataplane SDK .NET](#dataplane-sdk-net)
-  * [1. Installation and requirements](#1-installation-and-requirements)
-  * [2. Usage (with API)](#2-usage-with-api)
-    * [2.1 Configuring the SDK](#21-configuring-the-sdk)
-    * [2.2 Configuring SDK services](#22-configuring-sdk-services)
-    * [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
-    * [2.4 Setting up authorization of incoming HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
-    * [2.5 Setting up authorization of outgoing HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
-      * [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
-  * [3. Usage (core only)](#3-usage-core-only)
-  * [4. Required configuration](#4-required-configuration)
-  * [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
-  * [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
-  * [7. Using the Control API](#7-using-the-control-api)
-  * [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
+    * [1. Installation and requirements](#1-installation-and-requirements)
+    * [2. Usage (with API)](#2-usage-with-api)
+        * [2.1 Configuring the SDK](#21-configuring-the-sdk)
+        * [2.2 Configuring SDK services](#22-configuring-sdk-services)
+        * [2.3 Setting up authentication for incoming requests](#23-setting-up-authentication-for-incoming-requests)
+        * [2.4 Setting up authorization of incoming HTTP requests](#24-setting-up-authorization-of-incoming-http-requests)
+        * [2.5 Setting up authorization of outgoing HTTP requests](#25-setting-up-authorization-of-outgoing-http-requests)
+            * [Named vs unnamed `HttpClient`](#named-vs-unnamed-httpclient)
+    * [3. Usage (core only)](#3-usage-core-only)
+    * [4. Required configuration](#4-required-configuration)
+    * [5. DataPlane Signaling API callbacks](#5-dataplane-signaling-api-callbacks)
+    * [6. In-memory vs PostgreSQL persistence](#6-in-memory-vs-postgresql-persistence)
+    * [7. Using the Control API](#7-using-the-control-api)
+    * [8. Reporting issues and bugs](#8-reporting-issues-and-bugs)
+
 <!-- TOC -->
 
 ## 1. Installation and requirements
@@ -219,7 +221,7 @@ In situations where the built-in API server for DataPlane Signaling cannot be us
 `DataPlane.Sdk.Core` module. While this will forego all API controllers, authentication and authorization, it will still
 provide
 core services and persistence. To do that, add the `DataPlane.Sdk.Core` package to your .NET project:
-`dotnet add package DataPlane.Sdk.Core --version 0.0.1-alpha`.
+`dotnet add package DataPlane.Sdk.Core --version <VERSION>`.
 
 Depending on the type of project (console, webapi) an `IHost` may or may not be available. If it is, client code can
 still utilize the dependency injection facilities built into the SDK by calling the `AddSdkServices(sdk)` extension

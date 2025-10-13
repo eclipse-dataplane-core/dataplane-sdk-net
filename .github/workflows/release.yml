@@ -44,6 +44,27 @@ jobs:
             exit 1
           fi
 
+      - name: Update version in .csproj files
+        run: |
+          # Find all .csproj files with <Version> tags and update them
+          find . -name "*.csproj" -type f | while read file; do
+            if grep -q "<Version>" "$file"; then
+              sed -i.bak "s|<Version>.*</Version>|<Version>${{ steps.normalize_version.outputs.version }}</Version>|g" "$file"
+              rm "${file}.bak"
+              echo "Updated version in $file"
+            fi
+          done
+
+      - name: Commit version bump
+        run: |
+          git add "*.csproj"
+          if git diff --cached --quiet; then
+            echo "No version changes to commit"
+          else
+            git commit -m "chore: bump version to ${{ steps.normalize_version.outputs.version }}"
+            git push origin HEAD
+          fi
+
       - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"

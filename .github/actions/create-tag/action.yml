@@ -1,0 +1,24 @@
+name: 'Create and Push Tag'
+description: 'Creates an annotated tag and pushes it to the repository'
+inputs:
+  tag:
+    description: 'Tag name to create'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Check if tag exists
+      shell: bash
+      run: |
+        if git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
+          echo "Error: Tag ${{ inputs.tag }} already exists"
+          exit 1
+        fi
+
+    - name: Create and push tag
+      shell: bash
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "${{ inputs.tag }}" -m "Release ${{ inputs.tag }}"
+        git push origin "${{ inputs.tag }}"

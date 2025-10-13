@@ -1,0 +1,27 @@
+name: 'Normalize Version'
+description: 'Normalizes a version string by removing v prefix and creating tag format'
+inputs:
+  version:
+    description: 'Version string to normalize (e.g., 1.0.0 or v1.0.0)'
+    required: true
+outputs:
+  version:
+    description: 'Normalized version without v prefix'
+    value: ${{ steps.normalize.outputs.version }}
+  tag:
+    description: 'Tag name with v prefix'
+    value: ${{ steps.normalize.outputs.tag }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Normalize version
+      id: normalize
+      shell: bash
+      run: |
+        version="${{ inputs.version }}"
+        # Remove 'v' prefix if present
+        version="${version#v}"
+        # Add 'v' prefix for tag
+        tag="v${version}"
+        echo "version=$version" >> $GITHUB_OUTPUT
+        echo "tag=$tag" >> $GITHUB_OUTPUT

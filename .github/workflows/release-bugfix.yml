@@ -1,0 +1,157 @@
+name: Release Bugfix
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Authenticate with GitHub Packages
+        run: |
+          dotnet nuget add source \
+          --username ${{ github.actor }} \
+          --password ${{ secrets.GITHUB_TOKEN }} \
+          --store-password-in-clear-text \
+          --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore 
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+  create-tag:
+    name: Create Tag
+    needs: run-tests
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+      tag: ${{ steps.extract_version.outputs.tag }}
+      is_latest: ${{ steps.check_latest.outputs.is_latest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate bugfix branch
+        run: |
+          current_branch="${{ github.ref_name }}"
+          if [[ ! "$current_branch" =~ ^bugfix/ ]]; then
+            echo "Error: This workflow must be run from a bugfix/* branch"
+            echo "Current branch: $current_branch"
+            exit 1
+          fi
+          echo "Running on bugfix branch: $current_branch"
+
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          current_branch="${{ github.ref_name }}"
+          # Extract version from bugfix/X.Y.Z format
+          version="${current_branch#bugfix/}"
+
+          # Validate semver format
+          if ! echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$'; then
+            echo "Error: Invalid version format in branch name. Expected bugfix/X.Y.Z"
+            exit 1
+          fi
+
+          tag="v${version}"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo "Extracted version: $version"
+
+      - name: Check if this should be latest release
+        id: check_latest
+        run: |
+          current_version="${{ steps.extract_version.outputs.version }}"
+
+          # Get all tags and find the highest version
+          highest_version=$(git tag -l 'v*' | sed 's/^v//' | sort -V | tail -n 1)
+
+          if [ -z "$highest_version" ]; then
+            echo "No existing tags found, this will be latest"
+            echo "is_latest=true" >> $GITHUB_OUTPUT
+          else
+            echo "Current version: $current_version"
+            echo "Highest existing version: $highest_version"
+
+            # Compare versions using sort -V
+            highest=$(printf "%s\n%s" "$current_version" "$highest_version" | sort -V | tail -n 1)
+
+            if [ "$highest" = "$current_version" ]; then
+              echo "This version is higher than or equal to existing versions, marking as latest"
+              echo "is_latest=true" >> $GITHUB_OUTPUT
+            else
+              echo "This version is lower than existing versions, not marking as latest"
+              echo "is_latest=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Bump version in .csproj files
+        uses: ./.github/actions/bump-version
+        with:
+          version: ${{ steps.extract_version.outputs.version }}
+
+      - name: Create and push tag
+        uses: ./.github/actions/create-tag
+        with:
+          tag: ${{ steps.extract_version.outputs.tag }}
+
+  publish-nuget:
+    name: Publish NuGet Packages
+    needs: create-tag
+    uses: ./.github/workflows/publish_nuget.yml
+    with:
+      version: ${{ needs.create-tag.outputs.version }}
+    permissions:
+      packages: write
+      contents: read
+
+  create-release:
+    name: Create GitHub Release
+    needs: [ create-tag, publish-nuget ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.create-tag.outputs.tag }}
+          name: Release ${{ needs.create-tag.outputs.tag }}
+          generateReleaseNotes: true
+          makeLatest: ${{ needs.create-tag.outputs.is_latest == 'true' }}
+          body: |
+            NuGet packages published to GitHub Packages.
+
+            ### Installation
+            ```bash
+            dotnet add package DataPlane.Sdk.Core --version ${{ needs.create-tag.outputs.version }}
+            dotnet add package DataPlane.Sdk.Api --version ${{ needs.create-tag.outputs.version }}
+            ```
+          draft: false
+          prerelease: false

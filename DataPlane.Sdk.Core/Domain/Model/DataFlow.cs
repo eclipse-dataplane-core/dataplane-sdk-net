@@ -46,4 +46,9 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     {
         Transition(DataFlowState.Starting);
     }
+
+    public void Complete()
+    {
+        Transition(DataFlowState.Completed);
+    }
 }

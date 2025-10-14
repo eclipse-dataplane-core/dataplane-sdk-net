@@ -46,4 +46,14 @@ public interface IDataPlaneSignalingService
     ///     preparation to happen asynchronously. If the state is PREPARED, then the caller can proceed normally.
     /// </returns>
     Task<StatusResult<DataFlow>> PrepareAsync(DataFlowPrepareMessage prepareMessage);
+
+    /// <summary>
+    ///     Marks a data flow as completed.
+    /// </summary>
+    /// <param name="dataFlowId">The ID of the data flow to complete</param>
+    /// <returns>
+    ///     A status result indicating success or failure. Failure may include specific details
+    ///     such as wrong state, not found, or other error conditions.
+    /// </returns>
+    Task<StatusResult> CompleteAsync(string dataFlowId);
 }

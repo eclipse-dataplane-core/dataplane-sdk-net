@@ -523,7 +523,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
     #endregion
 
-    #region StartById
+    #region Notify-Started
 
     [Fact]
     public async Task StartById_Success()
@@ -540,7 +540,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
@@ -560,7 +560,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -580,7 +580,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
@@ -603,7 +603,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         response.Headers.Location.ShouldNotBeNull()
             .ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/{flow.Id}");
@@ -632,7 +632,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
@@ -659,7 +659,72 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    #endregion
+
+    #region Complete
+
+    [Fact]
+    public async Task Complete_Success()
+    {
+        Sdk.OnComplete = null;
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Started;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Complete_WhenNotFound_ExpectNotFound()
+    {
+        Sdk.OnComplete = null;
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/not-exist/complete", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Complete_WithBody_ExpectBadRequest()
+    {
+        Sdk.OnComplete = null;
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/some-flow/complete", new StringContent("{\"foo\": \"bar\"}"));
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Complete_WhenSdkReportsError_ExpectBadRequest()
+    {
+        Sdk.OnComplete = df => StatusResult.Failed(new StatusFailure
+        {
+            Message = "test error",
+            Reason = FailureReason.ServiceUnavailable
+        });
+
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Started;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
+    public async Task Complete_WhenFlowInWrongState_ExpectBadRequest()
+    {
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Terminated;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 

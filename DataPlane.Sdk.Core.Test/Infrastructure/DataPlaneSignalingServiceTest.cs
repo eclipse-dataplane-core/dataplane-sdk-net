@@ -522,6 +522,57 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.IsSucceeded.ShouldBeTrue();
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Never);
     }
+
+    [Fact]
+    public async Task CompleteAsync_WhenFound_ShouldReturnSuccess()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenWrongState_ShouldReturnConflict()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        flow.State = Terminated;
+
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(Conflict);
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenSdkReportsError_ShouldReturnError()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        _sdk.OnComplete = _ => StatusResult.Failed(new StatusFailure { Message = "test error", Reason = InternalError });
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(InternalError);
+        res.Failure.Message.ShouldBe("test error");
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenNotFound_ShouldReturnNotFound()
+    {
+        var res = await _service.CompleteAsync("not-exist");
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(NotFound);
+    }
 }
 
 [CollectionDefinition("SignalingService")] //parallelize tests in this collection

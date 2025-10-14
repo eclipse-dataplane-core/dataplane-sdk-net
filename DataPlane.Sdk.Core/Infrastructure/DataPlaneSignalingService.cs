@@ -144,6 +144,35 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
+    public async Task<StatusResult> CompleteAsync(string dataFlowId)
+    {
+        var existingFlowResult = await dataFlowContext.FindByIdAsync(dataFlowId);
+        if (existingFlowResult == null)
+        {
+            return StatusResult.NotFound();
+        }
+
+        if (existingFlowResult.State == DataFlowState.Completed) // de-duplication check
+        {
+            return StatusResult.Success();
+        }
+
+        if (existingFlowResult.State is DataFlowState.Started)
+        {
+            var res = sdk.InvokeOnComplete(existingFlowResult);
+            if (res.IsFailed)
+            {
+                return res;
+            }
+
+            existingFlowResult.Complete();
+            await dataFlowContext.UpsertAsync(existingFlowResult, true);
+            return StatusResult.Success();
+        }
+
+        return StatusResult.Conflict("DataFlow is not in started state, cannot complete.");
+    }
+
     private async Task<StatusResult<DataFlow>> StartExistingFlow(DataFlow existingFlow, Func<DataFlow, StatusResult<DataFlow>> sdkHandler)
     {
         // invoke SDK handler

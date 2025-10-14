@@ -8,6 +8,7 @@ namespace DataPlane.Sdk.Core;
 
 public class DataPlaneSdk
 {
+    public Func<DataFlow, StatusResult>? OnComplete;
     public Func<DataFlow, StatusResult<DataFlow>>? OnPrepare;
     public Func<DataFlow, StatusResult<DataFlow>>? OnStart;
     public Func<DataFlow, StatusResult>? OnSuspend;
@@ -50,6 +51,11 @@ public class DataPlaneSdk
         return StatusResult<DataFlow>.Success(flow);
     }
 
+    internal StatusResult InvokeOnComplete(DataFlow flow)
+    {
+        return OnComplete != null ? OnComplete(flow) : StatusResult.Success();
+    }
+
     public class SdkBuilder
     {
         private readonly DataPlaneSdk _dataPlaneSdk = new()
@@ -83,6 +89,12 @@ public class DataPlaneSdk
         public SdkBuilder OnSuspend(Func<DataFlow, StatusResult> processor)
         {
             _dataPlaneSdk.OnSuspend = processor;
+            return this;
+        }
+
+        public SdkBuilder OnComplete(Func<DataFlow, StatusResult> processor)
+        {
+            _dataPlaneSdk.OnComplete = processor;
             return this;
         }
 

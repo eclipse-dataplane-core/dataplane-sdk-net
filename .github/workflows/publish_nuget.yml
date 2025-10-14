@@ -55,6 +55,12 @@ jobs:
             # Remove leading 'v' if present (e.g., v1.2.3 -> 1.2.3)
             version="${GITHUB_REF#refs/tags/v}"
             echo "version=$version" >> $GITHUB_OUTPUT
+          
+          # workflow_call input overrides
+          elif [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          
+          # Fallback to manual trigger input; then
           elif [ -n "${{ github.event.inputs.version }}" ]; then
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
           else

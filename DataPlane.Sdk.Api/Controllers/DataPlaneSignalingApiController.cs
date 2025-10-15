@@ -145,7 +145,7 @@ public class DataPlaneSignalingApiController(
     }
 
     [Authorize]
-    [HttpPost("{dataFlowId}/complete")]
+    [HttpPost("{dataFlowId}/completed")]
     public async Task<IActionResult> Complete([FromRoute] string participantContextId, [FromRoute] string dataFlowId)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)

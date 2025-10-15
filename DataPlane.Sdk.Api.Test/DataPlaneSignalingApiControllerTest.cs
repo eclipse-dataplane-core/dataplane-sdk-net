@@ -676,7 +676,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -685,7 +685,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnComplete = null;
 
-        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/not-exist/complete", null);
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/not-exist/completed", null);
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -694,7 +694,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnComplete = null;
 
-        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/some-flow/complete", new StringContent("{\"foo\": \"bar\"}"));
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/some-flow/completed", new StringContent("{\"foo\": \"bar\"}"));
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
@@ -712,7 +712,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
     }
 
@@ -724,7 +724,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/complete", null);
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 

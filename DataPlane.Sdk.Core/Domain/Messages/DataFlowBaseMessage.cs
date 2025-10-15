@@ -33,5 +33,5 @@ public abstract class DataFlowBaseMessage : JsonLdDto
     public required TransferType TransferType { get; init; }
 
     [JsonPropertyName("dataAddress")]
-    public required DataAddress DataAddress { get; init; }
+    public DataAddress? DataAddress { get; init; }
 }

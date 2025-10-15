@@ -3,7 +3,7 @@ namespace DataPlane.Sdk.Core.Domain.Model;
 public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
 {
     public DataAddress? Source { get; set; }
-    public required DataAddress Destination { get; set; }
+    public required DataAddress? Destination { get; set; }
     public Uri? CallbackAddress { get; init; }
     public IDictionary<string, string> Properties { get; init; } = new Dictionary<string, string>();
 

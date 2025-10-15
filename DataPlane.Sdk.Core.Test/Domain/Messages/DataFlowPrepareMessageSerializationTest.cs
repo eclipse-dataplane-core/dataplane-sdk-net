@@ -163,7 +163,7 @@ public class DataFlowPrepareMessageTest
         deserialized.DatasetId.ShouldBe(original.DatasetId);
         deserialized.ParticipantId.ShouldBe(original.ParticipantId);
         deserialized.AgreementId.ShouldBe(original.AgreementId);
-        deserialized.DataAddress.Type.ShouldBe(original.DataAddress.Type);
+        deserialized.DataAddress?.Type.ShouldBe(original.DataAddress.Type);
         deserialized.TransferType.DestinationType.ShouldBe(original.TransferType.DestinationType);
         deserialized.TransferType.FlowType.ShouldBe(original.TransferType.FlowType);
     }

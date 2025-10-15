@@ -12,7 +12,7 @@ using static DataPlane.Sdk.Core.Test.TestMethods;
 
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]
 
-namespace DataPlane.Sdk.Core.Test;
+namespace DataPlane.Sdk.Core.Test.Infrastructure;
 
 public abstract class DataPlaneSignalingServiceTest : IDisposable
 {
@@ -149,6 +149,7 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     public async Task StartByIdAsync_WhenExists_ShouldReturnSuccess()
     {
         var flow = CreateDataFlow(Guid.NewGuid().ToString(), Uninitialized);
+        flow.IsConsumer = true;
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
@@ -179,6 +180,28 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.IsFailed.ShouldBeTrue();
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(NotFound);
+    }
+
+    [Fact]
+    public async Task StartByIdAsync_WhenNotConsumer_ShouldReturnFailure()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Uninitialized);
+        flow.IsConsumer = false;
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var msg = new DataFlowStartByIdMessage
+        {
+            SourceDataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync(flow.Id, msg);
+        result.IsFailed.ShouldBeTrue();
+        result.Failure.ShouldNotBeNull();
+        result.Failure.Reason.ShouldBe(Conflict);
     }
 
     [Fact]

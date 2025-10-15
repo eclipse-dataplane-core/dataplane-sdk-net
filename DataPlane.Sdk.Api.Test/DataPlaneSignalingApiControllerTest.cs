@@ -530,6 +530,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnStart = null;
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
@@ -593,6 +594,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             return StatusResult<DataFlow>.Success(df);
         };
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
@@ -622,6 +624,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             return StatusResult<DataFlow>.Success(df);
         };
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 

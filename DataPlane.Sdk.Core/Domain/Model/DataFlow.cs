@@ -13,7 +13,7 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public bool IsProvisionRequested { get; init; }
     public bool IsDeprovisionComplete { get; init; }
     public bool IsDeprovisionRequested { get; init; }
-    public bool IsConsumer { get; init; }
+    public bool IsConsumer { get; set; }
     public required string ParticipantId { get; init; }
     public required string AssetId { get; init; }
     public required string AgreementId { get; init; }

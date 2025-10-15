@@ -45,6 +45,11 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
             return StatusResult<DataFlow>.Success(existing);
         }
 
+        if (!existing.IsConsumer)
+        {
+            return StatusResult<DataFlow>.Conflict("This request is only valid for DataFlows on the consumer side.");
+        }
+
         // check the correct state of the existing DF
         if (existing.State is DataFlowState.Starting or DataFlowState.Prepared or DataFlowState.Uninitialized)
         {

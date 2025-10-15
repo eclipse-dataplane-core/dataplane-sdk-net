@@ -83,7 +83,8 @@ public class DataPlaneSignalingApiController(
 
     [Authorize]
     [HttpPost("{dataFlowId}/started")]
-    public async Task<IActionResult> StartById([FromRoute] string participantContextId, [FromRoute] string dataFlowId, DataFlowStartByIdMessage startMessage)
+    public async Task<IActionResult> StartById([FromRoute] string participantContextId, [FromRoute] string dataFlowId,
+        DataFlowStartedNotificationMessage startMessage)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
         {

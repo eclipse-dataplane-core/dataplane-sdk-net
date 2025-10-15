@@ -1,6 +1,3 @@
-using System.Text.Json.Serialization;
-using DataPlane.Sdk.Core.Domain.Model;
-
 namespace DataPlane.Sdk.Core.Domain.Messages;
 
 /// <summary>
@@ -10,6 +7,4 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 /// </summary>
 public class DataFlowStartMessage : DataFlowBaseMessage
 {
-    [JsonPropertyName("sourceDataAddress")]
-    public DataAddress? SourceDataAddress { get; init; }
 }

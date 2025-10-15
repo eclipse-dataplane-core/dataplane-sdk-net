@@ -21,7 +21,7 @@ public class DataFlowPrepareMessageTest
             DataspaceContext = "dataspace-context",
             AgreementId = "agreement-def",
             CallbackAddress = new Uri("https://callback.example.com"),
-            DestinationDataAddress = new DataAddress("AzureBlob")
+            DataAddress = new DataAddress("AzureBlob")
             {
                 Properties = { ["container"] = "dest-container", ["account"] = "myaccount" }
             },
@@ -43,7 +43,7 @@ public class DataFlowPrepareMessageTest
         json.ShouldContain("\"participantID\":\"participant-abc\"");
         json.ShouldContain("\"counterPartyID\":\"counterparty-xyz\"");
         json.ShouldContain("\"agreementID\":\"agreement-def\"");
-        json.ShouldContain("\"destinationDataAddress\"");
+        json.ShouldContain("\"dataAddress\"");
         json.ShouldContain("\"transferType\"");
     }
 
@@ -61,7 +61,7 @@ public class DataFlowPrepareMessageTest
                        "dataspaceContext": "dataspace-context",
                        "agreementID": "agreement-def",
                        "callbackAddress": "https://callback.example.com",
-                       "destinationDataAddress": {
+                       "dataAddress": {
                            "@type": "AzureBlob",
                            "properties": {
                                "container": "dest-container",
@@ -89,8 +89,8 @@ public class DataFlowPrepareMessageTest
         message.AgreementId.ShouldBe("agreement-def");
         message.CallbackAddress.ShouldNotBeNull();
         message.CallbackAddress.ToString().ShouldBe("https://callback.example.com/");
-        message.DestinationDataAddress.ShouldNotBeNull();
-        message.DestinationDataAddress.Type.ShouldBe("AzureBlob");
+        message.DataAddress.ShouldNotBeNull();
+        message.DataAddress.Type.ShouldBe("AzureBlob");
         message.TransferType.ShouldNotBeNull();
         message.TransferType.DestinationType.ShouldBe("AzureBlob");
         message.TransferType.FlowType.ShouldBe(FlowType.Push);
@@ -106,7 +106,7 @@ public class DataFlowPrepareMessageTest
                        "datasetID": "dataset-789",
                        "participantID": "participant-abc",
                        "agreementID": "agreement-def",
-                       "destinationDataAddress": {
+                       "dataAddress": {
                            "type": "HttpData"
                        },
                        "transferType": {
@@ -125,7 +125,7 @@ public class DataFlowPrepareMessageTest
         message.DatasetId.ShouldBe("dataset-789");
         message.ParticipantId.ShouldBe("participant-abc");
         message.AgreementId.ShouldBe("agreement-def");
-        message.DestinationDataAddress.ShouldNotBeNull();
+        message.DataAddress.ShouldNotBeNull();
         message.TransferType.ShouldNotBeNull();
         message.TransferType.FlowType.ShouldBe(FlowType.Pull);
     }
@@ -141,7 +141,7 @@ public class DataFlowPrepareMessageTest
             DatasetId = "dataset-roundtrip",
             ParticipantId = "participant-roundtrip",
             AgreementId = "agreement-roundtrip",
-            DestinationDataAddress = new DataAddress("Database")
+            DataAddress = new DataAddress("Database")
             {
                 Properties = { ["connectionString"] = "Server=localhost", ["table"] = "dest_table" }
             },
@@ -163,7 +163,7 @@ public class DataFlowPrepareMessageTest
         deserialized.DatasetId.ShouldBe(original.DatasetId);
         deserialized.ParticipantId.ShouldBe(original.ParticipantId);
         deserialized.AgreementId.ShouldBe(original.AgreementId);
-        deserialized.DestinationDataAddress.Type.ShouldBe(original.DestinationDataAddress.Type);
+        deserialized.DataAddress.Type.ShouldBe(original.DataAddress.Type);
         deserialized.TransferType.DestinationType.ShouldBe(original.TransferType.DestinationType);
         deserialized.TransferType.FlowType.ShouldBe(original.TransferType.FlowType);
     }

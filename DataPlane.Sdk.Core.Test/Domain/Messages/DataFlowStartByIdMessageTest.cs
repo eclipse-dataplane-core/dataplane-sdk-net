@@ -6,7 +6,7 @@ using Shouldly;
 namespace DataPlane.Sdk.Core.Test.Domain.Messages;
 
 /// <summary>
-///     Tests for JSON serialization and deserialization of DataFlowStartByIdMessage
+///     Tests for JSON serialization and deserialization of DataFlowStartedNotificationMessage
 /// </summary>
 public class DataFlowStartByIdMessageTest
 {
@@ -14,9 +14,9 @@ public class DataFlowStartByIdMessageTest
     public void SerDes_WithSourceDataAddress_Success()
     {
         // Arrange
-        var message = new DataFlowStartByIdMessage
+        var message = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("S3")
+            DataAddress = new DataAddress("S3")
             {
                 Properties = { ["bucketName"] = "source-bucket", ["region"] = "us-east-1" }
             }
@@ -27,20 +27,20 @@ public class DataFlowStartByIdMessageTest
 
         // Assert
         json.ShouldNotBeNullOrWhiteSpace();
-        json.ShouldContain("\"sourceDataAddress\"");
+        json.ShouldContain("\"dataAddress\"");
         json.ShouldContain("\"@type\":\"S3\"");
         json.ShouldContain("\"bucketName\":\"source-bucket\"");
         json.ShouldContain("\"region\":\"us-east-1\"");
 
         // Act
-        var deserialized = JsonSerializer.Deserialize<DataFlowStartByIdMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
+        var deserialized = JsonSerializer.Deserialize<DataFlowStartedNotificationMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         deserialized.ShouldNotBeNull();
-        deserialized.SourceDataAddress.ShouldNotBeNull();
-        deserialized.SourceDataAddress.Type.ShouldBe("S3");
-        deserialized.SourceDataAddress.Properties["bucketName"].ShouldBeEquivalentTo("source-bucket");
-        deserialized.SourceDataAddress.Properties["region"].ShouldBeEquivalentTo("us-east-1");
+        deserialized.DataAddress.ShouldNotBeNull();
+        deserialized.DataAddress.Type.ShouldBe("S3");
+        deserialized.DataAddress.Properties["bucketName"].ShouldBeEquivalentTo("source-bucket");
+        deserialized.DataAddress.Properties["region"].ShouldBeEquivalentTo("us-east-1");
         deserialized.ShouldBeEquivalentTo(message);
     }
 
@@ -51,20 +51,20 @@ public class DataFlowStartByIdMessageTest
         // Arrange
         var json = """
                    {
-                       "sourceDataAddress": {
+                       "dataAddress": {
                            "@type": "HttpData"
                        }
                    }
                    """;
 
         // Act
-        var message = JsonSerializer.Deserialize<DataFlowStartByIdMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
+        var message = JsonSerializer.Deserialize<DataFlowStartedNotificationMessage>(json, TestJsonDeserializerConfig.DefaultOptions);
 
         // Assert
         message.ShouldNotBeNull();
-        message.SourceDataAddress.ShouldNotBeNull();
-        message.SourceDataAddress.Type.ShouldBe("HttpData");
-        message.SourceDataAddress.Properties.ShouldBeEmpty();
+        message.DataAddress.ShouldNotBeNull();
+        message.DataAddress.Type.ShouldBe("HttpData");
+        message.DataAddress.Properties.ShouldBeEmpty();
     }
 
     [Fact]
@@ -77,6 +77,6 @@ public class DataFlowStartByIdMessageTest
                    """;
 
         // Act
-        Should.Throw<JsonException>(() => JsonSerializer.Deserialize<DataFlowStartByIdMessage>(json, TestJsonDeserializerConfig.DefaultOptions));
+        Should.Throw<JsonException>(() => JsonSerializer.Deserialize<DataFlowStartedNotificationMessage>(json, TestJsonDeserializerConfig.DefaultOptions));
     }
 }

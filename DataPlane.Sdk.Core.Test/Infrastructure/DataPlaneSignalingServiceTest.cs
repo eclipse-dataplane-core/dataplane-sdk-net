@@ -153,9 +153,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -168,9 +168,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     [Fact]
     public async Task StartByIdAsync_WhenNotExists_ShouldReturnFailure()
     {
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -190,9 +190,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -211,9 +211,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -232,9 +232,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }

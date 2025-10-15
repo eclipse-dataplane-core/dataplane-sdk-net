@@ -17,7 +17,7 @@ public interface IDataPlaneSignalingService
     /// </summary>
     /// <param name="id"></param>
     /// <param name="message">The start message</param>
-    Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartByIdMessage message);
+    Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartedNotificationMessage message);
 
     /// <summary>
     ///     Suspends (pauses) a data flow by its ID.

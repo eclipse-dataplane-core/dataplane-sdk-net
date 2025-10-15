@@ -32,8 +32,7 @@ public static class TestMethods
         return new DataFlowStartMessage
         {
             ProcessId = "test-process-id",
-            SourceDataAddress = new DataAddress("test-source-type"),
-            DestinationDataAddress = new DataAddress("test-destination-type"),
+            DataAddress = new DataAddress("test-destination-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -50,7 +49,7 @@ public static class TestMethods
         return new DataFlowPrepareMessage
         {
             ProcessId = "test-process-id",
-            DestinationDataAddress = new DataAddress("test-destination-type"),
+            DataAddress = new DataAddress("test-destination-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",

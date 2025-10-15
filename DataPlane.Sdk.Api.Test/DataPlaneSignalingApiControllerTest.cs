@@ -143,7 +143,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -174,7 +174,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -205,7 +205,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -238,7 +238,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -263,7 +263,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -359,11 +359,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -396,11 +392,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -432,11 +424,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -470,8 +458,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -501,8 +488,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -534,9 +520,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
@@ -554,9 +540,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnStart = null;
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
@@ -574,9 +560,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
@@ -598,9 +584,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
@@ -628,9 +614,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
@@ -655,9 +641,9 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }

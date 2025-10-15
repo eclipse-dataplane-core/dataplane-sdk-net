@@ -31,7 +31,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     }
 
 
-    public async Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartByIdMessage message)
+    public async Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartedNotificationMessage message)
     {
         var existing = await dataFlowContext.FindByIdAsync(id);
 
@@ -205,7 +205,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     {
         return new DataFlow(message.ProcessId)
         {
-            Destination = message.DestinationDataAddress,
+            Destination = message.DataAddress,
             TransferType = message.TransferType,
             RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,
@@ -220,8 +220,9 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     {
         return new DataFlow(message.ProcessId)
         {
-            Source = message.SourceDataAddress,
-            Destination = message.DestinationDataAddress,
+            Source = new DataAddress(
+                "TODO: CHANGE"), //todo: this is incorrect: the source address must be resolved externally from the asset-to-source mapping  
+            Destination = message.DataAddress,
             TransferType = message.TransferType,
             RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,

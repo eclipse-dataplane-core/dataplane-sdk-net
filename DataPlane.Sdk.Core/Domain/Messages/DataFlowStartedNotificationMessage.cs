@@ -10,5 +10,5 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 public class DataFlowStartedNotificationMessage : JsonLdDto
 {
     [JsonPropertyName("dataAddress")]
-    public required DataAddress DataAddress { get; init; }
+    public DataAddress? DataAddress { get; init; }
 }

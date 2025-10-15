@@ -92,11 +92,6 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(Conflict);
 
-        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
-        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
-
-        // _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
-        // _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
     }
 
     [Fact]

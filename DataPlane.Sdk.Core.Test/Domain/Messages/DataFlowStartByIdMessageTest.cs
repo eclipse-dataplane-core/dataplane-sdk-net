@@ -68,7 +68,7 @@ public class DataFlowStartByIdMessageTest
     }
 
     [Fact]
-    public void SerializeDeserialize_NoSourceDataAddress_Failure()
+    public void SerializeDeserialize_NoDataAddress_Success()
     {
         // Arrange
         var json = """
@@ -77,6 +77,6 @@ public class DataFlowStartByIdMessageTest
                    """;
 
         // Act
-        Should.Throw<JsonException>(() => JsonSerializer.Deserialize<DataFlowStartedNotificationMessage>(json, TestJsonDeserializerConfig.DefaultOptions));
+        Should.NotThrow(() => JsonSerializer.Deserialize<DataFlowStartedNotificationMessage>(json, TestJsonDeserializerConfig.DefaultOptions));
     }
 }

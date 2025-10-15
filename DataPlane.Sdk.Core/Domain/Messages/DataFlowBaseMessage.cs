@@ -32,6 +32,6 @@ public abstract class DataFlowBaseMessage : JsonLdDto
     [JsonPropertyName("transferType")]
     public required TransferType TransferType { get; init; }
 
-    [JsonPropertyName("destinationDataAddress")]
-    public required DataAddress DestinationDataAddress { get; init; }
+    [JsonPropertyName("dataAddress")]
+    public DataAddress? DataAddress { get; init; }
 }

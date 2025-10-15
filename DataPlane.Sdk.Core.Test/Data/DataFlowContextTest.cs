@@ -22,7 +22,7 @@ public abstract class DataFlowContextTest(DataFlowContext context, string testLo
 
         entry.Entity.Id.ShouldBe(dataFlow.Id);
         entry.Entity.ShouldBeEquivalentTo(dataFlow);
-        entry.Entity.Destination.Properties["test-key"].ShouldBeEquivalentTo("test-value");
+        entry.Entity.Destination?.Properties["test-key"].ShouldBeEquivalentTo("test-value");
     }
 
     [Fact]

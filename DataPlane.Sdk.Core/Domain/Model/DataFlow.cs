@@ -3,7 +3,7 @@ namespace DataPlane.Sdk.Core.Domain.Model;
 public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
 {
     public DataAddress? Source { get; set; }
-    public required DataAddress Destination { get; set; }
+    public required DataAddress? Destination { get; set; }
     public Uri? CallbackAddress { get; init; }
     public IDictionary<string, string> Properties { get; init; } = new Dictionary<string, string>();
 
@@ -13,7 +13,7 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public bool IsProvisionRequested { get; init; }
     public bool IsDeprovisionComplete { get; init; }
     public bool IsDeprovisionRequested { get; init; }
-    public bool IsConsumer { get; init; }
+    public bool IsConsumer { get; set; }
     public required string ParticipantId { get; init; }
     public required string AssetId { get; init; }
     public required string AgreementId { get; init; }
@@ -45,5 +45,10 @@ public class DataFlow(string id) : StatefulEntity<DataFlowState>(id)
     public void Starting()
     {
         Transition(DataFlowState.Starting);
+    }
+
+    public void Complete()
+    {
+        Transition(DataFlowState.Completed);
     }
 }

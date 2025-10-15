@@ -82,8 +82,9 @@ public class DataPlaneSignalingApiController(
     }
 
     [Authorize]
-    [HttpPost("{dataFlowId}/start")]
-    public async Task<IActionResult> StartById([FromRoute] string participantContextId, [FromRoute] string dataFlowId, DataFlowStartByIdMessage startMessage)
+    [HttpPost("{dataFlowId}/started")]
+    public async Task<IActionResult> StartById([FromRoute] string participantContextId, [FromRoute] string dataFlowId,
+        DataFlowStartedNotificationMessage startMessage)
     {
         if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
         {
@@ -142,6 +143,24 @@ public class DataPlaneSignalingApiController(
 
         var statusResult = await signalingService.TerminateAsync(dataFlowId, terminateMessage.Reason);
         return statusResult.IsSucceeded ? Ok() : StatusCode((int)statusResult.Failure!.Reason, statusResult);
+    }
+
+    [Authorize]
+    [HttpPost("{dataFlowId}/completed")]
+    public async Task<IActionResult> Complete([FromRoute] string participantContextId, [FromRoute] string dataFlowId)
+    {
+        if (!(await authorizationService.AuthorizeAsync(User, new ResourceTuple(participantContextId, dataFlowId), "DataFlowAccess")).Succeeded)
+        {
+            return Forbid();
+        }
+
+        if (Request.ContentLength > 0)
+        {
+            return BadRequest("Request body is not allowed for this endpoint");
+        }
+
+        var result = await signalingService.CompleteAsync(dataFlowId);
+        return result.IsSucceeded ? Ok() : StatusCode((int)result.Failure!.Reason, result);
     }
 
     [Authorize]

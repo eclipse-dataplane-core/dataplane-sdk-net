@@ -12,7 +12,7 @@ using static DataPlane.Sdk.Core.Test.TestMethods;
 
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]
 
-namespace DataPlane.Sdk.Core.Test;
+namespace DataPlane.Sdk.Core.Test.Infrastructure;
 
 public abstract class DataPlaneSignalingServiceTest : IDisposable
 {
@@ -92,11 +92,6 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(Conflict);
 
-        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Source.ShouldNotBeNull());
-        // result.Content.ShouldSatisfyAllConditions(() => result.Content!.Destination.ShouldNotBeNull());
-
-        // _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
-        // _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId && x.State == Started);
     }
 
     [Fact]
@@ -149,12 +144,13 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     public async Task StartByIdAsync_WhenExists_ShouldReturnSuccess()
     {
         var flow = CreateDataFlow(Guid.NewGuid().ToString(), Uninitialized);
+        flow.IsConsumer = true;
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -167,9 +163,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     [Fact]
     public async Task StartByIdAsync_WhenNotExists_ShouldReturnFailure()
     {
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -182,15 +178,37 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
     }
 
     [Fact]
+    public async Task StartByIdAsync_WhenNotConsumer_ShouldReturnFailure()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Uninitialized);
+        flow.IsConsumer = false;
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var msg = new DataFlowStartedNotificationMessage
+        {
+            DataAddress = new DataAddress("test-type")
+            {
+                Properties = { ["key1"] = "value1" }
+            }
+        };
+
+        var result = await _service.StartByIdAsync(flow.Id, msg);
+        result.IsFailed.ShouldBeTrue();
+        result.Failure.ShouldNotBeNull();
+        result.Failure.Reason.ShouldBe(Conflict);
+    }
+
+    [Fact]
     public async Task StartByIdAsync_WhenWrongState_ShouldReturnFailure()
     {
         var flow = CreateDataFlow(Guid.NewGuid().ToString(), Completed); // can't start from Terminated
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -209,9 +227,9 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         await _dataFlowContext.AddAsync(flow);
         await _dataFlowContext.SaveChangesAsync();
 
-        var msg = new DataFlowStartByIdMessage
+        var msg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["key1"] = "value1" }
             }
@@ -521,6 +539,57 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
 
         result.IsSucceeded.ShouldBeTrue();
         eventMock.Verify(ev => ev.Invoke(dataFlow), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenFound_ShouldReturnSuccess()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenWrongState_ShouldReturnConflict()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        flow.State = Terminated;
+
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(Conflict);
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenSdkReportsError_ShouldReturnError()
+    {
+        var flow = CreateDataFlow(Guid.NewGuid().ToString(), Started);
+        await _dataFlowContext.AddAsync(flow);
+        await _dataFlowContext.SaveChangesAsync();
+
+        _sdk.OnComplete = _ => StatusResult.Failed(new StatusFailure { Message = "test error", Reason = InternalError });
+
+        var res = await _service.CompleteAsync(flow.Id);
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(InternalError);
+        res.Failure.Message.ShouldBe("test error");
+    }
+
+    [Fact]
+    public async Task CompleteAsync_WhenNotFound_ShouldReturnNotFound()
+    {
+        var res = await _service.CompleteAsync("not-exist");
+        res.IsSucceeded.ShouldBeFalse();
+        res.Failure.ShouldNotBeNull();
+        res.Failure.Reason.ShouldBe(NotFound);
     }
 }
 

@@ -143,7 +143,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -174,7 +174,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -205,7 +205,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -238,7 +238,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -263,7 +263,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -359,11 +359,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -396,11 +392,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -432,11 +424,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type")
-            {
-                Properties = { ["test-key"] = "test-value" }
-            },
-            DestinationDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             },
@@ -470,8 +458,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -501,8 +488,7 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             DatasetId = "test-asset",
             ParticipantId = TestUser,
             AgreementId = "test-agreement",
-            SourceDataAddress = new DataAddress("test-type"),
-            DestinationDataAddress = new DataAddress("test-type"),
+            DataAddress = new DataAddress("test-type"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -523,24 +509,25 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
 
     #endregion
 
-    #region StartById
+    #region Notify-Started
 
     [Fact]
     public async Task StartById_Success()
     {
         Sdk.OnStart = null;
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
@@ -553,14 +540,14 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
     {
         Sdk.OnStart = null;
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/not-exist/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -573,14 +560,14 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
@@ -593,17 +580,18 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             return StatusResult<DataFlow>.Success(df);
         };
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         response.Headers.Location.ShouldNotBeNull()
             .ToString().ShouldEndWith($"/api/v1/{TestUser}/dataflows/{flow.Id}");
@@ -622,17 +610,18 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
             return StatusResult<DataFlow>.Success(df);
         };
         var flow = CreateDataFlow();
+        flow.IsConsumer = true;
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<DataFlowResponseMessage>();
         body.ShouldNotBeNull();
@@ -652,14 +641,79 @@ public abstract class DataPlaneSignalingApiControllerTest(DataFlowContext dataFl
         DataFlowContext.DataFlows.Add(flow);
         await DataFlowContext.SaveChangesAsync();
 
-        var startMsg = new DataFlowStartByIdMessage
+        var startMsg = new DataFlowStartedNotificationMessage
         {
-            SourceDataAddress = new DataAddress("test-type")
+            DataAddress = new DataAddress("test-type")
             {
                 Properties = { ["test-key"] = "test-value" }
             }
         };
-        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/start", startMsg);
+        var response = await HttpClient.PostAsJsonAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/started", startMsg);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    #endregion
+
+    #region Complete
+
+    [Fact]
+    public async Task Complete_Success()
+    {
+        Sdk.OnComplete = null;
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Started;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Complete_WhenNotFound_ExpectNotFound()
+    {
+        Sdk.OnComplete = null;
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/not-exist/completed", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Complete_WithBody_ExpectBadRequest()
+    {
+        Sdk.OnComplete = null;
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/some-flow/completed", new StringContent("{\"foo\": \"bar\"}"));
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Complete_WhenSdkReportsError_ExpectBadRequest()
+    {
+        Sdk.OnComplete = df => StatusResult.Failed(new StatusFailure
+        {
+            Message = "test error",
+            Reason = FailureReason.ServiceUnavailable
+        });
+
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Started;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
+    public async Task Complete_WhenFlowInWrongState_ExpectBadRequest()
+    {
+        var flow = CreateDataFlow();
+        flow.State = DataFlowState.Terminated;
+        DataFlowContext.DataFlows.Add(flow);
+        await DataFlowContext.SaveChangesAsync();
+
+        var response = await HttpClient.PostAsync($"/api/v1/{TestUser}/dataflows/{flow.Id}/completed", null);
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 

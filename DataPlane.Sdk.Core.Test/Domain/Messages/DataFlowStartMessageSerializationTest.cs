@@ -21,11 +21,7 @@ public class DataFlowStartMessageTest
             DatasetId = "dataset-789",
             ParticipantId = "participant-abc",
             AgreementId = "agreement-def",
-            SourceDataAddress = new DataAddress("S3")
-            {
-                Properties = { ["bucketName"] = "source-bucket", ["region"] = "us-east-1" }
-            },
-            DestinationDataAddress = new DataAddress("AzureBlob")
+            DataAddress = new DataAddress("AzureBlob")
             {
                 Properties = { ["container"] = "dest-container", ["account"] = "myaccount" }
             },
@@ -46,8 +42,7 @@ public class DataFlowStartMessageTest
         json.ShouldContain("\"datasetId\":\"dataset-789\"");
         json.ShouldContain("\"participantId\":\"participant-abc\"");
         json.ShouldContain("\"agreementId\":\"agreement-def\"");
-        json.ShouldContain("\"sourceDataAddress\"");
-        json.ShouldContain("\"destinationDataAddress\"");
+        json.ShouldContain("\"dataAddress\"");
     }
 
     [Fact]
@@ -61,14 +56,7 @@ public class DataFlowStartMessageTest
                        "datasetID": "dataset-789",
                        "participantID": "participant-abc",
                        "agreementID": "agreement-def",
-                       "sourceDataAddress": {
-                           "@type": "S3",
-                           "properties": {
-                               "bucketName": "source-bucket",
-                               "region": "us-east-1"
-                           }
-                       },
-                       "destinationDataAddress": {
+                       "dataAddress": {
                            "@type": "AzureBlob",
                            "properties": {
                                "container": "dest-container",
@@ -92,14 +80,10 @@ public class DataFlowStartMessageTest
         message.DatasetId.ShouldBe("dataset-789");
         message.ParticipantId.ShouldBe("participant-abc");
         message.AgreementId.ShouldBe("agreement-def");
-        message.SourceDataAddress.ShouldNotBeNull();
-        message.SourceDataAddress.Type.ShouldBe("S3");
-        message.SourceDataAddress.Properties["bucketName"].ShouldBeEquivalentTo("source-bucket");
-        message.SourceDataAddress.Properties["region"].ShouldBeEquivalentTo("us-east-1");
-        message.DestinationDataAddress.ShouldNotBeNull();
-        message.DestinationDataAddress.Type.ShouldBe("AzureBlob");
-        message.DestinationDataAddress.Properties["container"].ShouldBeEquivalentTo("dest-container");
-        message.DestinationDataAddress.Properties["account"].ShouldBeEquivalentTo("myaccount");
+        message.DataAddress.ShouldNotBeNull();
+        message.DataAddress.Type.ShouldBe("AzureBlob");
+        message.DataAddress.Properties["container"].ShouldBeEquivalentTo("dest-container");
+        message.DataAddress.Properties["account"].ShouldBeEquivalentTo("myaccount");
         message.TransferType.FlowType.ShouldBe(FlowType.Push);
     }
 
@@ -113,10 +97,7 @@ public class DataFlowStartMessageTest
                        "datasetID": "dataset-789",
                        "participantID": "participant-abc",
                        "agreementID": "agreement-def",
-                       "sourceDataAddress": {
-                           "@type": "HttpData"
-                       },
-                       "destinationDataAddress": {
+                       "dataAddress": {
                            "@type": "HttpData"
                        },
                        "transferType": {
@@ -135,10 +116,8 @@ public class DataFlowStartMessageTest
         message.DatasetId.ShouldBe("dataset-789");
         message.ParticipantId.ShouldBe("participant-abc");
         message.AgreementId.ShouldBe("agreement-def");
-        message.SourceDataAddress.ShouldNotBeNull();
-        message.SourceDataAddress.Type.ShouldBe("HttpData");
-        message.DestinationDataAddress.ShouldNotBeNull();
-        message.DestinationDataAddress.Type.ShouldBe("HttpData");
+        message.DataAddress.ShouldNotBeNull();
+        message.DataAddress.Type.ShouldBe("HttpData");
         message.TransferType.FlowType.ShouldBe(FlowType.Pull);
     }
 
@@ -153,11 +132,7 @@ public class DataFlowStartMessageTest
             DatasetId = "dataset-roundtrip",
             ParticipantId = "participant-roundtrip",
             AgreementId = "agreement-roundtrip",
-            SourceDataAddress = new DataAddress("FileSystem")
-            {
-                Properties = { ["path"] = "/data/source", ["format"] = "csv" }
-            },
-            DestinationDataAddress = new DataAddress("Database")
+            DataAddress = new DataAddress("Database")
             {
                 Properties = { ["connectionString"] = "Server=localhost", ["table"] = "dest_table" }
             },
@@ -179,12 +154,9 @@ public class DataFlowStartMessageTest
         deserialized.DatasetId.ShouldBe(original.DatasetId);
         deserialized.ParticipantId.ShouldBe(original.ParticipantId);
         deserialized.AgreementId.ShouldBe(original.AgreementId);
-        deserialized.SourceDataAddress?.Type.ShouldBe(original.SourceDataAddress.Type);
-        deserialized.SourceDataAddress?.Properties["path"].ShouldBeEquivalentTo("/data/source");
-        deserialized.SourceDataAddress?.Properties["format"].ShouldBeEquivalentTo("csv");
-        deserialized.DestinationDataAddress.Type.ShouldBe(original.DestinationDataAddress.Type);
-        deserialized.DestinationDataAddress.Properties["connectionString"].ShouldBeEquivalentTo("Server=localhost");
-        deserialized.DestinationDataAddress.Properties["table"].ShouldBeEquivalentTo("dest_table");
+        deserialized.DataAddress?.Type.ShouldBe(original.DataAddress.Type);
+        deserialized.DataAddress?.Properties["connectionString"].ShouldBeEquivalentTo("Server=localhost");
+        deserialized.DataAddress?.Properties["table"].ShouldBeEquivalentTo("dest_table");
         deserialized.TransferType.ShouldBeEquivalentTo(original.TransferType);
     }
 
@@ -198,11 +170,7 @@ public class DataFlowStartMessageTest
                        "datasetID": "dataset-123",
                        "participantID": "participant-123",
                        "agreementID": "agreement-123",
-                       "sourceDataAddress": {
-                           "type": "Custom",
-                           "properties": {}
-                       },
-                       "destinationDataAddress": {
+                       "dataAddress": {
                            "type": "Custom",
                            "properties": {}
                        },
@@ -218,10 +186,8 @@ public class DataFlowStartMessageTest
 
         // Assert
         message.ShouldNotBeNull();
-        message.SourceDataAddress.ShouldNotBeNull();
-        message.SourceDataAddress.Properties.ShouldBeEmpty();
-        message.DestinationDataAddress.ShouldNotBeNull();
-        message.DestinationDataAddress.Properties.ShouldBeEmpty();
+        message.DataAddress.ShouldNotBeNull();
+        message.DataAddress.Properties.ShouldBeEmpty();
     }
 
     [Fact]
@@ -234,8 +200,7 @@ public class DataFlowStartMessageTest
             DatasetId = "dataset-123",
             ParticipantId = "participant-123",
             AgreementId = "agreement-123",
-            SourceDataAddress = new DataAddress("TestType"),
-            DestinationDataAddress = new DataAddress("TestType"),
+            DataAddress = new DataAddress("TestType"),
             TransferType = new TransferType
             {
                 DestinationType = "test-type",
@@ -251,8 +216,7 @@ public class DataFlowStartMessageTest
         json.ShouldContain("\"datasetId\"");
         json.ShouldContain("\"participantId\"");
         json.ShouldContain("\"agreementId\"");
-        json.ShouldContain("\"sourceDataAddress\"");
-        json.ShouldContain("\"destinationDataAddress\"");
+        json.ShouldContain("\"dataAddress\"");
         json.ShouldContain("\"transferType\"");
     }
 }

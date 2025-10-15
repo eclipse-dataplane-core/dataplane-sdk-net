@@ -31,7 +31,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     }
 
 
-    public async Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartByIdMessage message)
+    public async Task<StatusResult<DataFlow>> StartByIdAsync(string id, DataFlowStartedNotificationMessage message)
     {
         var existing = await dataFlowContext.FindByIdAsync(id);
 
@@ -43,6 +43,11 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         if (existing.State == DataFlowState.Started) // de-duplication check
         {
             return StatusResult<DataFlow>.Success(existing);
+        }
+
+        if (!existing.IsConsumer)
+        {
+            return StatusResult<DataFlow>.Conflict("This request is only valid for DataFlows on the consumer side.");
         }
 
         // check the correct state of the existing DF
@@ -144,6 +149,35 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         return StatusResult<DataFlow>.Success(updatedFlow);
     }
 
+    public async Task<StatusResult> CompleteAsync(string dataFlowId)
+    {
+        var existingFlowResult = await dataFlowContext.FindByIdAsync(dataFlowId);
+        if (existingFlowResult == null)
+        {
+            return StatusResult.NotFound();
+        }
+
+        if (existingFlowResult.State == DataFlowState.Completed) // de-duplication check
+        {
+            return StatusResult.Success();
+        }
+
+        if (existingFlowResult.State is DataFlowState.Started)
+        {
+            var res = sdk.InvokeOnComplete(existingFlowResult);
+            if (res.IsFailed)
+            {
+                return res;
+            }
+
+            existingFlowResult.Complete();
+            await dataFlowContext.UpsertAsync(existingFlowResult, true);
+            return StatusResult.Success();
+        }
+
+        return StatusResult.Conflict("DataFlow is not in started state, cannot complete.");
+    }
+
     private async Task<StatusResult<DataFlow>> StartExistingFlow(DataFlow existingFlow, Func<DataFlow, StatusResult<DataFlow>> sdkHandler)
     {
         // invoke SDK handler
@@ -171,7 +205,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     {
         return new DataFlow(message.ProcessId)
         {
-            Destination = message.DestinationDataAddress,
+            Destination = message.DataAddress,
             TransferType = message.TransferType,
             RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,
@@ -186,8 +220,9 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
     {
         return new DataFlow(message.ProcessId)
         {
-            Source = message.SourceDataAddress,
-            Destination = message.DestinationDataAddress,
+            Source = new DataAddress(
+                "TODO: CHANGE"), //todo: this is incorrect: the source address must be resolved externally from the asset-to-source mapping  
+            Destination = message.DataAddress,
             TransferType = message.TransferType,
             RuntimeId = _runtimeId,
             ParticipantId = message.ParticipantId,

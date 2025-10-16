@@ -8,19 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha12"/>
+        <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha13"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10"/>
         <PackageReference Include="NATS.Client.Core" Version="2.7.0-preview.7"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="Resources\Keycloak\dataplane-api-realm.json"/>
     </ItemGroup>
 
 
     <!--    uncomment when debugging the local SDK-->
     <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>-->
+    <!--        <ProjectReference Include="..\..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>-->
     <!--    </ItemGroup>-->
 
 </Project>

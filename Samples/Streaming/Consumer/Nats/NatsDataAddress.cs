@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DataPlane.Sdk.Core.Domain.Model;
 
-namespace Provider.Nats;
+namespace Consumer.Nats;
 
 public class NatsDataAddress : DataAddress
 {
@@ -14,7 +14,7 @@ public class NatsDataAddress : DataAddress
     public string NatsEndpoint
     {
         init => Properties["endpoint"] = value;
-        get => Properties["endpoint"] as string ?? throw new InvalidOperationException("No 'endpoint' endpointProperty found");
+        get => Properties["endpoint"].ToString() ?? throw new InvalidOperationException("No 'endpoint' endpointProperty found");
     }
 
     public string Channel

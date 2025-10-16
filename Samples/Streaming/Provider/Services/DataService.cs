@@ -32,7 +32,7 @@ public class DataService(IOptions<NatsOptions> options, INatsPublisherService pu
         flow.Destination = dataAddress;
 
         // start publishing events
-        publisherService.StartAsync(channel);
+        publisherService.Start(channel);
 
         return StatusResult<DataFlow>.Success(flow);
     }

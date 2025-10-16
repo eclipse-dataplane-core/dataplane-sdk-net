@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "84fd9da2-29f2-405d-9f51-f28fdf4c532b",
+		"name": "Streaming Pull",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "647585",
+		"_collection_link": "https://galactic-star-228409.postman.co/workspace/Dataplane-work~d820e7a7-8273-4d79-986e-96754a31f467/collection/647585-84fd9da2-29f2-405d-9f51-f28fdf4c532b?action=share&source=collection_link&creator=647585"
+	},
+	"item": [
+		{
+			"name": "Consumer - Prepare",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"processId\": \"{{DATAFLOW_ID}}\",\n    \"datasetId\": \"test-asset\",\n    \"participantId\": \"{{PARTICIPANT_ID}}\",\n    \"agreementId\": \"test-agreement\",\n    \"transferType\": {\n        \"flowType\": \"pull\",\n        \"destinationType\": \"NatsStream\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/v1/{{PARTICIPANT_ID}}/dataflows/prepare",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"prepare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Provider - Start Dataflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"processId\": \"{{DATAFLOW_ID}}\",\n    \"datasetId\": \"test-asset\",\n    \"participantId\": \"{{PARTICIPANT_ID}}\",\n    \"agreementId\": \"test-agreement\",\n    \"dataAddress\": {\n        \"@type\": \"DataAddress\",\n        \"properties\":{\n            \n        }\n    },\n    \"transferType\": {\n        \"flowType\": \"pull\",\n        \"destinationType\": \"NatsStream\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{DATAPLANE_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/start",
+					"host": [
+						"{{DATAPLANE_HOST}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"start"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consumer - Notify Started",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code < 300 && pm.response.code >= 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('dataAddress');",
+							"    pm.expect(responseJson.dataAddress).to.have.property('properties');",
+							"    pm.expect(responseJson.dataAddress.properties).to.have.property('url');",
+							"    pm.expect(responseJson.dataAddress.properties.url).to.exist;",
+							"",
+							"    const url = responseJson.dataAddress.properties.url;",
+							"    pm.collectionVariables.set(\"PUBLIC_URL\", url);",
+							"",
+							"    pm.expect(responseJson.dataAddress.properties).to.have.property('token');",
+							"    const token = responseJson.dataAddress.properties.token;",
+							"    pm.collectionVariables.set(\"API_KEY\", token);",
+							"}",
+							"",
+							"pm.test(\"Status code is >=200 and <300\", function () {",
+							"    pm.expect(pm.response.code < 300 && pm.response.code >= 200).to.be.true",
+							"});",
+							"pm.test(\"Public URL is set\", function(){",
+							"    pm.expect(pm.collectionVariables.get(\"PUBLIC_URL\")).not.to.be.undefined",
+							"})",
+							"",
+							"",
+							"pm.test(\"API is set\", function(){",
+							"    pm.expect(pm.collectionVariables.get(\"API_KEY\")).not.to.be.undefined",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"processId\": \"{{DATAFLOW_ID}}\",\n    \"datasetId\": \"test-asset\",\n    \"participantId\": \"{{PARTICIPANT_ID}}\",\n    \"agreementId\": \"test-agreement\",\n    \"dataAddress\": {\n        \"@type\": \"HttpData\",\n        \"properties\":{\n            \"baseUrl\": \"https://jsonplaceholder.typicode.com/comments/22\"\n        }\n    },\n    \"transferType\": {\n        \"flowType\": \"pull\",\n        \"destinationType\": \"HttpData\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{DATAPLANE_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{CONSUMER_DATAFLOW_ID}}//started",
+					"host": [
+						"{{DATAPLANE_HOST}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"{{CONSUMER_DATAFLOW_ID}}",
+						"",
+						"started"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Access Public API",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "{{API_KEY}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "x-api-key",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{PUBLIC_URL}}",
+					"host": [
+						"{{PUBLIC_URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Complete Dataflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{DATAPLANE_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/completed",
+					"host": [
+						"{{DATAPLANE_HOST}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"{{DATAFLOW_ID}}",
+						"completed"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Terminate Dataflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"done\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{DATAPLANE_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/terminate",
+					"host": [
+						"{{DATAPLANE_HOST}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"{{DATAFLOW_ID}}",
+						"terminate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,12 +1,11 @@
+using Consumer.Nats;
 using DataPlane.Sdk.Api;
 using DataPlane.Sdk.Core;
 using DataPlane.Sdk.Core.Domain.Model;
 using Microsoft.IdentityModel.Tokens;
-using Provider.Nats;
-using Provider.Services;
 using static DataPlane.Sdk.Core.Data.DataFlowContextFactory;
 
-namespace Provider;
+namespace Consumer;
 
 public static class Extensions
 {
@@ -24,23 +23,27 @@ public static class Extensions
             RuntimeId = config.RuntimeId,
             OnStart = dataFlow =>
             {
-                var dataService = services.BuildServiceProvider().GetRequiredService<IDataService>();
-                return dataService.ProcessStart(dataFlow);
+                if (dataFlow.Destination == null)
+                {
+                    return StatusResult<DataFlow>.BadRequest("DataFlow.Destination cannot be null");
+                }
+
+                var dataService = services.BuildServiceProvider().GetRequiredService<NatsSubscriber>();
+                dataService.Start(NatsDataAddress.Create(dataFlow.Destination)).Wait();
+                return StatusResult<DataFlow>.Success(dataFlow);
             },
-            OnTerminate = df =>
-            {
-                var dataService = services.BuildServiceProvider().GetRequiredService<IDataService>();
-                var task = dataService.ProcessTerminate(df);
-                task.Wait();
-                return task.Result;
-            },
+            OnTerminate = df => StatusResult.Success(),
             OnSuspend = _ => StatusResult.Success(),
-            OnPrepare = _ => throw new NotImplementedException("Cannot call /prepare on a provider data plane"),
+            OnPrepare = f =>
+            {
+                f.IsConsumer = true;
+                f.State = DataFlowState.Prepared;
+                return StatusResult<DataFlow>.Success(f);
+            },
             OnComplete = _ => StatusResult.Success()
         };
 
-        services.AddSingleton<IDataService, DataService>();
-        services.AddSingleton<INatsPublisherService, NatsPublisherService>();
+        services.AddSingleton<NatsSubscriber>();
 
 
         // add SDK core services

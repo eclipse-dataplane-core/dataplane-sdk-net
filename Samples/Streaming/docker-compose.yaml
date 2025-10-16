@@ -13,6 +13,26 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      nats:
+        condition: service_started
+    networks:
+      - sample-network
+  
+  consumer-dataplane:
+    build:
+      context: ./Consumer
+      dockerfile: Dockerfile
+      args:
+        NUGET_USERNAME: ${NUGET_USERNAME}
+        NUGET_PASSWORD: ${NUGET_PASSWORD}
+
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
     networks:
       - sample-network
   
@@ -53,6 +73,8 @@ services:
     image: nats:latest
     ports:
       - "4222:4222"
+    networks:
+      - sample-network
 
 volumes:
   postgres_data:

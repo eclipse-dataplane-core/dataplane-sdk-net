@@ -1,21 +1,25 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 
 namespace Provider.Nats;
 
-public class NatsPublisherService(ILogger<NatsPublisherService> logger) : INatsPublisherService
+public class NatsPublisherService(ILogger<NatsPublisherService> logger, IOptions<NatsOptions> options) : INatsPublisherService
 {
     private static readonly IDictionary<string, Task> BackgroundTasks = new Dictionary<string, Task>();
     private static readonly IDictionary<string, CancellationTokenSource> CancellationTokenSource = new Dictionary<string, CancellationTokenSource>();
 
-    public void StartAsync(string channel)
+    public void Start(string channel)
     {
         var ct = new CancellationTokenSource();
         CancellationTokenSource.Add(channel, ct);
 
         BackgroundTasks.Add(channel, Task.Run(async () =>
         {
-            await using var nats = new NatsConnection();
+            await using var nats = new NatsConnection(new NatsOpts
+            {
+                Url = options.Value.NatsEndpoint
+            });
 
             var num = 0;
             while (!ct.Token.IsCancellationRequested)

@@ -22,6 +22,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpDataplane-Keycloak", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlane.Sdk.Test.Utils", "DataPlane.Sdk.Test.Utils\DataPlane.Sdk.Test.Utils.csproj", "{391E2C8C-7806-40CC-A847-2ECD25FE73CC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Streaming", "Streaming", "{9B7B836B-426D-4F48-8467-98E24CE4FCB1}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\Streaming\docker-compose.yaml = Samples\Streaming\docker-compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provider", "Samples\Streaming\Provider\Provider.csproj", "{C1B9F93E-4499-4506-A654-9B19601D8FA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,8 +62,14 @@ Global
 		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{391E2C8C-7806-40CC-A847-2ECD25FE73CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1B9F93E-4499-4506-A654-9B19601D8FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1B9F93E-4499-4506-A654-9B19601D8FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1B9F93E-4499-4506-A654-9B19601D8FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1B9F93E-4499-4506-A654-9B19601D8FA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{534284F6-8E17-4774-95FA-7E133AF346F7} = {32055AC6-C4BE-4B7C-A829-F268AB12E577}
+		{9B7B836B-426D-4F48-8467-98E24CE4FCB1} = {32055AC6-C4BE-4B7C-A829-F268AB12E577}
+		{C1B9F93E-4499-4506-A654-9B19601D8FA2} = {9B7B836B-426D-4F48-8467-98E24CE4FCB1}
 	EndGlobalSection
 EndGlobal

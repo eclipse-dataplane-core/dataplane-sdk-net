@@ -6,7 +6,7 @@ namespace DataPlane.Sdk.Core.Domain.Messages;
 public class DataFlowStatusResponseMessage : JsonLdDto
 {
     [JsonPropertyName("state")]
-    [JsonConverter(typeof(JsonNumberEnumConverter<DataFlowState>))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public DataFlowState State { get; set; }
 
     [JsonPropertyName("dataFlowID")]

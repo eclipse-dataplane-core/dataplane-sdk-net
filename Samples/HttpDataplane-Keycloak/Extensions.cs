@@ -25,14 +25,14 @@ public static class Extensions
                 permissionService.CreatePublicEndpoint(f).Wait(); // yeah... Wait() ain't pretty, but no other option here. Async delegates can't return values
                 return StatusResult<DataFlow>.Success(f);
             },
-            OnRecover = _ => StatusResult.Success(),
             OnTerminate = _ => StatusResult.Success(),
             OnSuspend = _ => StatusResult.Success(),
             OnPrepare = f =>
             {
                 f.State = DataFlowState.Prepared;
                 return StatusResult<DataFlow>.Success(f);
-            }
+            },
+            OnComplete = _ => StatusResult.Success()
         };
 
         services.AddSingleton<IDataService>(permissionService);
@@ -47,6 +47,7 @@ public static class Extensions
         // This assumes that Keycloak is running on http://keycloak:8080, which is the default if launched with docker-compose.
 
         var jwtSettings = configuration.GetSection("JwtSettings");
+
         services.AddAuthentication("KeycloakJWT")
             .AddJwtBearer("KeycloakJWT", options =>
             {

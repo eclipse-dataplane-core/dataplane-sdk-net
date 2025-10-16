@@ -7,7 +7,7 @@ public class DataService(IDataPlaneStore dataFlowStore) : IDataService
 {
     public Task<bool> IsPermitted(string apiKey, DataFlow dataFlow)
     {
-        return Task.FromResult(dataFlow.Destination.Properties["token"] as string == apiKey);
+        return Task.FromResult(dataFlow.Destination?.Properties["token"] as string == apiKey);
     }
 
     public async Task<DataFlow?> GetFlow(string id)
@@ -21,6 +21,13 @@ public class DataService(IDataPlaneStore dataFlowStore) : IDataService
         var apiToken = Guid.NewGuid().ToString();
 
         dataFlow.State = DataFlowState.Started;
+        dataFlow.Source = new DataAddress("HttpData")
+        {
+            Properties =
+            {
+                ["baseUrl"] = "https://jsonplaceholder.typicode.com/comments/"
+            }
+        };
         dataFlow.Destination = new DataAddress("HttpData")
         {
             Properties =

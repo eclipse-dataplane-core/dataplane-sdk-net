@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using HttpDataplane.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +15,7 @@ public class PublicApiController(IDataService dataService, IHttpProxyService pro
         [FromRoute] string id)
     {
         var flow = await dataService.GetFlow(id);
-        if (flow != null && await dataService.IsPermitted(apiKey, flow))
+        if (flow is { Source: not null } && await dataService.IsPermitted(apiKey, flow))
         {
             if (!flow.Source.Properties.TryGetValue("baseUrl", out var url))
             {

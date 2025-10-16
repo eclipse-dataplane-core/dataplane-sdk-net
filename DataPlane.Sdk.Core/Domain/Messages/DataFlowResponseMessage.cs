@@ -15,6 +15,7 @@ public class DataFlowResponseMessage : JsonLdDto
     [JsonConverter(typeof(JsonNumberEnumConverter<DataFlowState>))]
     public required DataFlowState State { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("error")]
     public string? Error { get; init; }
 }

@@ -14,7 +14,16 @@ public class DataFlowAuthorizationHandler(IDataPlaneStore store)
 
         // Verify that the participant context ID (from the request) matches the JWT subject claim (sub)
         // which represents the authenticated user's unique identifier
-        var principal = context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+
+        var claim = context.User.FindFirst("azp") ?? context.User.FindFirst("sub") ?? context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+        if (claim == null)
+        {
+            context.Fail();
+            return;
+        }
+
+        var principal = claim.Value;
         if (participantContextId != principal)
         {
             context.Fail();

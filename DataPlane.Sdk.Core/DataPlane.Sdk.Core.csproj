@@ -6,7 +6,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Contains core building blocks for the DataPlane SDK in .NET such as services, callbacks, etc.</Description>
         <TargetFramework>net9.0</TargetFramework>
-        <Version>0.0.1-alpha10</Version>
+        <Version>0.0.1-alpha11</Version>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

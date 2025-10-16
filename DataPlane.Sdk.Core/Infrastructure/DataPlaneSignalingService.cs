@@ -53,6 +53,7 @@ public class DataPlaneSignalingService(IDataPlaneStore dataFlowContext, DataPlan
         // check the correct state of the existing DF
         if (existing.State is DataFlowState.Starting or DataFlowState.Prepared or DataFlowState.Uninitialized)
         {
+            existing.Destination = message.DataAddress ?? existing.Destination;
             return await StartExistingFlow(existing, sdk.InvokeStart);
         }
 

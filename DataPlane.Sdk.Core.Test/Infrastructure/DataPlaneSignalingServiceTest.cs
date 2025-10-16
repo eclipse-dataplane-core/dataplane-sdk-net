@@ -74,6 +74,11 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
 
         _dataFlowContext.ChangeTracker.HasChanges().ShouldBeFalse();
         _dataFlowContext.DataFlows.ShouldContain(x => x.Id == message.ProcessId);
+
+        var df = await _dataFlowContext.FindByIdAsync(message.ProcessId);
+        df.ShouldNotBeNull();
+        df.Destination.ShouldNotBeNull();
+        df.Destination.Properties.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -91,7 +96,6 @@ public abstract class DataPlaneSignalingServiceTest : IDisposable
         result.IsSucceeded.ShouldBeFalse();
         result.Failure.ShouldNotBeNull();
         result.Failure.Reason.ShouldBe(Conflict);
-
     }
 
     [Fact]

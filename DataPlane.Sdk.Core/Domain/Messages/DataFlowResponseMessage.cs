@@ -12,7 +12,7 @@ public class DataFlowResponseMessage : JsonLdDto
     public required string DataplaneId { get; init; }
 
     [JsonPropertyName("state")]
-    [JsonConverter(typeof(JsonNumberEnumConverter<DataFlowState>))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public required DataFlowState State { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

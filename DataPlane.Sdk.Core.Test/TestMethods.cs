@@ -32,7 +32,10 @@ public static class TestMethods
         return new DataFlowStartMessage
         {
             ProcessId = "test-process-id",
-            DataAddress = new DataAddress("test-destination-type"),
+            DataAddress = new DataAddress("test-destination-type")
+            {
+                Properties = { ["test-key"] = new List<string> { "test-value" } }
+            },
             TransferType = new TransferType
             {
                 DestinationType = "test-type",

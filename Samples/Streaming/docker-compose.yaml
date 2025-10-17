@@ -1,0 +1,84 @@
+services:
+  
+  provider-dataplane:
+    build:
+      context: ./Provider
+      dockerfile: Dockerfile
+      args:
+        NUGET_USERNAME: ${NUGET_USERNAME}
+        NUGET_PASSWORD: ${NUGET_PASSWORD}
+    
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    networks:
+      - sample-network
+  
+  consumer-dataplane:
+    build:
+      context: ./Consumer
+      dockerfile: Dockerfile
+      args:
+        NUGET_USERNAME: ${NUGET_USERNAME}
+        NUGET_PASSWORD: ${NUGET_PASSWORD}
+
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    networks:
+      - sample-network
+  
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=SdkApi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d SdkApi" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sample-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    command: [ "start-dev", "--http-port", "8088", "--import-realm" ]
+    ports:
+      - "8088:8088"
+    networks:
+      - sample-network
+    volumes:
+      - ./Resources/Keycloak/dataplane-api-realm.json:/opt/keycloak/data/import/realm-export.json
+  
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+    networks:
+      - sample-network
+
+volumes:
+  postgres_data:
+
+networks:
+  sample-network:
+    driver: bridge

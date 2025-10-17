@@ -4,22 +4,17 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>HttpDataplane</RootNamespace>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DataPlane.Sdk.Api" Version="0.0.1-alpha13"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Resources\"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10"/>
+        <PackageReference Include="NATS.Client.Core" Version="2.7.0-preview.7"/>
     </ItemGroup>
 
     <!--    uncomment when debugging the local SDK-->
     <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>-->
+    <!--        <ProjectReference Include="..\..\..\DataPlane.Sdk.Api\DataPlane.Sdk.Api.csproj"/>-->
     <!--    </ItemGroup>-->
-
-
 </Project>

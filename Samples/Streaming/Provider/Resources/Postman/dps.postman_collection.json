@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "ad21ada1-e71d-45b9-a5f5-9264972b8d62",
+		"name": "Dataplane Signaling API - Samples",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "647585",
+		"_collection_link": "https://galactic-star-228409.postman.co/workspace/Dataplane-work~d820e7a7-8273-4d79-986e-96754a31f467/collection/647585-ad21ada1-e71d-45b9-a5f5-9264972b8d62?action=share&source=collection_link&creator=647585"
+	},
+	"item": [
+		{
+			"name": "HttpDataplane",
+			"item": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "accessTokenUrl",
+				"value": "http://localhost:8088/realms/dataplane-signaling-api/protocol/openid-connect/token",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "dps-token",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{CLIENT_ID}}",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "body",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{CLIENT_SECRET}}",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "CLIENT_SECRET",
+			"value": ""
+		},
+		{
+			"key": "CLIENT_ID",
+			"value": ""
+		},
+		{
+			"key": "PARTICIPANT_ID",
+			"value": ""
+		},
+		{
+			"key": "DATAFLOW_ID",
+			"value": ""
+		},
+		{
+			"key": "DATAPLANE_HOST",
+			"value": ""
+		},
+		{
+			"key": "PUBLIC_URL",
+			"value": ""
+		},
+		{
+			"key": "API_KEY",
+			"value": ""
+		}
+	]
+}

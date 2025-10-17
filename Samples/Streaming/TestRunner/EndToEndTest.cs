@@ -34,6 +34,7 @@ public class EndToEndTest
 
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task StreamingTest()
     {
         var accessToken = await _pollyRetry

@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
       - name: Unit/Integration Tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
 
   e2e-test:
     runs-on: ubuntu-latest
@@ -62,9 +62,9 @@ jobs:
       - name: Execute E2E Tests
         run: |
           dotnet restore Samples/Streaming/TestRunner/TestRunner.csproj
-          dotnet test Samples/Streaming/TestRunner/TestRunner.csproj
-
-#      - name: Cleanup
-#        run: |
-#          docker-compose down -v
+          dotnet test Samples/Streaming/TestRunner/TestRunner.csproj --filter "Category=Integration"
+        
+        #      - name: Cleanup
+        #        run: |
+        #          docker-compose down -v
         

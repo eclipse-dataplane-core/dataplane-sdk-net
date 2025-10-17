@@ -25,11 +25,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Streaming", "Streaming", "{9B7B836B-426D-4F48-8467-98E24CE4FCB1}"
 	ProjectSection(SolutionItems) = preProject
 		Samples\Streaming\docker-compose.yaml = Samples\Streaming\docker-compose.yaml
+		Samples\Streaming\Resources\Postman\StreamingPull.postman_collection.json = Samples\Streaming\Resources\Postman\StreamingPull.postman_collection.json
+		Samples\Streaming\Resources\Keycloak\dataplane-api-realm.json = Samples\Streaming\Resources\Keycloak\dataplane-api-realm.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provider", "Samples\Streaming\Provider\Provider.csproj", "{C1B9F93E-4499-4506-A654-9B19601D8FA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Samples\Streaming\Consumer\Consumer.csproj", "{0219D903-F6B5-4E22-BF08-BAFF5EB1895D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "Samples\Streaming\TestRunner\TestRunner.csproj", "{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +141,18 @@ Global
 		{0219D903-F6B5-4E22-BF08-BAFF5EB1895D}.Release|x64.Build.0 = Release|Any CPU
 		{0219D903-F6B5-4E22-BF08-BAFF5EB1895D}.Release|x86.ActiveCfg = Release|Any CPU
 		{0219D903-F6B5-4E22-BF08-BAFF5EB1895D}.Release|x86.Build.0 = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|x64.Build.0 = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,5 +162,6 @@ Global
 		{9B7B836B-426D-4F48-8467-98E24CE4FCB1} = {32055AC6-C4BE-4B7C-A829-F268AB12E577}
 		{C1B9F93E-4499-4506-A654-9B19601D8FA2} = {9B7B836B-426D-4F48-8467-98E24CE4FCB1}
 		{0219D903-F6B5-4E22-BF08-BAFF5EB1895D} = {9B7B836B-426D-4F48-8467-98E24CE4FCB1}
+		{83F3FC39-4EA3-4DCA-A83C-331FA4CEA1C3} = {9B7B836B-426D-4F48-8467-98E24CE4FCB1}
 	EndGlobalSection
 EndGlobal

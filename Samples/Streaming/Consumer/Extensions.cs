@@ -32,7 +32,17 @@ public static class Extensions
                 dataService.Start(NatsDataAddress.Create(dataFlow.Destination)).Wait();
                 return StatusResult<DataFlow>.Success(dataFlow);
             },
-            OnTerminate = df => StatusResult.Success(),
+            OnTerminate = df =>
+            {
+                if (df.Destination == null)
+                {
+                    return StatusResult.FromCode(400, "DataFlow.Destination cannot be null");
+                }
+
+                var dataService = services.BuildServiceProvider().GetRequiredService<NatsSubscriber>();
+                dataService.Stop(NatsDataAddress.Create(df.Destination)).Wait();
+                return StatusResult.Success();
+            },
             OnSuspend = _ => StatusResult.Success(),
             OnPrepare = f =>
             {

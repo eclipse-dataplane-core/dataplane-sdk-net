@@ -50,20 +50,21 @@ jobs:
           dotnet-version: 9.0.x
 
       - uses: docker/setup-compose-action@v1
-      - uses: hoverkraft-tech/compose-action@3846bcd61da338e9eaaf83e7ed0234a12b099b72
-        with:
-          compose-file: './Samples/Streaming/docker-compose.yaml'
-        
+
+      - name: Docker Compose Build
         env:
           NUGET_USERNAME: ${{ github.actor }}
           NUGET_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker compose up --build -d
+        working-directory: ./Samples/Streaming
 
       - name: Execute E2E Tests
         run: |
           dotnet restore Samples/Streaming/TestRunner/TestRunner.csproj
           dotnet test Samples/Streaming/TestRunner/TestRunner.csproj
 
-      - name: Cleanup
-        run: |
-          docker-compose down -v
+#      - name: Cleanup
+#        run: |
+#          docker-compose down -v
         

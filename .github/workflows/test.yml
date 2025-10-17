@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
 
@@ -33,5 +37,33 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Test
+      - name: Unit/Integration Tests
         run: dotnet test --no-build --verbosity normal
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - uses: docker/setup-compose-action@v1
+      - uses: hoverkraft-tech/compose-action@3846bcd61da338e9eaaf83e7ed0234a12b099b72
+        with:
+          compose-file: './Samples/Streaming/docker-compose.yaml'
+        
+        env:
+          NUGET_USERNAME: ${{ github.actor }}
+          NUGET_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Execute E2E Tests
+        run: |
+          dotnet restore Samples/Streaming/TestRunner/TestRunner.csproj
+          dotnet test Samples/Streaming/TestRunner/TestRunner.csproj
+
+      - name: Cleanup
+        run: |
+          docker-compose down -v
+        

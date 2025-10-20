@@ -154,12 +154,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8081/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/started",
-					"protocol": "http",
+					"raw": "{{CONSUMER_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/started",
 					"host": [
-						"localhost"
+						"{{CONSUMER_HOST}}"
 					],
-					"port": "8081",
 					"path": [
 						"api",
 						"v1",
@@ -211,9 +209,64 @@
 					}
 				},
 				"url": {
-					"raw": "{{DATAPLANE_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/terminate",
+					"raw": "{{PROVIDER_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/terminate",
 					"host": [
-						"{{DATAPLANE_HOST}}"
+						"{{PROVIDER_HOST}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{PARTICIPANT_ID}}",
+						"dataflows",
+						"{{DATAFLOW_ID}}",
+						"terminate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consumer - Terminate Dataflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"done\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{CONSUMER_HOST}}/api/v1/{{PARTICIPANT_ID}}/dataflows/{{DATAFLOW_ID}}/terminate",
+					"host": [
+						"{{CONSUMER_HOST}}"
 					],
 					"path": [
 						"api",

@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Streaming", "Streaming", "{
 		Samples\Streaming\docker-compose.yaml = Samples\Streaming\docker-compose.yaml
 		Samples\Streaming\Resources\Postman\StreamingPull.postman_collection.json = Samples\Streaming\Resources\Postman\StreamingPull.postman_collection.json
 		Samples\Streaming\Resources\Keycloak\dataplane-api-realm.json = Samples\Streaming\Resources\Keycloak\dataplane-api-realm.json
+		Samples\Streaming\README.md = Samples\Streaming\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provider", "Samples\Streaming\Provider\Provider.csproj", "{C1B9F93E-4499-4506-A654-9B19601D8FA2}"
